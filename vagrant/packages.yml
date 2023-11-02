@@ -6,6 +6,7 @@
     update_cache: yes
   vars:
     packages:
+    - acl
     - git
     - postgresql
     - python3
@@ -17,6 +18,6 @@
     - libpq-dev
     - python-setuptools
     - build-essential
-    - python-dev
+    - python3-dev
     - make
     - m4
