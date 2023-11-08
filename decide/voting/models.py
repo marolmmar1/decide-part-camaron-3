@@ -27,11 +27,18 @@ class QuestionOption(models.Model):
     def __str__(self):
         return '{} ({})'.format(self.option, self.number)
 
-
+VOTING_TYPES = [
+    ('S', 'Single Choice'),
+    ('M', 'Multiple Choice'),
+    ('H', 'Hierarchy'),
+    ('Q', 'Many Questions'),
+]
 class Voting(models.Model):
     name = models.CharField(max_length=200)
     desc = models.TextField(blank=True, null=True)
     question = models.ForeignKey(Question, related_name='voting', on_delete=models.CASCADE)
+
+    voting_type = models.CharField(max_length=1, choices=VOTING_TYPES, default='S')
 
     start_date = models.DateTimeField(blank=True, null=True)
     end_date = models.DateTimeField(blank=True, null=True)
