@@ -11,20 +11,38 @@ from base.models import Auth, Key
 
 class Question(models.Model):
     desc = models.TextField()
-    optionSiNo = models.BooleanField(default=False, help_text="Marca esta casilla para que las opciones sean Si o No. No podrás añadir más opciones")
+    optionSiNo = models.BooleanField(default=False, help_text="Marca esta casilla solo si el tipo de votación es 'Single Choice'. No podrás añadir más opciones si esta casilla está marcada.")
 
     def __str__(self):
-        return self.desc
+        return self.desc    
+    
+
+    def clean(self):
+        if self.optionSiNo and self.pk is not None:  # Si la instancia ya existe y la opción es Sí/No
+            for voting in self.voting.all():
+                if voting.voting_type != 'S':
+                    raise ValidationError('La opción Sí/No solo puede usarse con el tipo de votación Single Choice')
+        super().clean()
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)  # Guarda la instancia en la base de datos
+        if self.optionSiNo:
+            if self.options.count() > 2:
+                raise ValidationError('No puedes tener más de dos opciones si la opción Sí/No está marcada')
+
+
+
+
 
 @receiver(post_save, sender=Question)
 def post_SiNo_Option(sender, instance, **kwargs):
-    options = instance.options.all()
-    if instance.optionSiNo and options.count() == 0:
-        op1 = QuestionOption(question=instance, number=1, option="Sí")
-        op1.save()
-        op2 = QuestionOption(question=instance, number=2, option="No")
-        op2.save()
-
+    if instance.optionSiNo:
+        options = instance.options.all()
+        if options.count() == 0:
+            op1 = QuestionOption(question=instance, number=1, option="Sí")
+            op1.save()
+            op2 = QuestionOption(question=instance, number=2, option="No")
+            op2.save()
 
 class QuestionOption(models.Model):
     question = models.ForeignKey(Question, related_name='options', on_delete=models.CASCADE)
