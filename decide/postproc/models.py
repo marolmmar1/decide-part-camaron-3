@@ -14,7 +14,6 @@ class PostProcessing(models.Model):
     start_date = models.DateTimeField(blank=True, null=True)
     end_date = models.DateTimeField(blank=True, null=True)
     results = models.JSONField(blank=True, null=True)
-    
     class Meta:
         unique_together = (('voting_id', 'question_id', 'type'),)
 
