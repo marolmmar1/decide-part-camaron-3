@@ -24,6 +24,29 @@
             <div v-else>
               <h2 v-if="!voting.end_date">Votación en curso</h2>
 
+              <h2>Estadísticas de la votación:</h2>
+                  <table v-if="voting.tally" class="table table-bordered table-striped">
+                    <tr>
+                      <th>Número de inscritos en censo</th>
+                      <td>[[census.voters.length]]</td>
+                    <tr>
+                    <tr>
+                      <th>Número de votos</th>
+                      <td>[[voting.tally.length]]</td>
+                    <tr>
+                    <tr>
+                      <th>Porcentaje del censo que ha votado</th>
+                      <td>[[voting.tally.length/census.voters.length * 100]] %</td>
+                    <tr>
+                  
+                  </table>
+                  <table v-else class="table table-bordered table-striped">
+                    <tr>
+                      <th>Número de inscritos en censo</th>
+                      <td>[[census.voters.length]]</td>
+                    <tr>
+                  </table>
+
               <div v-if="voting.end_date">
                   <h2 class="heading">Resultados:</h2>
 
@@ -64,16 +87,23 @@
 
     <script>
         var voting = {{voting|safe}};
+        var census = {{census|safe}};
+        
+        console.log(voting)
+        console.log(census.voters)
+
         const { createApp } = Vue
         createApp({
             delimiters: ['[[', ']]'],
             data() {
                 return {
-                    voting: voting
+                    voting: voting,
+                    census: census
                 }
             }
         }).mount('#app-visualizer')
     </script>
+
 <script>
   var xValues = voting.postproc.map((t)=>t.option) 
   var yValues = voting.postproc.map((t)=>t.votes) 
@@ -117,5 +147,6 @@
   });
 
 </script>
+
 </body>
 {% endblock %}
