@@ -1,5 +1,6 @@
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
+from django.core.management import call_command
 import django_filters.rest_framework
 from rest_framework import status
 from rest_framework.response import Response
@@ -78,5 +79,5 @@ class StoreView(generics.ListAPIView):
         v.b = b
 
         v.save()
-
+        
         return  Response({})
