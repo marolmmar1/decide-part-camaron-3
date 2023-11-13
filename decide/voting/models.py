@@ -155,8 +155,6 @@ class Voting(models.Model):
         
         for i in range (1, total_seats + 1):
             quotients = {option["option"]: option["votes"] / (2 * i - 1) for option in opts_aux}
-            print(quotients)
-            print(opts)
             best_option = max(quotients, key=quotients.get)
             for option in opts_aux:
                 if option['option'] == best_option:
