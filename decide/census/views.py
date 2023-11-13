@@ -10,12 +10,13 @@ from rest_framework.status import (
         HTTP_409_CONFLICT as ST_409
 )
 
-from base.perms import UserIsStaff
+from base.perms import UserIsStaff, IsReadOnly
+# from rest_framework.permissions import OR
 from .models import Census
 
 
 class CensusCreate(generics.ListCreateAPIView):
-    permission_classes = (UserIsStaff,)
+    permission_classes = [IsReadOnly|UserIsStaff]
 
     def create(self, request, *args, **kwargs):
         voting_id = request.data.get('voting_id')
@@ -29,6 +30,7 @@ class CensusCreate(generics.ListCreateAPIView):
         return Response('Census created', status=ST_201)
 
     def list(self, request, *args, **kwargs):
+
         voting_id = request.GET.get('voting_id')
         voters = Census.objects.filter(voting_id=voting_id).values_list('voter_id', flat=True)
         return Response({'voters': voters})
