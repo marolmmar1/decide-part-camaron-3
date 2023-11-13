@@ -146,7 +146,6 @@ class Voting(models.Model):
             votes = option["votes"]
             dhont = votes / (total_seats + 1)
             option["dhont"] = dhont
-            
     def do_saintLague(self, opts, total_seats):
         opts_aux = copy.deepcopy(opts)
         
