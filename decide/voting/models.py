@@ -171,5 +171,15 @@ class Voting(models.Model):
                     option['saintLague'] += 1
                     break
 
+    def do_borda(self, opts):
+        n = len(opts)
+        for option in opts:
+            votes = option["votes"]
+            borda = 0
+            for i in range(n):
+                borda += (n - i) * votes[i]
+            option["borda"] = borda
+
+
     def __str__(self):
         return self.name
