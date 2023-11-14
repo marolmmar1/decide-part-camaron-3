@@ -45,6 +45,8 @@ class Voting(models.Model):
     tally = JSONField(blank=True, null=True)
     postproc = JSONField(blank=True, null=True)
 
+    seats = models.PositiveIntegerField(blank=True, null=True, default=10)
+
     def create_pubkey(self):
         if self.pub_key or not self.auths.count():
             return
@@ -127,10 +129,7 @@ class Voting(models.Model):
                 'votes': votes
             })
 
-        # Remove this after a way to define number of seats is defined
-        total_seats = 10
-        # total_seats = get_seats()
-        ##
+        total_seats = self.seats
 
         self.do_dhont(opts, total_seats)
         data = {'type': 'IDENTITY', 'options': opts}
@@ -142,8 +141,15 @@ class Voting(models.Model):
     def do_dhont(self, opts, total_seats):
         for option in opts:
             votes = option["votes"]
-            dhont = votes / (total_seats + 1)
-            option["dhont"] = dhont
+            dhont_values = []
+            for seat in range(1, total_seats + 1):
+                dhont = round(votes / seat, 4)
+                dhont_values.append({
+                    "seat": seat,
+                    "percentaje": dhont
+                })
+
+            option["dhont"] = dhont_values
 
     def __str__(self):
         return self.name
