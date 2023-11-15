@@ -6,6 +6,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework import generics
 
+import subprocess
 from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.urls import reverse
@@ -89,7 +90,7 @@ class StoreView(generics.ListAPIView):
 
 def create_backup(request):
     try:
-        call_command('dbbackup')
+        subprocess.run('python manage.py dbbackup', shell=True, check=True)
         messages.success(request, 'Backup created successfully.')
     except Exception as e:
         messages.error(request, f'Error creating backup: {e}')
