@@ -1,12 +1,10 @@
 {% extends "base.html" %}
 {% load i18n static %}
-
 {% block extrahead %}
     <link type="text/css" rel="stylesheet"
          href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css" />
     <link type="text/css" rel="stylesheet" href="{% static "booth/style.css" %}" />
 {% endblock %}
-
 {% block content %}
     <div id="app-visualizer">
         <!-- Navbar -->
@@ -15,11 +13,8 @@
                 <h1 class="navbar-brand">Decide</h1>
             </div>
         </nav>
-          
-
         <div class="voting container">
             <h1>[[ voting.id ]] - [[ voting.name ]]</h1>
-
             <h2 v-if="!voting.start_date">Votación no comenzada</h2>
             <h2 v-else-if="!voting.end_date">Votación en curso</h2>
             <div v-else>
@@ -31,6 +26,7 @@
                             <th>Opción</th>
                             <th>Puntuación</th>
                             <th>Votos</th>
+                            <th>Escaños Sistema Saint Lague<th>
                         </tr>
                     </thead>
                     <tbody>
@@ -38,11 +34,25 @@
                             <th>[[opt.option]]</th>
                             <td>[[opt.postproc]]</td>
                             <td class="text-muted">[[opt.votes]]</td>
+                            <td>[[opt.saintLague]]</td>
                         </tr>
                     </tbody>
                 </table>
+		<table class="table table-bordered table-striped">
+		<thead>
+			<th>-/-</th>
+                        <th v-for="opt in seats" :key="opt.seat">Escaño [[opt.seat]]</th>
+                    </thead>
+		    <tbody>
+			    <tr v-for="opt in voting.postproc">
+				    <th>[[opt.option]]</th>
+				    <td v-for="d_hont in opt.dhont" :key="opt.number">
+					    [[d_hont.percentaje]]
+				    </td>
+			    </tr>
+		    </tbody>
+		</table>
             </div>
-
         </div>
     </div>
 {% endblock %}
@@ -60,7 +70,8 @@
             delimiters: ['[[', ']]'],
             data() {
                 return {
-                    voting: voting
+                    voting: voting,
+		    seats: voting.postproc[0].dhont
                 }
             }
         }).mount('#app-visualizer')

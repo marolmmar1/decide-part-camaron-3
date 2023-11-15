@@ -40,9 +40,10 @@ jobs:
         pip install -r requirements.txt
         pip install codacy-coverage
         cp decide/local_settings.gactions.py decide/local_settings.py
-    - name: Run migrations (unnecessary)
+    - name: Run migrations
       run: |
         cd decide
+        python manage.py makemigrations
         python manage.py migrate
     - name: Run tests
       run: |
