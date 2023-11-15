@@ -3,10 +3,7 @@ from rest_framework import serializers
 from .models import Vote
 
 
-class VoteSerializer(serializers.HyperlinkedModelSerializer):
-    a = serializers.IntegerField()
-    b = serializers.IntegerField()
-
+class VoteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vote
-        fields = ('voting_id', 'voter_id', 'a', 'b')
+        fields = ('id', 'voter_id', 'voting_id', 'a', 'b', 'voted')

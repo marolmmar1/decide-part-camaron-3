@@ -14,7 +14,7 @@ from .models import Vote
 from .serializers import VoteSerializer
 from base import mods
 from base.perms import UserIsStaff
-
+from rest_framework.permissions import IsAuthenticated
 
 class StoreView(generics.ListAPIView):
     queryset = Vote.objects.all()
@@ -103,3 +103,12 @@ def restore_backup(request):
         messages.error(request, f'Error restoring backup: {e}')
 
     return HttpResponseRedirect(reverse('admin:store_vote_changelist'))
+    
+class VoteHistoryView(generics.ListAPIView):
+    serializer_class = VoteSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Filtra los votos del usuario actual
+        user = self.request.user
+        return Vote.objects.filter(voter_id=user.id).order_by('-voted')
