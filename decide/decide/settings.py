@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'dbbackup', # django-dbbackup
     'corsheaders',
     'django_filters',
     'rest_framework',
@@ -116,6 +117,8 @@ DATABASES = {
         'PORT': '5432',
     }
 }
+DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
+DBBACKUP_STORAGE_OPTIONS = {'location': BASE_DIR + '/store/backup'}
 
 
 # Password validation

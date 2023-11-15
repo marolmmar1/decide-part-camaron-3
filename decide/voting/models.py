@@ -2,6 +2,7 @@ from django.db import models
 from django.db.models import JSONField
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+import copy
 
 from base import mods
 from base.models import Auth, Key
@@ -132,6 +133,7 @@ class Voting(models.Model):
         total_seats = self.seats
 
         self.do_dhont(opts, total_seats)
+        self.do_saintLague(opts, total_seats)
         data = {'type': 'IDENTITY', 'options': opts}
         postp = mods.post('postproc', json=data)
 
@@ -150,6 +152,34 @@ class Voting(models.Model):
                 })
 
             option["dhont"] = dhont_values
+            
+    def do_saintLague(self, opts, total_seats):
+        opts_aux = copy.deepcopy(opts)
+        
+        for option in opts:
+            option["saintLague"] = 0
+        
+        for i in range (1, total_seats + 1):
+            quotients = {option["option"]: option["votes"] / (2 * i - 1) for option in opts_aux}
+            best_option = max(quotients, key=quotients.get)
+            for option in opts_aux:
+                if option['option'] == best_option:
+                    option['votes'] /= (2 * i + 1)
+                    break
+            for option in opts:
+                if option['option'] == best_option:
+                    option['saintLague'] += 1
+                    break
+
+    def do_borda(self, opts):
+        n = len(opts)
+        for option in opts:
+            votes = option["votes"]
+            borda = 0
+            for i in range(n):
+                borda += (n - i) * votes[i]
+            option["borda"] = borda
+
 
     def __str__(self):
         return self.name
