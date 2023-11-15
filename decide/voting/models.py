@@ -2,6 +2,8 @@ from django.db import models
 from django.db.models import JSONField
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.core.exceptions import ValidationError
+
 
 from base import mods
 from base.models import Auth, Key
@@ -9,9 +11,19 @@ from base.models import Auth, Key
 
 class Question(models.Model):
     desc = models.TextField()
+    optionSiNo = models.BooleanField(default=False, help_text="Marca esta casilla para que las opciones sean Si o No. No podrás añadir más opciones")
 
     def __str__(self):
         return self.desc
+
+@receiver(post_save, sender=Question)
+def post_SiNo_Option(sender, instance, **kwargs):
+    options = instance.options.all()
+    if instance.optionSiNo and options.count() == 0:
+        op1 = QuestionOption(question=instance, number=1, option="Sí")
+        op1.save()
+        op2 = QuestionOption(question=instance, number=2, option="No")
+        op2.save()
 
 
 class QuestionOption(models.Model):
@@ -26,6 +38,11 @@ class QuestionOption(models.Model):
 
     def __str__(self):
         return '{} ({})'.format(self.option, self.number)
+    
+    def clean(self):
+        if self.question.optionSiNo and self.question.options.all().count() != 2:
+            raise ValidationError('Las Preguntas Sí/No no deben tener opciones extras. Borre todas las opciones añadidas para poder crear la pregunta')
+
 
 VOTING_TYPES = [
     ('S', 'Single Choice'),
@@ -37,6 +54,7 @@ class Voting(models.Model):
     voting_type = models.CharField(max_length=1, choices=VOTING_TYPES, default='S')
     name = models.CharField(max_length=200)
     desc = models.TextField(blank=True, null=True)
+
     question = models.ForeignKey(Question, related_name='voting', on_delete=models.CASCADE)
 
     start_date = models.DateTimeField(blank=True, null=True)
