@@ -13,12 +13,18 @@
             const element2 = document.getElementById("plus2");
             element.innerHTML += element2.innerHTML;
             }
-            </script>
-                <div id = "plus">
+        </script>
+            <div id = "plus">
                     {% csrf_token %}
 
                     {{form2.as_p}}
-                    </div>
+            </div>
+            <script>
+                        document.getElementById('id_optionSiNo').addEventListener('change', function() {
+                            document.getElementById('id_third_option').disabled = !this.checked;
+                        });
+            </script>
+            
         <div id = "plus2">
             {% csrf_token %}
             {{form2.as_p}}
@@ -34,4 +40,4 @@
 <br />
 <button class="btn btn-secondary btn-lg"><a href="{% url 'preguntas' %}"></a>Back to list</a></button>
 
-{% endblock %}3
+{% endblock %}

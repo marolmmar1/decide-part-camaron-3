@@ -24,27 +24,3 @@ class StartedFilter(SimpleListFilter):
             return queryset.exclude(end_date__isnull=True)
         else:
             return queryset.all()
-
-class StartedFilterVoting(SimpleListFilter):
-    title = 'voting'
-    parameter_name = 'voting'
-
-    def lookups(self, request, model_admin):
-        return [
-            ('SC', 'Single Choice'),
-            ('MC', 'Multiple Choice'),
-            ('H', 'Hierarchy'),
-            ('MQ', 'Many Questions'),
-        ]
-
-    def queryset(self, request, queryset):
-        if self.value() == 'SC':
-            return queryset.filter(start_date__isnull=True)
-        if self.value() == 'MC':
-            return queryset.exclude(start_date__isnull=True)
-        if self.value() == 'H':
-            return queryset.exclude(start_date__isnull=True).filter(end_date__isnull=True)
-        if self.value() == 'MQ':
-            return queryset.exclude(end_date__isnull=True)
-        else:
-            return queryset.all()

@@ -133,9 +133,11 @@ def create_question_YesNo(request):
             form = QuestionForm(request.POST)
             q = form.save()
             q.optionSiNo = True
+            if 'third_option' in request.POST:
+                q.third_option = True
             q.save()
 
             return redirect('preguntas')
 
         except ValueError:
-            return render(request, 'preguntas.html', {'form':QuestionYNForm})
+            return render(request, 'preguntas.html', {'form':QuestionForm})

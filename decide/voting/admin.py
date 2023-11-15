@@ -5,7 +5,7 @@ from .models import QuestionOption
 from .models import Question
 from .models import Voting
 
-from .filters import StartedFilter, StartedFilterVoting
+from .filters import StartedFilter
 
 def start(modeladmin, request, queryset):
     for v in queryset.all():
@@ -75,4 +75,3 @@ class VotingAdmin(admin.ModelAdmin):
     
 
 admin.site.register(Voting, VotingAdmin)
-#admin.site.register(Question, QuestionAdmin)
