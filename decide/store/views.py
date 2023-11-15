@@ -6,6 +6,11 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework import generics
 
+from django.contrib import messages
+from django.http import HttpResponseRedirect
+from django.urls import reverse
+from django.core.management import call_command
+
 from .models import Vote
 from .serializers import VoteSerializer
 from base import mods
@@ -81,3 +86,12 @@ class StoreView(generics.ListAPIView):
         v.save()
         
         return  Response({})
+
+def create_backup(request):
+    try:
+        call_command('dbbackup')
+        messages.success(request, 'Backup created successfully.')
+    except Exception as e:
+        messages.error(request, f'Error creating backup: {e}')
+
+    return HttpResponseRedirect(reverse('admin:store_vote_changelist'))
