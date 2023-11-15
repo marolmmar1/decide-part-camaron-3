@@ -1,6 +1,5 @@
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
-from django.core.management import call_command
 import django_filters.rest_framework
 from rest_framework import status
 from rest_framework.response import Response
@@ -10,7 +9,6 @@ import subprocess
 from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-from django.core.management import call_command
 
 from .models import Vote
 from .serializers import VoteSerializer
