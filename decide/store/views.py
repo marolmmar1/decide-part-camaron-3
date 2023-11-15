@@ -14,6 +14,7 @@ from .models import Vote
 from .serializers import VoteSerializer
 from base import mods
 from base.perms import UserIsStaff
+from rest_framework.permissions import IsAuthenticated
 
 
 class StoreView(generics.ListAPIView):
@@ -42,12 +43,12 @@ class StoreView(generics.ListAPIView):
         start_date = voting[0].get('start_date', None)
         # print ("Start date: "+  start_date)
         end_date = voting[0].get('end_date', None)
-        #print ("End date: ", end_date)
+        # print ("End date: ", end_date)
         not_started = not start_date or timezone.now() < parse_datetime(start_date)
-        #print (not_started)
+        # print (not_started)
         is_closed = end_date and parse_datetime(end_date) < timezone.now()
         if not_started or is_closed:
-            #print("por aqui 42")
+            # print("por aqui 42")
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
 
         uid = request.data.get('voter')
@@ -61,14 +62,16 @@ class StoreView(generics.ListAPIView):
             token = request.auth.key
         else:
             token = "NO-AUTH-VOTE"
-        voter = mods.post('authentication', entry_point='/getuser/', json={'token': token})
+        voter = mods.post('authentication',
+                          entry_point='/getuser/', json={'token': token})
         voter_id = voter.get('id', None)
         if not voter_id or voter_id != uid:
             # print("por aqui 59")
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
 
         # the user is in the census
-        perms = mods.get('census/{}'.format(vid), params={'voter_id': uid}, response=True)
+        perms = mods.get('census/{}'.format(vid),
+                         params={'voter_id': uid}, response=True)
         if perms.status_code == 401:
             # print("por aqui 65")
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
@@ -76,15 +79,16 @@ class StoreView(generics.ListAPIView):
         a = vote.get("a")
         b = vote.get("b")
 
-        defs = { "a": a, "b": b }
+        defs = {"a": a, "b": b}
         v, _ = Vote.objects.get_or_create(voting_id=vid, voter_id=uid,
                                           defaults=defs)
         v.a = a
         v.b = b
 
         v.save()
-        
-        return  Response({})
+
+        return Response({})
+
 
 def create_backup(request):
     try:
@@ -95,11 +99,23 @@ def create_backup(request):
 
     return HttpResponseRedirect(reverse('admin:store_vote_changelist'))
 
+
 def restore_backup(request):
     try:
-        subprocess.run('python manage.py dbrestore --noinput', shell=True, check=True)
+        subprocess.run('python manage.py dbrestore --noinput',
+                       shell=True, check=True)
         messages.success(request, 'Backup restored successfully.')
     except Exception as e:
         messages.error(request, f'Error restoring backup: {e}')
 
     return HttpResponseRedirect(reverse('admin:store_vote_changelist'))
+
+
+class VoteHistoryView(generics.ListAPIView):
+    serializer_class = VoteSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Filtra los votos del usuario actual
+        user = self.request.user
+        return Vote.objects.filter(voter_id=user.id).order_by('-voted')
