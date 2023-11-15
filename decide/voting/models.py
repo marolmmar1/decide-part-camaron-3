@@ -33,6 +33,7 @@ VOTING_TYPES = [
     ('H', 'Hierarchy'),
     ('Q', 'Many Questions'),
 ]
+
 class Voting(models.Model):
     name = models.CharField(max_length=200)
     desc = models.TextField(blank=True, null=True)

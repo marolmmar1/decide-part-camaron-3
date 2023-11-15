@@ -118,6 +118,19 @@
         <div v-if="!signup">
             <h1>[[ voting.id ]] - [[ voting.name ]]</h1>
             <h2>[[ voting.question.desc ]]</h2>
+            {% if voting_obj.voting_type == "M" %}
+                <ul>
+                    <li v-for="opt in voting.question.options">
+                        <select name="option-opt.number" id="option-opt.number">
+                            <option v-for="index in voting.order_options" :value="index" :key="index">
+                                [[ index ]]
+                            </option>
+                        </select>             
+                        <p>Number: [[ opt.number ]]</p>
+                        <p>[[ opt.option ]]</p>
+                    </li>
+                </ul>
+            {% else %}
             <form v-for="opt in voting.question.options" :key="opt.number">
                 <div class="form-group">
                     <input type="radio" v-model="selected"
@@ -127,6 +140,7 @@
                         [[ opt.option ]]
                 </div>
             </form>
+            {% endif %}
             <button class="btn btn-primary mt-3" v-on:click="decideSend">
                 {% trans "Vote" %}
             </button>
