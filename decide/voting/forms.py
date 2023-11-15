@@ -12,4 +12,4 @@ class QuestionForm(ModelForm):
 class QuestionYNForm(ModelForm):
     class Meta: 
         model= Question
-        fields = ['desc', 'optionSiNo']
+        fields = ['desc', 'optionSiNo','third_option']

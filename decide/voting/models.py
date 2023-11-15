@@ -8,42 +8,76 @@ from django.core.exceptions import ValidationError
 from base import mods
 from base.models import Auth, Key
 
-
 class Question(models.Model):
     desc = models.TextField()
-    optionSiNo = models.BooleanField(default=False, help_text="Marca esta casilla para que las opciones sean Si o No. No podrás añadir más opciones")
+    optionSiNo = models.BooleanField(default=False, help_text="Marca esta casilla si quieres limitar las opciones a 'Sí' o 'No'. No podrás añadir más opciones si esta casilla está marcada.")
+    third_option = models.BooleanField(default=False, help_text="Marca esta casilla para añadir una tercera opción con el valor 'Depende'")
 
     def __str__(self):
-        return self.desc
+        return self.desc    
+
+    def clean(self):
+        if self.pk is not None:  # Asegúrate de que la instancia de Question ya se ha guardado en la base de datos
+            max_options = float('inf')  # Por defecto, se permiten infinitas opciones
+            if self.optionSiNo and not self.third_option:
+                max_options = 2  # Si solo optionSiNo está marcado, se permiten dos opciones
+            elif self.optionSiNo and self.third_option:
+                max_options = 3  # Si optionSiNo y third_option están marcados, se permiten tres opciones
+
+            if self.options.count() > max_options:
+                raise ValidationError('Tienes demasiadas opciones para la configuración actual')
+        super().clean()
+        
+    def save(self, *args, **kwargs):
+        self.full_clean()  # Realiza la validación antes de guardar la instancia
+        super().save(*args, **kwargs)
 
 @receiver(post_save, sender=Question)
-def post_SiNo_Option(sender, instance, **kwargs):
-    options = instance.options.all()
-    if instance.optionSiNo and options.count() == 0:
-        op1 = QuestionOption(question=instance, number=1, option="Sí")
-        op1.save()
-        op2 = QuestionOption(question=instance, number=2, option="No")
-        op2.save()
+def post_SiNo_Option(sender, instance,created, **kwargs):
+    if created:
+        options = instance.options.all() # Obtenemos las opciones de la instancia
+        if options.count() == 0:
+            if instance.optionSiNo:
+                op1 = QuestionOption(question=instance, number=1, option="Sí")
+                op1.save()
+                op2 = QuestionOption(question=instance, number=2, option="No")
+                op2.save()
+            if instance.third_option:
+                op3 = QuestionOption(question=instance, number=3, option="Depende")
+                op3.save()
 
+@receiver(post_save, sender=Question)
+def update_SiNo_Option(sender, instance, created, **kwargs):
+    if not created:  # Esto significa que la instancia de Question se está actualizando
+        if instance.third_option:
+            options = instance.options.all()
+            if not any(option.option == "Depende" for option in options):
+                op3 = QuestionOption(question=instance, number=3, option="Depende")
+                op3.save()
 
+                
 class QuestionOption(models.Model):
     question = models.ForeignKey(Question, related_name='options', on_delete=models.CASCADE)
     number = models.PositiveIntegerField(blank=True, null=True)
     option = models.TextField()
 
-    def save(self):
-        if not self.number:
-            self.number = self.question.options.count() + 2
-        return super().save()
+    def save(self, *args, **kwargs):
+        max_options = float('inf')  # Por defecto, se permiten infinitas opciones
+        if self.question.optionSiNo and self.question.third_option:
+            max_options = 3  # Si optionSiNo y third_option están marcados, se permiten tres opciones
+        elif self.question.optionSiNo:
+            max_options = 2  # Si solo optionSiNo está marcado, se permiten dos opciones
+        elif self.question.third_option:
+            max_options = 3  # Si solo third_option está marcado, se permiten tres opciones
+
+        if self.question.options.count() >= max_options:
+            raise ValidationError('No puedes añadir más opciones')
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return '{} ({})'.format(self.option, self.number)
     
-    def clean(self):
-        if self.question.optionSiNo and self.question.options.all().count() != 2:
-            raise ValidationError('Las Preguntas Sí/No no deben tener opciones extras. Borre todas las opciones añadidas para poder crear la pregunta')
-
-
+        
 VOTING_TYPES = [
     ('S', 'Single Choice'),
     ('M', 'Multiple Choice'),
