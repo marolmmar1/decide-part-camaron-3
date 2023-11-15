@@ -96,3 +96,12 @@ def create_backup(request):
         messages.error(request, f'Error creating backup: {e}')
 
     return HttpResponseRedirect(reverse('admin:store_vote_changelist'))
+
+def restore_backup(request):
+    try:
+        subprocess.run('python manage.py dbrestore --noinput', shell=True, check=True)
+        messages.success(request, 'Backup restored successfully.')
+    except Exception as e:
+        messages.error(request, f'Error restoring backup: {e}')
+
+    return HttpResponseRedirect(reverse('admin:store_vote_changelist'))
