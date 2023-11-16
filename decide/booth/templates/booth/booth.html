@@ -289,7 +289,6 @@
                     return res;
                 },
                 decideSend(evt) {
-                    alert("patata");
                     evt.preventDefault();
 
                     if (this.voting.voting_type == "M") {
@@ -315,7 +314,7 @@
                     }
 
                     this.postData("{% url "gateway" "store" "/" %}", data)
-                        .then(_vote => {
+                        .then(data => {
                             this.successVote = true;
                             this.alertShow = false;
                             this.showAlert("success", '{% trans "Congratulations. Your vote has been sent" %}');
