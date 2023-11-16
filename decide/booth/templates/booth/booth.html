@@ -121,7 +121,7 @@
             {% if voting_obj.voting_type == "M" %}
                 <ul id="M-voting">
                     <li v-for="opt in voting.question.options">
-                        <select name="option-opt.number" id="option-opt.number">
+                        <select :name="'option-' + opt.number" :id="'option-' + opt.number">
                             <option v-for="index in voting.order_options" :value="index" :key="index">
                                 [[ index ]]
                             </option>
@@ -270,8 +270,8 @@
                     this.signup = true;
                     this.successVote = false;
                 },
-                decideEncrypt() {
-                    var bigmsg = BigInt.fromJSONObject(this.selected.toString());
+                decideEncrypt(num) {
+                    var bigmsg = BigInt.fromJSONObject(num);
                     var cipher = ElGamal.encrypt(this.bigpk, bigmsg);
                     return cipher;
                 },
@@ -279,7 +279,7 @@
                     var minflicto = []; //(More Intelligent Names For List I Can't Think Of)
                     var l = document.getElementById("M-voting").getElementsByTagName("select");
                     for (const i of l) { minflicto.push(parseInt(i.value)); }
-                    var comp =[...Array(l.length + 1).keys()];
+                    var comp = [...Array(l.length + 1).keys()];
                     comp.shift()
 
                     res = true
@@ -291,22 +291,31 @@
                 decideSend(evt) {
                     alert("patata");
                     evt.preventDefault();
-                    votes_list = []
+
                     if (this.voting.voting_type == "M") {
                         if (!this.check_order_ok()) { this.showAlert("danger", 'Order of options not valid'); return; }
+                        var l = document.getElementById("M-voting").getElementsByTagName("select");
+                        //For M type votings, we save a toString array with the indexes been the question positions and the values been the preferences
+                        var enc = [...Array(l.length + 1).keys()];
+                        enc.shift();
+                        for (const i of l) {
+                            enc[parseInt(i.id.replace('option-', ''))-1] = parseInt(i.value);
+                        }
+                        //console.log(enc.toString())
+                        var v = this.decideEncrypt(enc.toString());
 
+                    } else {
+                        var v = this.decideEncrypt(this.selected.toString());
                     }
-                    var v = this.decideEncrypt();
                     var data = {
                         vote: {a: v.alpha.toString(), b: v.beta.toString()},
                         voting: this.voting.id,
                         voter: this.user.id,
                         token: this.token
                     }
-                    
 
                     this.postData("{% url "gateway" "store" "/" %}", data)
-                        .then(data => {
+                        .then(_vote => {
                             this.successVote = true;
                             this.alertShow = false;
                             this.showAlert("success", '{% trans "Congratulations. Your vote has been sent" %}');
@@ -315,7 +324,7 @@
                             this.succesVote = false;
                             this.showAlert("danger", '{% trans "Error: " %}' + error);
                         });
-                
+                    
                 },
                 showAlert(lvl, msg) {
                     this.alertLvl = lvl;
