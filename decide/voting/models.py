@@ -2,35 +2,103 @@ from django.db import models
 from django.db.models import JSONField
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.core.exceptions import ValidationError
+
 
 from base import mods
 from base.models import Auth, Key
 
-
 class Question(models.Model):
     desc = models.TextField()
+    optionSiNo = models.BooleanField(default=False, help_text="Marca esta casilla si quieres limitar las opciones a 'Sí' o 'No'. No podrás añadir más opciones si esta casilla está marcada.")
+    third_option = models.BooleanField(default=False, help_text="Marca esta casilla para añadir una tercera opción con el valor 'Depende'")
 
     def __str__(self):
-        return self.desc
+        return self.desc    
+
+    def clean(self):
+        if self.pk is not None: 
+            max_options = float('inf')  
+            if self.optionSiNo and not self.third_option:
+                max_options = 2  
+            elif self.optionSiNo and self.third_option:
+                max_options = 3  
+            if self.options.count() > max_options:
+                raise ValidationError('Tienes demasiadas opciones para la configuración actual.')
+
+            old = Question.objects.get(pk=self.pk)
+            if self.optionSiNo and not old.optionSiNo and old.third_option:
+                raise ValidationError('No puede seleccionar la opciónSiNo si previamente se seleccionó la tercera opción.')
+
+        super().clean()
 
 
+    def save(self, *args, **kwargs):
+        self.full_clean() 
+        super().save(*args, **kwargs)
+
+@receiver(post_save, sender=Question)
+def post_SiNo_Option(sender, instance,created, **kwargs):
+    if created:
+        options = instance.options.all() 
+        if options.count() == 0:
+            if instance.optionSiNo:
+                op1 = QuestionOption(question=instance, number=1, option="Sí")
+                op1.save()
+                op2 = QuestionOption(question=instance, number=2, option="No")
+                op2.save()
+            if instance.third_option:
+                op3 = QuestionOption(question=instance, number=3, option="Depende")
+                op3.save()
+
+@receiver(post_save, sender=Question)
+def update_SiNo_Option(sender, instance, created, **kwargs):
+    if not created:  
+        if instance.third_option:
+            options = instance.options.all()
+            if not any(option.option == "Depende" for option in options):
+                op3 = QuestionOption(question=instance, number=3, option="Depende")
+                op3.save()
+
+                
 class QuestionOption(models.Model):
     question = models.ForeignKey(Question, related_name='options', on_delete=models.CASCADE)
     number = models.PositiveIntegerField(blank=True, null=True)
     option = models.TextField()
 
-    def save(self):
-        if not self.number:
-            self.number = self.question.options.count() + 2
-        return super().save()
+    def save(self, *args, **kwargs):
+        max_options = float('inf')
+        if self.question.optionSiNo and self.question.third_option:
+            max_options = 3  
+        elif self.question.optionSiNo:
+            max_options = 2 
+        elif self.question.third_option:
+            max_options = 3  
+
+        if self.question.options.count() >= max_options:
+            raise ValidationError({
+                'options': [
+                    f'No puedes añadir más opciones, ni editar los valores ya predefinidos. El número máximo de opciones permitidas es {max_options}.'
+                ]
+            }) 
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return '{} ({})'.format(self.option, self.number)
-
+    
+        
+VOTING_TYPES = [
+    ('S', 'Single Choice'),
+    ('M', 'Multiple Choice'),
+    ('H', 'Hierarchy'),
+    ('Q', 'Many Questions'),
+]
 
 class Voting(models.Model):
+    voting_type = models.CharField(max_length=1, choices=VOTING_TYPES, default='S')
     name = models.CharField(max_length=200)
     desc = models.TextField(blank=True, null=True)
+
     question = models.ForeignKey(Question, related_name='voting', on_delete=models.CASCADE)
 
     start_date = models.DateTimeField(blank=True, null=True)
