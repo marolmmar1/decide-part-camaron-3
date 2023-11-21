@@ -23,4 +23,8 @@ class StartedFilter(SimpleListFilter):
         if self.value() == 'F':
             return queryset.exclude(end_date__isnull=True)
         else:
+<<<<<<< HEAD
             return queryset.all()
+=======
+            return queryset.all()
+>>>>>>> central/integracion-votaciones

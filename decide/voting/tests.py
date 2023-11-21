@@ -70,6 +70,19 @@ class VotingTestCase(BaseTestCase):
         user.save()
         return user
 
+<<<<<<< HEAD
+    def test_to_string(self):
+        #Crea un objeto votacion
+        v = self.create_voting()
+        #Verifica que el nombre de la votacion es test voting
+        self.assertEquals(str(v),"test voting")
+        #Verifica que la descripcion de la pregunta sea test question
+        self.assertEquals(str(v.question),"test question")
+        #Verifica que la primera opcion es option1 (2)
+        self.assertEquals(str(v.question.options.all()[0]),"option 1 (2)")
+
+=======
+>>>>>>> central/integracion-votaciones
     def store_votes(self, v):
         voters = list(Census.objects.filter(voting_id=v.id))
         voter = voters.pop()
@@ -133,7 +146,10 @@ class VotingTestCase(BaseTestCase):
             'name': 'Example',
             'desc': 'Description example',
             'question': 'I want a ',
+<<<<<<< HEAD
+=======
             'seats': 8,
+>>>>>>> central/integracion-votaciones
             'question_opt': ['cat', 'dog', 'horse']
         }
 
@@ -218,6 +234,38 @@ class VotingTestCase(BaseTestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json(), 'Voting already tallied')
 
+<<<<<<< HEAD
+    def test_update_voting_405(self):
+        v = self.create_voting()
+        data = {} #El campo action es requerido en la request
+        self.login()
+        response = self.client.post('/voting/{}/'.format(v.pk), data, format= 'json')
+        self.assertEquals(response.status_code, 405)
+
+class VotingModelTestCase(BaseTestCase):
+    def setUp(self):
+        q = Question(desc='Descripcion')
+        q.save()
+        
+        opt1 = QuestionOption(question=q, option='opcion 1')
+        opt1.save()
+        opt1 = QuestionOption(question=q, option='opcion 2')
+        opt1.save()
+
+        self.v = Voting(name='Votacion', question=q)
+        self.v.save()
+        super().setUp()
+
+    def tearDown(self):
+        super().tearDown()
+        self.v = None
+
+    def testExist(self):
+        v=Voting.objects.get(name='Votacion')
+        self.assertEquals(v.question.options.all()[0].option, "opcion 1")
+
+=======
+>>>>>>> central/integracion-votaciones
 class LogInSuccessTests(StaticLiveServerTestCase):
 
     def setUp(self):
@@ -249,7 +297,11 @@ class LogInSuccessTests(StaticLiveServerTestCase):
 
         self.cleaner.find_element(By.ID, "id_password").send_keys("Keys.ENTER")
         self.assertTrue(self.cleaner.current_url == self.live_server_url+"/admin/")
+<<<<<<< HEAD
+        
+=======
 
+>>>>>>> central/integracion-votaciones
 class LogInErrorTests(StaticLiveServerTestCase):
 
     def setUp(self):

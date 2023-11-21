@@ -118,6 +118,22 @@
         <div v-if="!signup">
             <h1>[[ voting.id ]] - [[ voting.name ]]</h1>
             <h2>[[ voting.question.desc ]]</h2>
+<<<<<<< HEAD
+            {% if voting_obj.voting_type == "M" %}
+                <ul id="M-voting">
+                    <li v-for="opt in voting.question.options">
+                        <select :name="'option-' + opt.number" :id="'option-' + opt.number">
+                            <option v-for="index in voting.order_options" :value="index" :key="index">
+                                [[ index ]]
+                            </option>
+                        </select>             
+                        <p>Number: [[ opt.number ]]</p>
+                        <p>[[ opt.option ]]</p>
+                    </li>
+                </ul>
+            {% else %}
+=======
+>>>>>>> central/integracion-votaciones
             <form v-for="opt in voting.question.options" :key="opt.number">
                 <div class="form-group">
                     <input type="radio" v-model="selected"
@@ -127,6 +143,10 @@
                         [[ opt.option ]]
                 </div>
             </form>
+<<<<<<< HEAD
+            {% endif %}
+=======
+>>>>>>> central/integracion-votaciones
             <button class="btn btn-primary mt-3" v-on:click="decideSend">
                 {% trans "Vote" %}
             </button>
@@ -256,6 +276,44 @@
                     this.signup = true;
                     this.successVote = false;
                 },
+<<<<<<< HEAD
+                decideEncrypt(num) {
+                    var bigmsg = BigInt.fromJSONObject(num);
+                    var cipher = ElGamal.encrypt(this.bigpk, bigmsg);
+                    return cipher;
+                },
+                check_order_ok() {
+                    var minflicto = []; //(More Intelligent Names For List I Can't Think Of)
+                    var l = document.getElementById("M-voting").getElementsByTagName("select");
+                    for (const i of l) { minflicto.push(parseInt(i.value)); }
+                    var comp = [...Array(l.length + 1).keys()];
+                    comp.shift()
+
+                    res = true
+                    for (const i of comp) {
+                        if (!minflicto.includes(i)) { res = false; }
+                    }
+                    return res;
+                },
+                decideSend(evt) {
+                    evt.preventDefault();
+
+                    if (this.voting.voting_type == "M") {
+                        if (!this.check_order_ok()) { this.showAlert("danger", 'Order of options not valid'); return; }
+                        var l = document.getElementById("M-voting").getElementsByTagName("select");
+                        //For M type votings, we save a toString array with the indexes been the question positions and the values been the preferences
+                        var enc = [...Array(l.length + 1).keys()];
+                        enc.shift();
+                        for (const i of l) {
+                            enc[parseInt(i.id.replace('option-', ''))-1] = parseInt(i.value);
+                        }
+                        //console.log(enc.toString())
+                        var v = this.decideEncrypt(enc.toString());
+
+                    } else {
+                        var v = this.decideEncrypt(this.selected.toString());
+                    }
+=======
                 decideEncrypt() {
                     var bigmsg = BigInt.fromJSONObject(this.selected.toString());
                     var cipher = ElGamal.encrypt(this.bigpk, bigmsg);
@@ -264,12 +322,17 @@
                 decideSend(evt) {
                     evt.preventDefault();
                     var v = this.decideEncrypt();
+>>>>>>> central/integracion-votaciones
                     var data = {
                         vote: {a: v.alpha.toString(), b: v.beta.toString()},
                         voting: this.voting.id,
                         voter: this.user.id,
                         token: this.token
                     }
+<<<<<<< HEAD
+
+=======
+>>>>>>> central/integracion-votaciones
                     this.postData("{% url "gateway" "store" "/" %}", data)
                         .then(data => {
                             this.successVote = true;
@@ -280,6 +343,10 @@
                             this.succesVote = false;
                             this.showAlert("danger", '{% trans "Error: " %}' + error);
                         });
+<<<<<<< HEAD
+                    
+=======
+>>>>>>> central/integracion-votaciones
                 },
                 showAlert(lvl, msg) {
                     this.alertLvl = lvl;

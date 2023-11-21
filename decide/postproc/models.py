@@ -1,4 +1,8 @@
 from django.db import models
+<<<<<<< HEAD
+
+# Create your models here.
+=======
 from django.utils.translation import gettext_lazy as _
 # Create your models here.
 
@@ -19,3 +23,4 @@ class PostProcessing(models.Model):
 
     def __str__(self):
         return f"{self.type} - v{self.voting_id} - q{self.question_id} - \n \t results: {self.results}"
+>>>>>>> central/integracion-votaciones

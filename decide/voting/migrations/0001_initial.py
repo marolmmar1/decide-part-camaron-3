@@ -35,9 +35,15 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=200)),
                 ('desc', models.TextField(blank=True, null=True)),
+<<<<<<< HEAD
+                ('voting_type', models.CharField(max_length=1)),
+                ('start_date', models.DateTimeField(blank=True, null=True)),
+                ('end_date', models.DateTimeField(blank=True, null=True)),
+=======
                 ('start_date', models.DateTimeField(blank=True, null=True)),
                 ('end_date', models.DateTimeField(blank=True, null=True)),
                 ('seats', models.PositiveIntegerField(blank=True, null=True, default=10)),
+>>>>>>> central/integracion-votaciones
                 ('auths', models.ManyToManyField(related_name='votings', to='mixnet.Auth')),
                 ('pub_key', models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='voting', to='mixnet.Key')),
                 ('question', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='voting', to='voting.Question')),
