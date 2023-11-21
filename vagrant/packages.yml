@@ -6,7 +6,10 @@
     update_cache: yes
   vars:
     packages:
+<<<<<<< HEAD
     - acl
+=======
+>>>>>>> central/integracion-votaciones
     - git
     - postgresql
     - python3
@@ -18,6 +21,10 @@
     - libpq-dev
     - python-setuptools
     - build-essential
+<<<<<<< HEAD
     - python3-dev
+=======
+    - python-dev
+>>>>>>> central/integracion-votaciones
     - make
     - m4

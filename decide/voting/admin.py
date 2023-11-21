@@ -7,6 +7,10 @@ from .models import Voting
 
 from .filters import StartedFilter
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> central/integracion-votaciones
 def start(modeladmin, request, queryset):
     for v in queryset.all():
         v.create_pubkey()
@@ -25,6 +29,7 @@ def tally(ModelAdmin, request, queryset):
         token = request.session.get('auth-token', '')
         v.tally_votes(token)
 
+<<<<<<< HEAD
 def single_choice(modeladmin, request, queryset):
     queryset.update(voting_type='S')
 
@@ -38,6 +43,8 @@ def hierarchy(modeladmin, request, queryset):
 def many_questions(modeladmin, request, queryset):
     queryset.update(voting_type='Q')
 
+=======
+>>>>>>> central/integracion-votaciones
 
 class QuestionOptionInline(admin.TabularInline):
     model = QuestionOption
@@ -46,6 +53,7 @@ class QuestionOptionInline(admin.TabularInline):
 class QuestionAdmin(admin.ModelAdmin):
     inlines = [QuestionOptionInline]
 
+<<<<<<< HEAD
 admin.site.register(Question, QuestionAdmin)
 
 class VotingTypeFilter(admin.SimpleListFilter):
@@ -75,3 +83,19 @@ class VotingAdmin(admin.ModelAdmin):
     
 
 admin.site.register(Voting, VotingAdmin)
+=======
+
+class VotingAdmin(admin.ModelAdmin):
+    list_display = ('name', 'start_date', 'end_date')
+    readonly_fields = ('start_date', 'end_date', 'pub_key',
+                       'tally', 'postproc')
+    date_hierarchy = 'start_date'
+    list_filter = (StartedFilter,)
+    search_fields = ('name', )
+
+    actions = [ start, stop, tally ]
+
+
+admin.site.register(Voting, VotingAdmin)
+admin.site.register(Question, QuestionAdmin)
+>>>>>>> central/integracion-votaciones

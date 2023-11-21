@@ -4,7 +4,10 @@ from django.conf import settings
 from django.http import Http404
 
 from base import mods
+<<<<<<< HEAD
 from voting.models import QuestionOption, Voting
+=======
+>>>>>>> central/integracion-votaciones
 
 
 # TODO: check permissions and census
@@ -22,6 +25,7 @@ class BoothView(TemplateView):
             for k, v in r[0]['pub_key'].items():
                 r[0]['pub_key'][k] = str(v)
 
+<<<<<<< HEAD
             voting = Voting.objects.filter(id=vid).get()
             context['voting_obj'] = voting
             order_options = [i + 1 for i in range(QuestionOption.objects.filter(question=voting.question).count())]
@@ -31,6 +35,10 @@ class BoothView(TemplateView):
 
         except Exception as e:
             print(e)
+=======
+            context['voting'] = json.dumps(r[0])
+        except:
+>>>>>>> central/integracion-votaciones
             raise Http404
 
         context['KEYBITS'] = settings.KEYBITS

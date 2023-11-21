@@ -10,13 +10,21 @@ from rest_framework.status import (
         HTTP_409_CONFLICT as ST_409
 )
 
+<<<<<<< HEAD
 from base.perms import UserIsStaff, IsReadOnly
 # from rest_framework.permissions import OR
+=======
+from base.perms import UserIsStaff
+>>>>>>> central/integracion-votaciones
 from .models import Census
 
 
 class CensusCreate(generics.ListCreateAPIView):
+<<<<<<< HEAD
     permission_classes = [IsReadOnly|UserIsStaff]
+=======
+    permission_classes = (UserIsStaff,)
+>>>>>>> central/integracion-votaciones
 
     def create(self, request, *args, **kwargs):
         voting_id = request.data.get('voting_id')
@@ -30,7 +38,10 @@ class CensusCreate(generics.ListCreateAPIView):
         return Response('Census created', status=ST_201)
 
     def list(self, request, *args, **kwargs):
+<<<<<<< HEAD
 
+=======
+>>>>>>> central/integracion-votaciones
         voting_id = request.GET.get('voting_id')
         voters = Census.objects.filter(voting_id=voting_id).values_list('voter_id', flat=True)
         return Response({'voters': voters})
@@ -51,6 +62,7 @@ class CensusDetail(generics.RetrieveDestroyAPIView):
         except ObjectDoesNotExist:
             return Response('Invalid voter', status=ST_401)
         return Response('Valid voter')
+<<<<<<< HEAD
     
 class CensusRole(generics.RetrieveAPIView):
     
@@ -61,3 +73,5 @@ class CensusRole(generics.RetrieveAPIView):
         except ObjectDoesNotExist:
             return Response('Invalid voter', status=ST_401)
         return Response(census.role)
+=======
+>>>>>>> central/integracion-votaciones
