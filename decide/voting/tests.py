@@ -43,7 +43,7 @@ class VotingTestCase(BaseTestCase):
         q = Question(desc='test question')
         q.save()
         for i in range(5):
-            opt = QuestionOption(question=q, option='option {}'.format(i+1))
+            opt = QuestionOption(question=q, option='option {}'.format(i+1), number=i+2)
             opt.save()
         v = Voting(name='test voting', question=q)
         v.save()
@@ -140,6 +140,7 @@ class VotingTestCase(BaseTestCase):
         self.assertEqual(response.status_code, 400)
 
         data = {
+            'voting_type': 'S',
             'name': 'Example',
             'desc': 'Description example',
             'question': 'I want a ',
