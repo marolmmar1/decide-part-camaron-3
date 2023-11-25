@@ -130,56 +130,13 @@ class Voting(models.Model):
                 'votes': votes
             })
 
-        total_seats = self.seats
-
-        self.do_dhont(opts, total_seats)
-        self.do_saintLague(opts, total_seats)
-        data = {'type': 'IDENTITY', 'options': opts}
+        data = {'type': 'IDENTITY', 'options': opts, 'voting_id': self.id, 'question_id': self.question.id, 'total_seats': self.seats, 'type': self.postproc_type}
         postp = mods.post('postproc', json=data)
 
         self.postproc = postp
         self.save()
 
-    def do_dhont(self, opts, total_seats):
-        for option in opts:
-            votes = option["votes"]
-            dhont_values = []
-            for seat in range(1, total_seats + 1):
-                dhont = round(votes / seat, 4)
-                dhont_values.append({
-                    "seat": seat,
-                    "percentaje": dhont
-                })
-
-            option["dhont"] = dhont_values
-            
-    def do_saintLague(self, opts, total_seats):
-        opts_aux = copy.deepcopy(opts)
-        
-        for option in opts:
-            option["saintLague"] = 0
-        
-        for i in range (1, total_seats + 1):
-            quotients = {option["option"]: option["votes"] / (2 * i - 1) for option in opts_aux}
-            best_option = max(quotients, key=quotients.get)
-            for option in opts_aux:
-                if option['option'] == best_option:
-                    option['votes'] /= (2 * i + 1)
-                    break
-            for option in opts:
-                if option['option'] == best_option:
-                    option['saintLague'] += 1
-                    break
-
-    def do_borda(self, opts):
-        n = len(opts)
-        for option in opts:
-            votes = option["votes"]
-            borda = 0
-            for i in range(n):
-                borda += (n - i) * votes[i]
-            option["borda"] = borda
-
+    
 
     def __str__(self):
         return self.name
