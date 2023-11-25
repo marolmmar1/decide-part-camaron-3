@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from postproc.models import PostProcessing
 
+
 class PostProcView(APIView):
 
     def identity(self, options):
@@ -11,7 +12,7 @@ class PostProcView(APIView):
             out.append({
                 **opt,
                 'postproc': opt['votes'],
-            });
+            })
 
         out.sort(key=lambda x: -x['postproc'])
         return Response(out)
@@ -31,11 +32,12 @@ class PostProcView(APIView):
          * question_id: int
          * type: str
         """
-        opts = request.data.get('options')
-        total_seats = request.data.get('total_seats')
-        voting_id = request.data.get('voting_id')
-        question_id = request.data.get('question_id')
-        type = request.data.get('type')
+
+        opts = request.data.get("options")
+        total_seats = request.data.get("total_seats")
+        voting_id = request.data.get("voting_id")
+        question_id = request.data.get("question_id")
+        type = request.data.get("type")
 
         postproc = PostProcessing.objects.create(
             voting_id=voting_id,
@@ -44,7 +46,7 @@ class PostProcView(APIView):
         )
 
         postproc.do(opts, total_seats)
-        
+
         if not postproc.results:
             return Response({}, status=400)
         else:

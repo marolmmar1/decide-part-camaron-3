@@ -4,8 +4,18 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.exceptions import ValidationError
 import copy
+import json
+from django.utils.translation import gettext_lazy as _
+import requests
 from base import mods
 from base.models import Auth, Key
+
+
+class Type(models.TextChoices):
+    NONE = "NON", _("NONE")
+    BORDA = "BOR", _("BORDA")
+    DHONDT = "DHO", _("DHONDT")
+    SAINT = "PAR", _("SAINT")
 
 
 class Question(models.Model):
@@ -107,6 +117,8 @@ class Voting(models.Model):
     desc = models.TextField(blank=True, null=True)
     question = models.ForeignKey(
         Question, related_name='voting', on_delete=models.CASCADE)
+    postproc_type = models.CharField(
+        max_length=3, choices=Type.choices, default=Type.NONE)
     start_date = models.DateTimeField(blank=True, null=True)
     end_date = models.DateTimeField(blank=True, null=True)
     pub_key = models.OneToOneField(
@@ -199,51 +211,15 @@ class Voting(models.Model):
                 'votes': votes
             })
 
-        total_seats = self.seats
-        data = {'type': 'IDENTITY', 'options': opts, 'voting_id': self.id, 'question_id': self.question.id, 'total_seats': self.seats, 'type': self.postproc_type}
-        postp = mods.post('postproc', json=data)
-        self.postproc = postp
+        data = {'type': 'IDENTITY', 'options': opts, 'voting_id': self.id,
+                'question_id': self.question.id, 'total_seats': self.seats, 'type': self.postproc_type}
+
+        headers = {'Content-Type': 'application/json'}
+        response = requests.post(
+            'http://localhost:8000/postproc/', json=data, headers=headers)
+
+        self.postproc = response.json()
         self.save()
-
-    def do_dhont(self, opts, total_seats):
-        for option in opts:
-            votes = option["votes"]
-            dhont_values = []
-            for seat in range(1, total_seats + 1):
-                dhont = round(votes / seat, 4)
-                dhont_values.append({
-                    "seat": seat,
-                    "percentaje": dhont
-                })
-
-            option["dhont"] = dhont_values
-            
-    def do_saintLague(self, opts, total_seats):
-        opts_aux = copy.deepcopy(opts)
-        
-        for option in opts:
-            option["saintLague"] = 0
-        
-        for i in range (1, total_seats + 1):
-            quotients = {option["option"]: option["votes"] / (2 * i - 1) for option in opts_aux}
-            best_option = max(quotients, key=quotients.get)
-            for option in opts_aux:
-                if option['option'] == best_option:
-                    option['votes'] /= (2 * i + 1)
-                    break
-            for option in opts:
-                if option['option'] == best_option:
-                    option['saintLague'] += 1
-                    break
-
-    def do_borda(self, opts):
-        n = len(opts)
-        for option in opts:
-            votes = option["votes"]
-            borda = 0
-            for i in range(n):
-                borda += (n - i) * votes[i]
-            option["borda"] = borda
 
     def __str__(self):
         return self.name
