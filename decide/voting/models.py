@@ -2,10 +2,19 @@ from django.db import models
 from django.db.models import JSONField
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-import copy
+import json
+from django.utils.translation import gettext_lazy as _
+import requests
 
 from base import mods
 from base.models import Auth, Key
+
+
+class Type(models.TextChoices):
+    NONE = "NON", _("NONE")
+    BORDA = "BOR", _("BORDA")
+    DHONDT = "DHO", _("DHONDT")
+    SAINT = "PAR", _("SAINT")
 
 
 class Question(models.Model):
@@ -35,6 +44,9 @@ class Voting(models.Model):
     desc = models.TextField(blank=True, null=True)
     question = models.ForeignKey(
         Question, related_name='voting', on_delete=models.CASCADE)
+
+    postproc_type = models.CharField(
+        max_length=3, choices=Type.choices, default=Type.NONE)
 
     start_date = models.DateTimeField(blank=True, null=True)
     end_date = models.DateTimeField(blank=True, null=True)
@@ -130,13 +142,15 @@ class Voting(models.Model):
                 'votes': votes
             })
 
-        data = {'type': 'IDENTITY', 'options': opts, 'voting_id': self.id, 'question_id': self.question.id, 'total_seats': self.seats, 'type': self.postproc_type}
-        postp = mods.post('postproc', json=data)
+        data = {'type': 'IDENTITY', 'options': opts, 'voting_id': self.id,
+                'question_id': self.question.id, 'total_seats': self.seats, 'type': self.postproc_type}
 
-        self.postproc = postp
+        headers = {'Content-Type': 'application/json'}
+        response = requests.post(
+            'http://localhost:8000/postproc/', json=data, headers=headers)
+
+        self.postproc = response.json()
         self.save()
-
-    
 
     def __str__(self):
         return self.name

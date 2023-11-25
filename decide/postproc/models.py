@@ -1,9 +1,10 @@
 from django.db import models
+
+from voting.models import Voting, Question, Type
 from django.utils.translation import gettext_lazy as _
-from voting.models import Voting, Question
 import copy
 from django.utils import timezone
-# Create your models here.
+
 
 class PostProcessing(models.Model):
     class Type(models.TextChoices):
@@ -13,16 +14,18 @@ class PostProcessing(models.Model):
         SAINT = "PAR", _("SAINT")
     voting = models.ForeignKey(Voting, null=True, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, null=True, on_delete=models.CASCADE)
-    type = models.CharField(max_length=3, choices=Type.choices, default=Type.NONE)
+    type = models.CharField(
+        max_length=3, choices=Type.choices, default=Type.NONE)
     start_date = models.DateTimeField(blank=True, null=True)
     end_date = models.DateTimeField(blank=True, null=True)
     results = models.JSONField(blank=True, null=True)
+
     class Meta:
         unique_together = (('voting_id', 'question_id', 'type'),)
 
     def __str__(self):
         return f"{self.type} - v{self.voting_id} - q{self.question_id} - \n \t results: {self.results}"
-    
+
     def dhondt(self, opts, total_seats):
         for option in opts:
             votes = option["votes"]
@@ -36,15 +39,16 @@ class PostProcessing(models.Model):
             option["dhont"] = dhont_values
         self.results = opts
         self.save()
-            
+
     def saint(self, opts, total_seats):
         opts_aux = copy.deepcopy(opts)
-        
+
         for option in opts:
             option["saintLague"] = 0
-        
-        for i in range (1, total_seats + 1):
-            quotients = {option["option"]: option["votes"] / (2 * i - 1) for option in opts_aux}
+
+        for i in range(1, total_seats + 1):
+            quotients = {option["option"]: option["votes"] /
+                         (2 * i - 1) for option in opts_aux}
             best_option = max(quotients, key=quotients.get)
             for option in opts_aux:
                 if option['option'] == best_option:
@@ -67,7 +71,6 @@ class PostProcessing(models.Model):
             option["borda"] = borda
         self.results = opts
         self.save()
-
 
     def do(self, opts, total_seats):
         self.start_date = timezone.now()

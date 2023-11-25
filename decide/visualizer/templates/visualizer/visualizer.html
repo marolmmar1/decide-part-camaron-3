@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% load i18n static %}
 {% block extrahead %}
-    <link type="text/css" rel="stylesheet"
-         href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
     <link type="text/css" rel="stylesheet" href="{% static "booth/style.css" %}" />
 {% endblock %}
 {% block content %}
@@ -59,9 +59,9 @@
 
 {% block extrabody %}
     <!-- Vuejs -->
-    <script src="https://unpkg.com/vue"></script>
-    <script src="https://unpkg.com/babel-polyfill@latest/dist/polyfill.min.js"></script>
-    <script src="https://unpkg.com/bootstrap@5.2.2/dist/js/bootstrap.js"></script>
+    <script src="https://unpkg.com/vue@2.6.14/dist/vue.min.js"></script>    
+    <script src="https://unpkg.com/vue-router@3.5.3/dist/vue-router.min.js"></script>
+    <script src="https://unpkg.com/bootstrap-vue@2.21.2/dist/bootstrap-vue.min.js"></script>
 
     <script>
         var voting = {{voting|safe}};
