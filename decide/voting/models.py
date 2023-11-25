@@ -75,13 +75,22 @@ class QuestionOption(models.Model):
         elif self.question.third_option:
             max_options = 3  
 
-        if self.question.options.count() >= max_options:
+        if self.question.options.count() >= max_options and not (self.question.third_option and self.number == 3):
             raise ValidationError({
                 'options': [
                     f'No puedes añadir más opciones, ni editar los valores ya predefinidos. El número máximo de opciones permitidas es {max_options}.'
                 ]
             }) 
-        super().save(*args, **kwargs)
+
+        if self.question.optionSiNo and self.option not in ["Sí", "No"] and self.number in [1, 2]:
+            raise ValidationError("Debes rellenar el campo 1 Option con 'Sí' o 'No'.")
+
+        super().save(*args, **kwargs)        
+
+    def delete(self, *args, **kwargs):
+        if self.question.optionSiNo and self.option in ["Sí", "No"]:
+            raise ValidationError("No puedes eliminar las opciones predefinidas.")
+        super().delete(*args, **kwargs)
 
     def __str__(self):
         return '{} ({})'.format(self.option, self.number)
@@ -199,3 +208,5 @@ class Voting(models.Model):
 
     def __str__(self):
         return self.name
+    
+    
