@@ -127,15 +127,17 @@ class VotingUpdate(generics.RetrieveUpdateDestroyAPIView):
 @staff_required(login_url="/base")
 def create_question_YesNo(request):
     if request.method == 'GET':
-        return render(request, 'crearPreguntas.html', {'form':QuestionForm})
+        return render(request, 'createQuestion.html', {'form':QuestionForm})
     else:
         try:
             form = QuestionForm(request.POST)
             q = form.save()
             q.optionSiNo = True
+            if 'third_option' in request.POST:
+                q.third_option = True
             q.save()
 
-            return redirect('preguntas')
+            return redirect('questions')
 
         except ValueError:
-            return render(request, 'preguntas.html', {'form':QuestionYNForm})
+            return render(request, 'questions.html', {'form':QuestionForm})

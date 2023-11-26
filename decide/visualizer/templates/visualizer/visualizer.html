@@ -21,27 +21,58 @@
             <h1>[[ voting.id ]] - [[ voting.name ]]</h1>
 
             <h2 v-if="!voting.start_date">Votación no comenzada</h2>
-            <h2 v-else-if="!voting.end_date">Votación en curso</h2>
             <div v-else>
-                <h2 class="heading">Resultados:</h2>
+              <h2 v-if="!voting.end_date">Votación en curso</h2>
 
-                <table class="table table-bordered table-striped">
-                    <thead>
-                        <tr>
-                            <th>Opción</th>
-                            <th>Puntuación</th>
-                            <th>Votos</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="opt in voting.postproc" :key="opt.number">
-                            <th>[[opt.option]]</th>
-                            <td>[[opt.postproc]]</td>
-                            <td class="text-muted">[[opt.votes]]</td>
-                        </tr>
-                    </tbody>
-                </table>
+              <h2>Estadísticas de la votación:</h2>
+                  <table v-if="voting.tally" class="table table-bordered table-striped">
+                    <tr>
+                      <th>Número de inscritos en censo</th>
+                      <td>[[census.voters.length]]</td>
+                    <tr>
+                    <tr>
+                      <th>Número de votos</th>
+                      <td>[[voting.tally.length]]</td>
+                    <tr>
+                    <tr>
+                      <th>Porcentaje del censo que ha votado</th>
+                      <td>[[voting.tally.length/census.voters.length * 100]] %</td>
+                    <tr>
+                  
+                  </table>
+                  <table v-else class="table table-bordered table-striped">
+                    <tr>
+                      <th>Número de inscritos en censo</th>
+                      <td>[[census.voters.length]]</td>
+                    <tr>
+                  </table>
+
+              <div v-if="voting.end_date">
+                  <h2 class="heading">Resultados:</h2>
+
+                  <table class="table table-bordered table-striped">
+                      <thead>
+                          <tr>
+                              <th>Opción</th>
+                              <th>Puntuación</th>
+                              <th>Votos</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          <tr v-for="opt in voting.postproc" :key="opt.number">
+                              <th>[[opt.option]]</th>
+                              <td>[[opt.postproc]]</td>
+                              <td class="text-muted">[[opt.votes]]</td>
+                          </tr>
+                      </tbody>
+                  </table>
+                  <div class="d-flex flex-row justify-content-around p-4">
+                    <div><canvas id="stats-bar"></canvas></div>
+                    <div><canvas id="stats-pie"></canvas></div>
+                  </div>
+              </div>
             </div>
+
 
         </div>
     </div>
@@ -49,21 +80,73 @@
 
 {% block extrabody %}
     <!-- Vuejs -->
+    <script src="https://unpkg.com/chart.js"></script>
     <script src="https://unpkg.com/vue"></script>
     <script src="https://unpkg.com/babel-polyfill@latest/dist/polyfill.min.js"></script>
     <script src="https://unpkg.com/bootstrap@5.2.2/dist/js/bootstrap.js"></script>
 
     <script>
         var voting = {{voting|safe}};
+        var census = {{census|safe}};
+        
+        console.log(voting)
+        console.log(census.voters)
+
         const { createApp } = Vue
         createApp({
             delimiters: ['[[', ']]'],
             data() {
                 return {
-                    voting: voting
+                    voting: voting,
+                    census: census
                 }
             }
         }).mount('#app-visualizer')
     </script>
+
+<script>
+  var xValues = voting.postproc.map((t)=>t.option) 
+  var yValues = voting.postproc.map((t)=>t.votes) 
+  var barColors = ["red", "orange","yellow","lime","turquoise","blue","purple"];
+
+  new Chart("stats-bar", {
+    type: "bar",
+    data: {
+      labels: xValues,
+      datasets: [{
+        backgroundColor: barColors,
+        data: yValues
+      }]
+    },
+    options: {
+      maintainAspectRatio:false,
+      plugins: {
+        legend: {
+          display: false
+        }
+      }
+    }
+  });
+
+  new Chart("stats-pie", {
+    type: "pie",
+    data: {
+      labels: xValues,
+      datasets: [{
+        backgroundColor: barColors,
+        data: yValues
+      }]
+    },
+    options: {
+      plugins: {
+        legend: {
+          display: false
+        }
+      }
+    }
+  });
+
+</script>
+
 </body>
 {% endblock %}
