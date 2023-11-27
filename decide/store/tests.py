@@ -16,6 +16,11 @@ from mixnet.models import Key
 from voting.models import Question
 from voting.models import Voting
 
+from django.core.management import call_command
+from django.conf import settings
+from django.test import Client
+import os
+
 
 class StoreTextCase(BaseTestCase):
 
@@ -193,3 +198,28 @@ class StoreTextCase(BaseTestCase):
         self.voting.save()
         response = self.client.post('/store/', data, format='json')
         self.assertEqual(response.status_code, 401)
+
+class BackupTestCase(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_superuser(
+            username='testuser',
+            password='testpassword',
+            email='testuser@example.com'
+        )
+
+    def tearDown(self):
+        self.user.delete()
+
+    def test_backup_file_is_created(self):
+        self.client = Client()
+
+        try:
+            initial_backup_count = len(os.listdir(settings.DATABASE_BACKUP_DIR))
+            self.client.get('/store/vote/create_backup/', format='json')
+            updated_backup_count = len(os.listdir(settings.DATABASE_BACKUP_DIR))
+
+            self.assertEqual(updated_backup_count, initial_backup_count + 1, 'No new backup file created.')
+
+        except Exception as e:
+            self.fail(f'Unexpected exception: {e}')
+
