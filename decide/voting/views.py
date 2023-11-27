@@ -1,7 +1,7 @@
 import django_filters.rest_framework
 from django.conf import settings
 from django.utils import timezone
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render, redirect
 from rest_framework import generics, status
 from rest_framework.response import Response
 
@@ -9,7 +9,13 @@ from .models import Question, QuestionOption, Voting
 from .serializers import SimpleVotingSerializer, VotingSerializer
 from base.perms import UserIsStaff
 from base.models import Auth
+from django.contrib.auth.decorators import user_passes_test
+from voting.forms import QuestionForm, QuestionYNForm
 
+
+
+def staff_required(login_url):
+    return user_passes_test(lambda u: u.is_staff, login_url=login_url)
 
 class VotingView(generics.ListCreateAPIView):
     queryset = Voting.objects.all()
@@ -31,7 +37,7 @@ class VotingView(generics.ListCreateAPIView):
     def post(self, request, *args, **kwargs):
         self.permission_classes = (UserIsStaff,)
         self.check_permissions(request)
-        for data in ['name', 'desc', 'voting_type','question', 'question_opt']:
+        for data in ['voting_type', 'desc', 'name','question', 'question_opt']:
             if not data in request.data:
                 return Response({}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -53,9 +59,9 @@ class VotingView(generics.ListCreateAPIView):
     def test_create_voting_API(self):
         self.login()
         data = {
+            'voting_type': 'S',
             'name': 'Example',
             'desc': 'Description example',
-            'voting_type': 'S',
             'question': 'I want a ',
             'question_opt': ['cat', 'dog', 'horse']
         }
@@ -116,3 +122,22 @@ class VotingUpdate(generics.RetrieveUpdateDestroyAPIView):
             msg = 'Action not found, try with start, stop or tally'
             st = status.HTTP_400_BAD_REQUEST
         return Response(msg, status=st)
+
+
+@staff_required(login_url="/base")
+def create_question_YesNo(request):
+    if request.method == 'GET':
+        return render(request, 'createQuestion.html', {'form':QuestionForm})
+    else:
+        try:
+            form = QuestionForm(request.POST)
+            q = form.save()
+            q.optionSiNo = True
+            if 'third_option' in request.POST:
+                q.third_option = True
+            q.save()
+
+            return redirect('questions')
+
+        except ValueError:
+            return render(request, 'questions.html', {'form':QuestionForm})
