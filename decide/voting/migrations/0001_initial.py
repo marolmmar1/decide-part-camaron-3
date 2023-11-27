@@ -40,7 +40,6 @@ class Migration(migrations.Migration):
                 ('end_date', models.DateTimeField(blank=True, null=True)),
                 ('auths', models.ManyToManyField(related_name='votings', to='mixnet.Auth')),
                 ('pub_key', models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='voting', to='mixnet.Key')),
-                ('question', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='voting', to='voting.Question')),
             ],
         ),
     ]
