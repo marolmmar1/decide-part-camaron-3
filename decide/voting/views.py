@@ -38,6 +38,8 @@ class VotingView(generics.ListCreateAPIView):
         self.permission_classes = (UserIsStaff,)
         self.check_permissions(request)
         for data in ['voting_type', 'desc', 'name','question', 'question_opt']:
+            if request.data.get('voting_type') not in ['S', 'H', 'M', 'Q']:
+                return Response({}, status=status.HTTP_400_BAD_REQUEST)
             if not data in request.data:
                 return Response({}, status=status.HTTP_400_BAD_REQUEST)
 
