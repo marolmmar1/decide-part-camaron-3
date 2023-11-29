@@ -20,7 +20,7 @@ class CensusTestCase(BaseTestCase):
 
     def setUp(self):
         super().setUp()
-        self.census = Census(voting_id=1, voter_id=1)
+        self.census = Census(voting_id=1, voter_id=1, role='0')
         self.census.save()
 
     def tearDown(self):
@@ -38,11 +38,12 @@ class CensusTestCase(BaseTestCase):
 
     def test_list_voting(self):
         response = self.client.get('/census/?voting_id={}'.format(1), format='json')
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {'voters': [1]})
 
         self.login(user='noadmin')
         response = self.client.get('/census/?voting_id={}'.format(1), format='json')
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 200)  
 
         self.login()
         response = self.client.get('/census/?voting_id={}'.format(1), format='json')
@@ -81,6 +82,27 @@ class CensusTestCase(BaseTestCase):
         response = self.client.delete('/census/{}/'.format(1), data, format='json')
         self.assertEqual(response.status_code, 204)
         self.assertEqual(0, Census.objects.count())
+    
+    def test_create_census_with_valid_role(self):
+        data = {'voting_id': 3, 'voters': [1], 'role': '1'}
+
+        self.login()
+        response = self.client.post('/census/', data, format='json')
+        self.assertEqual(response.status_code, 201)
+
+    def test_create_census_with_invalid_role(self):
+        data = {'voting_id': 4, 'voters': [1], 'role': 'ADMIN'}
+
+        self.login()
+        response = self.client.post('/census/', data, format='json')
+        self.assertEqual(response.status_code, 400)
+    
+    def test_create_census_with_empty_role(self):
+        data = {'voting_id': 5, 'voters': [1], 'role': ''}
+
+        self.login()
+        response = self.client.post('/census/', data, format='json')
+        self.assertEqual(response.status_code, 400)
 
 
 class CensusTest(StaticLiveServerTestCase):

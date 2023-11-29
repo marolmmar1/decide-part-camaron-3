@@ -15,6 +15,7 @@
     <nav class="navbar navbar-dark bg-primary">
         <div class="container-fluid">
             <div class="navbar-brand" >Decide</div>
+            <div v-if="user != null" class="navbar-brand" > Hello, [[ user.username ]]</div>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -116,6 +117,10 @@
 
         <!-- Voting -->
         <div v-if="!signup">
+            <div v-if="voting.voting_type == 'H'">
+                <h1>Hierarchy Voting</h1>
+                <br>
+            </div>
             <h1>[[ voting.id ]] - [[ voting.name ]]</h1>
             <h2>[[ voting.question.desc ]]</h2>
             {% if voting_obj.voting_type == "M" %}
