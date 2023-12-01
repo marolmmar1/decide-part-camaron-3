@@ -146,8 +146,8 @@ class VotingTestCase(BaseTestCase):
             'voting_type': 'S',
             'name': 'Example',
             'desc': 'Description example',
-            'question': 'I want a ',
-            'question_opt': ['cat', 'dog', 'horse']
+            'questions': ['I want a '],
+            'questions_opt': [['cat', 'dog', 'horse']]
         }
 
         response = self.client.post('/voting/', data, format='json')
@@ -237,6 +237,20 @@ class VotingTestCase(BaseTestCase):
         self.login()
         response = self.client.post('/voting/{}/'.format(v.pk), data, format= 'json')
         self.assertEquals(response.status_code, 405)
+
+    def test_create_voting_multiple_questions_from_api(self):
+        # login with user admin
+        self.login()
+        data = {
+            'voting_type': 'S',
+            'name': 'Example',
+            'desc': 'Description example',
+            'questions': ['I want a ', 'I prefer a'],
+            'questions_opt': [['cat', 'dog', 'horse'],['red','blue','green']]
+        }
+
+        response = self.client.post('/voting/', data, format='json')
+        self.assertEqual(response.status_code, 201)
 
 class VotingModelTestCase(BaseTestCase):
     def setUp(self):
