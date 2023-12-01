@@ -429,29 +429,24 @@ class VotingModelTestCaseOptionSiNo(BaseTestCase):
     def test_cannot_delete_predefined_options(self):
         initial_option_count = self.v.question.options.count()
 
-        # Intentar eliminar la opción "Sí"
         yes_option = self.v.question.options.get(option="Sí")
         with self.assertRaises(ValidationError):
             yes_option.delete()
 
-        # Verificar que el número de opciones no ha cambiado
         final_option_count = self.v.question.options.count()
         self.assertEqual(initial_option_count, final_option_count)
 
     def test_cannot_edit_predefined_options(self):
-        # Intentar editar la opción "Sí"
         yes_option = self.v.question.options.get(option="Sí")
         with self.assertRaises(ValidationError):
             yes_option.option = "Maybe"
             yes_option.save()
 
     def test_can_change_options_to_depends(self):
-        # Cambiar la pregunta de "Sí/No" a "Depende"
         self.v.question.optionSiNo = False
         self.v.question.third_option = True
         self.v.question.save()
 
-        # Verificar que las opciones se han actualizado correctamente
         options = self.v.question.options.values_list('option', flat=True)
         self.assertIn("Depende", options)
 
@@ -464,15 +459,12 @@ class VotingModelTestCaseOptionSiNo(BaseTestCase):
             new_option.save()
 
     def test_can_add_third_option(self):
-        # Establecer third_option en True
         self.v.question.third_option = True
         self.v.question.save()
 
-        # Añadir una tercera opción
         new_option = QuestionOption(question=self.v.question, number=3, option="Depende")
         new_option.save()
 
-        # Verificar que la tercera opción se ha añadido correctamente
         options = self.v.question.options.values_list('option', flat=True)
         self.assertIn("Depende", options)
 
