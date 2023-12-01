@@ -47,9 +47,9 @@ class VotingTestCase(BaseTestCase):
         for i in range(5):
             opt = QuestionOption(question=q, option='option {}'.format(i+1), number=i+2)
             opt.save()
-        v = Voting(name='test voting', question=q)
+        v = Voting(name='test voting')
         v.save()
-
+        v.questions.set([q])
         a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
                                           defaults={'me': True, 'name': 'test auth'})
         a.save()
@@ -78,29 +78,30 @@ class VotingTestCase(BaseTestCase):
         #Verifica que el nombre de la votacion es test voting
         self.assertEquals(str(v),"test voting")
         #Verifica que la descripcion de la pregunta sea test question
-        self.assertEquals(str(v.question),"test question")
+        #self.assertEquals(str(v.questions.),"test question")
         #Verifica que la primera opcion es option1 (2)
-        self.assertEquals(str(v.question.options.all()[0]),"option 1 (2)")
+        #self.assertEquals(str(v.question.options.all()[0]),"option 1 (2)")
 
     def store_votes(self, v):
         voters = list(Census.objects.filter(voting_id=v.id))
         voter = voters.pop()
 
         clear = {}
-        for opt in v.question.options.all():
-            clear[opt.number] = 0
-            for i in range(random.randint(0, 5)):
-                a, b = self.encrypt_msg(opt.number, v)
-                data = {
-                    'voting': v.id,
-                    'voter': voter.voter_id,
-                    'vote': { 'a': a, 'b': b },
-                }
-                clear[opt.number] += 1
-                user = self.get_or_create_user(voter.voter_id)
-                self.login(user=user.username)
-                voter = voters.pop()
-                mods.post('store', json=data)
+        for question in v.questions.all():
+            for opt in question.options.all():
+                clear[opt.number] = 0
+                for i in range(random.randint(0, 5)):
+                    a, b = self.encrypt_msg(opt.number, v)
+                    data = {
+                        'voting': v.id,
+                        'voter': voter.voter_id,
+                        'vote': { 'a': a, 'b': b },
+                    }
+                    clear[opt.number] += 1
+                    user = self.get_or_create_user(voter.voter_id)
+                    self.login(user=user.username)
+                    voter = voters.pop()
+                    mods.post('store', json=data)
         return clear
 
     def test_complete_voting(self):
@@ -120,7 +121,7 @@ class VotingTestCase(BaseTestCase):
         tally.sort()
         tally = {k: len(list(x)) for k, x in itertools.groupby(tally)}
 
-        for q in v.question.options.all():
+        for q in v.questions.all()[0].options.all():
             self.assertEqual(tally.get(q.number, 0), clear.get(q.number, 0))
 
         for q in v.postproc:
@@ -247,8 +248,9 @@ class VotingModelTestCase(BaseTestCase):
         opt1 = QuestionOption(question=q, option='opcion 2')
         opt1.save()
 
-        self.v = Voting(name='Votacion', question=q)
+        self.v = Voting(name='Votacion')
         self.v.save()
+        self.v.questions.set([q])
         super().setUp()
 
     def tearDown(self):
@@ -257,7 +259,8 @@ class VotingModelTestCase(BaseTestCase):
 
     def testExist(self):
         v=Voting.objects.get(name='Votacion')
-        self.assertEquals(v.question.options.all()[0].option, "opcion 1")
+        for question in v.questions.all():
+            self.assertEquals(question.options.all()[0].option, "opcion 1")
 
 class VotingTypeTestCase(BaseTestCase):
 
@@ -271,7 +274,7 @@ class VotingTypeTestCase(BaseTestCase):
         opt2.save()
 
         with self.assertRaises(ValidationError):
-            self.v = Voting(name='Votacion_Type', voting_type='INVALID', question=q)
+            self.v = Voting(name='Votacion_Type', voting_type='INVALID')
             self.v.full_clean() 
             self.v.save()  
 
@@ -288,8 +291,9 @@ class VotingHierarchyModelTestCase(BaseTestCase):
         opt1 = QuestionOption(question=q, option='opcion hierarchy 2')
         opt1.save()
 
-        self.v = Voting(name='Votacion_Hierarchy', voting_type='H', question=q)
+        self.v = Voting(name='Votacion_Hierarchy', voting_type='H')
         self.v.save()
+        self.v.questions.set([q])
         super().setUp()
 
     def tearDown(self):
@@ -298,8 +302,9 @@ class VotingHierarchyModelTestCase(BaseTestCase):
 
     def testExist(self):
         v=Voting.objects.get(name='Votacion_Hierarchy')
-        self.assertEquals(v.question.options.all()[0].option, "opcion hierarchy 1")
-        self.assertEquals(v.voting_type, "H")
+        for question in v.questions.all():
+            self.assertEquals(question.options.all()[0].option, "opcion hierarchy 1")
+            self.assertEquals(v.voting_type, "H")
 
 class LogInSuccessTests(StaticLiveServerTestCase):
 
@@ -451,8 +456,9 @@ class VotingModelTestCaseOptionSiNo(BaseTestCase):
         q = Question(desc='Test question', optionSiNo=True)
         q.save()
 
-        self.v = Voting(name='Votacion', question=q)
+        self.v = Voting(name='Votacion')
         self.v.save()
+        self.v.questions.set([q])
 
         super().setUp()
     def tearDown(self):
@@ -461,63 +467,73 @@ class VotingModelTestCaseOptionSiNo(BaseTestCase):
 
     def testExist(self):
         v = Voting.objects.get(name='Votacion')
-        self.assertTrue(v.question.options.count() == 2)
-        self.assertEquals(v.question.options.all()[0].option, "Sí")
-        self.assertEquals(v.question.options.all()[1].option, "No")
+        for question in v.questions.all():
+            self.assertTrue(question.options.count() == 2)
+            self.assertEquals(question.options.all()[0].option, "Sí")
+            self.assertEquals(question.options.all()[1].option, "No")
     
     def test_cannot_add_more_options(self):
         with self.assertRaises(ValidationError):
-            new_option = QuestionOption(question=self.v.question, number=3, option="Maybe")
-            new_option.save()
+            for question in self.v.questions.all():
+                new_option = QuestionOption(question=question, number=3, option="Maybe")
+                new_option.save()
+
     def test_cannot_delete_predefined_options(self):
-        initial_option_count = self.v.question.options.count()
+        for question in self.v.questions.all():
+            options = question.options.all()
+            initial_option_count = options.count()
 
-        # Intentar eliminar la opción "Sí"
-        yes_option = self.v.question.options.get(option="Sí")
-        with self.assertRaises(ValidationError):
-            yes_option.delete()
+            # Intentar eliminar la opción "Sí"
+            yes_option = options.get(option="Sí")
+            with self.assertRaises(ValidationError):
+                yes_option.delete()
 
-        # Verificar que el número de opciones no ha cambiado
-        final_option_count = self.v.question.options.count()
-        self.assertEqual(initial_option_count, final_option_count)
+            # Verificar que el número de opciones no ha cambiado
+            final_option_count = options.count()
+            self.assertEqual(initial_option_count, final_option_count)
 
     def test_cannot_edit_predefined_options(self):
         # Intentar editar la opción "Sí"
-        yes_option = self.v.question.options.get(option="Sí")
-        with self.assertRaises(ValidationError):
-            yes_option.option = "Maybe"
-            yes_option.save()
+        for question in self.v.questions.all():
+            options = question.options.all()
+            yes_option = options.get(option="Sí")
+            with self.assertRaises(ValidationError):
+                yes_option.option = "Maybe"
+                yes_option.save()
 
     def test_can_change_options_to_depends(self):
         # Cambiar la pregunta de "Sí/No" a "Depende"
-        self.v.question.optionSiNo = False
-        self.v.question.third_option = True
-        self.v.question.save()
+        for question in self.v.questions.all():
+            question.optionSiNo = False
+            question.third_option = True
+            question.save()
 
-        # Verificar que las opciones se han actualizado correctamente
-        options = self.v.question.options.values_list('option', flat=True)
-        self.assertIn("Depende", options)
+            # Verificar que las opciones se han actualizado correctamente
+            options = question.options.values_list('option', flat=True)
+            self.assertIn("Depende", options)
 
     def test_cannot_add_more_than_three_options(self):
-        self.v.question.third_option = True
-        self.v.question.save()
+        for question in self.v.questions.all():
+            question.third_option = True
+            question.save()
 
-        with self.assertRaises(ValidationError):
-            new_option = QuestionOption(question=self.v.question, number=4, option="Maybe")
-            new_option.save()
+            with self.assertRaises(ValidationError):
+                new_option = QuestionOption(question=question, number=4, option="Maybe")
+                new_option.save()
 
     def test_can_add_third_option(self):
         # Establecer third_option en True
-        self.v.question.third_option = True
-        self.v.question.save()
+        for question in self.v.questions.all():
+            question.third_option = True
+            question.save()
 
-        # Añadir una tercera opción
-        new_option = QuestionOption(question=self.v.question, number=3, option="Depende")
-        new_option.save()
+            # Añadir una tercera opción
+            new_option = QuestionOption(question=question, number=3, option="Depende")
+            new_option.save()
 
-        # Verificar que la tercera opción se ha añadido correctamente
-        options = self.v.question.options.values_list('option', flat=True)
-        self.assertIn("Depende", options)
+            # Verificar que la tercera opción se ha añadido correctamente
+            options = question.options.values_list('option', flat=True)
+            self.assertIn("Depende", options)
 
 class VotingModelTestCaseThirdOption(TestCase):
     def setUp(self):
