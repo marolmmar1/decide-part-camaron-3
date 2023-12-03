@@ -4,6 +4,9 @@ import django_filters.rest_framework
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework import generics
+import os
+from django.shortcuts import render
+from django.conf import settings
 
 import subprocess
 from django.contrib import messages
@@ -99,14 +102,20 @@ def create_backup(request):
 
     return HttpResponseRedirect(reverse('admin:store_vote_changelist'))
 
+def list_backups(request):
+    backup_dir = settings.DATABASE_BACKUP_DIR
+    backup_files = list(os.listdir(backup_dir))
+
+    return render(request, 'list_backups.html', {'backup_files': backup_files})
 
 def restore_backup(request):
-    try:
-        subprocess.run('python manage.py dbrestore --noinput',
-                       shell=True, check=True)
-        messages.success(request, 'Backup restored successfully.')
-    except Exception as e:
-        messages.error(request, f'Error restoring backup: {e}')
+    if request.method == 'POST':
+        selected_backup = request.POST.get('selected_backup', '')
+        try:
+            subprocess.run(['python', 'manage.py', 'dbrestore', '--noinput', '--backup-file', selected_backup], check=True)
+            messages.success(request, f'Backup {selected_backup} restored successfully.')
+        except Exception as e:
+            messages.error(request, f'Error restoring backup: {e}')
 
     return HttpResponseRedirect(reverse('admin:store_vote_changelist'))
 
