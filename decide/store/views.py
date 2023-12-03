@@ -112,7 +112,8 @@ def restore_backup(request):
     if request.method == 'POST':
         selected_backup = request.POST.get('selected_backup', '')
         try:
-            subprocess.run(['python', 'manage.py', 'dbrestore', '--noinput', '--backup-file', selected_backup], check=True)
+            backup_dir = os.path.join(settings.DATABASE_BACKUP_DIR, selected_backup)
+            subprocess.run(['python', 'manage.py', 'dbrestore', '--noinput', '-i', selected_backup], check=True)
             messages.success(request, f'Backup {selected_backup} restored successfully.')
         except Exception as e:
             messages.error(request, f'Error restoring backup: {e}')
