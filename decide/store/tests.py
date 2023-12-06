@@ -5,6 +5,7 @@ from django.utils import timezone
 from django.test import TestCase
 from rest_framework.test import APIClient
 from rest_framework.test import APITestCase
+from django.urls import reverse
 
 from .models import Vote
 from .serializers import VoteSerializer
@@ -222,4 +223,19 @@ class BackupTestCase(TestCase):
 
         except Exception as e:
             self.fail(f'Unexpected exception: {e}')
+
+
+    def test_backup_file_is_restored(self):
+        self.client = Client()
+
+        #Crear el backup
+        backup_file_path = os.path.join(settings.DATABASE_BACKUP_DIR, 'test.psql.bin')
+        call_command('dbbackup', f'--output={backup_file_path}')
+        self.assertTrue(os.path.exists(backup_file_path), 'Backup file not found')
+
+        restore_url = reverse('store:vote_restore_backup')
+        response = self.client.post(restore_url, {'selected_backup': 'test.psql.bin'}) 
+        self.assertEqual(response.status_code, 302)
+
+        
 
