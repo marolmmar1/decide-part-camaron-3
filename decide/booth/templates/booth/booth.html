@@ -122,30 +122,33 @@
                 <br>
             </div>
             <h1>[[ voting.id ]] - [[ voting.name ]]</h1>
-            <h2>[[ voting.question.desc ]]</h2>
-            {% if voting_obj.voting_type == "M" %}
-                <ul id="M-voting">
-                    <li v-for="opt in voting.question.options">
-                        <select :name="'option-' + opt.number" :id="'option-' + opt.number">
-                            <option v-for="index in voting.order_options" :value="index" :key="index">
-                                [[ index ]]
-                            </option>
-                        </select>             
-                        <p>Number: [[ opt.number ]]</p>
-                        <p>[[ opt.option ]]</p>
-                    </li>
-                </ul>
-            {% else %}
-            <form v-for="opt in voting.question.options" :key="opt.number">
+            <form id="vote" v-for="(question, index) in voting.questions" :key="index">
                 <div class="form-group">
-                    <input type="radio" v-model="selected"
-                                :id="'q' + opt.number"
-                                name="question"
-                                :value="opt.number">
-                        [[ opt.option ]]
-                </div>
+                    <h2>[[ question.desc ]]</h2>
+                    <div v-if="voting.voting_type == 'M'">
+                        <ul id="M-voting">
+                            <li v-for="opt in question.options">
+                                <select :name="'option-' + opt.number" :id="'option-' + opt.number">
+                                    <option v-for="index in voting.order_options" :value="index" :key="index">
+                                        [[ index ]]
+                                    </option>
+                                </select>             
+                                <p>Number: [[ opt.number ]]</p>
+                                <p>[[ opt.option ]]</p>
+                            </li>
+                        </ul>
+                    </div>
+                    <div v-else>
+                        <div class="form-group" v-for="opt in question.options" :key="opt.number">
+                            <input type="radio" v-model="selected[index]"
+                                    :id="'opt' + opt.number + '_index' + index"
+                                    name="'question_' + index"
+                                    :value="opt.number">
+                                [[ opt.option ]]
+                        </div>
+                    </div>
+                </div> 
             </form>
-            {% endif %}
             <button class="btn btn-primary mt-3" v-on:click="decideSend">
                 {% trans "Vote" %}
             </button>
@@ -170,7 +173,7 @@
     <script src="{% static "crypto/elgamal.js" %}"></script>
 
     <!-- Vuejs -->
-    <script src="https://unpkg.com/vue@latest"</script>
+    <script src="https://unpkg.com/vue@latest"></script>
     <script src="https://unpkg.com/babel-polyfill@latest/dist/polyfill.min.js"></script>
     <script src="https://unpkg.com/bootstrap@5.2.2/dist/js/bootstrap.js"></script>
 
@@ -183,6 +186,7 @@
                 return {
                     voting: voting,
                     selected: "",
+                    questions: {{ questions|safe }},
                     signup: true,
                     successVote: false,
                     alertShow: false,
@@ -244,10 +248,13 @@
                     evt.preventDefault();
                     this.postData("{% url "gateway" "authentication" "/login/" %}", this.form)
                         .then(data => {
+                            console.log("Received token:", data.token); 
                             document.cookie = 'decide='+data.token+';';
                             this.token = data.token;
                             this.getUser();
                             this.alertShow = false;
+                            this.signup = false;
+                            
                         })
                         .catch(error => {
                             this.showAlert("danger", '{% trans "Error: " %}' + error);
@@ -255,7 +262,7 @@
                 },
                 getUser(evt) {
                     var data = {token: this.token};
-                    this.postData("{% url "gateway" "authentication" "/getuser/" %}", data)
+                    this.postData('{% url "gateway" "authentication" "/getuser/" %}', data)
                         .then(data => {
                             this.user = data;
                             this.signup = false;
@@ -267,7 +274,7 @@
                 decideLogout(evt) {
                     evt.preventDefault();
                     var data = {token: this.token};
-                    this.postData("{% url "gateway" "authentication" "/logout/" %}", data);
+                    this.postData('{% url "gateway" "authentication" "/logout/" %}', data);
                     this.token = null;
                     this.user = null;
                     this.alertShow = false;
@@ -280,6 +287,8 @@
                     var cipher = ElGamal.encrypt(this.bigpk, bigmsg);
                     return cipher;
                 },
+
+               
                 check_order_ok() {
                     var minflicto = []; //(More Intelligent Names For List I Can't Think Of)
                     var l = document.getElementById("M-voting").getElementsByTagName("select");
@@ -305,18 +314,29 @@
                         for (const i of l) {
                             enc[parseInt(i.id.replace('option-', ''))-1] = parseInt(i.value);
                         }
-                        //console.log(enc.toString())
                         var v = this.decideEncrypt(enc.toString());
 
                     } else {
-                        var v = this.decideEncrypt(this.selected.toString());
+                        var v = this.decideEncrypt();
+                        
+                        var data = {
+                            voting: this.voting.id,
+                            voter: this.user.id,
+                            token: this.token
+
+                        }
+                        for (var questionId in this.selected) {
+                            var cipher = this.decideEncrypt(questionId);
+                            data.votes.push({
+                                questionId: questionId,
+                                vote: {
+                                    a: cipher.alpha.toString(),
+                                    b: cipher.beta.toString()
+                                }
+                        });
+                         }
                     }
-                    var data = {
-                        vote: {a: v.alpha.toString(), b: v.beta.toString()},
-                        voting: this.voting.id,
-                        voter: this.user.id,
-                        token: this.token
-                    }
+
 
                     this.postData("{% url "gateway" "store" "/" %}", data)
                         .then(data => {

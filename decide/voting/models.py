@@ -100,7 +100,6 @@ VOTING_TYPES = [
     ('S', 'Single Choice'),
     ('M', 'Multiple Choice'),
     ('H', 'Hierarchy'),
-    ('Q', 'Many Questions'),
 ]
 
 class Voting(models.Model):
