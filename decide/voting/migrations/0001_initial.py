@@ -26,9 +26,29 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=200)),
                 ('desc', models.TextField(blank=True, null=True)),
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+                ('voting_type', models.CharField(max_length=1)),
+                ('start_date', models.DateTimeField(blank=True, null=True)),
+                ('end_date', models.DateTimeField(blank=True, null=True)),
+=======
+                ('start_date', models.DateTimeField(blank=True, null=True)),
+                ('end_date', models.DateTimeField(blank=True, null=True)),
+                ('seats', models.PositiveIntegerField(blank=True, null=True, default=10)),
+>>>>>>> central/integracion-votaciones
+                ('auths', models.ManyToManyField(related_name='votings', to='mixnet.Auth')),
+                ('pub_key', models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='voting', to='mixnet.Key')),
+                ('question', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='voting', to='voting.Question')),
+=======
                 ('postproc_type', models.CharField(choices=[('NON', 'NONE'), ('BOR', 'BORDA'), ('DHO', 'DHONDT'), ('PAR', 'SAINT')], default='NON', max_length=3)),
                 ('start_date', models.DateTimeField(blank=True, null=True)),
                 ('end_date', models.DateTimeField(blank=True, null=True)),
+=======
+                ('postproc_type', models.CharField(choices=[('NON', 'NONE'), ('BOR', 'BORDA'), ('DHO', 'DHONDT'), ('PAR', 'SAINT')], default='NON', max_length=3)),
+                ('start_date', models.DateTimeField(blank=True, null=True)),
+                ('end_date', models.DateTimeField(blank=True, null=True)),
+>>>>>>> marolmmar1-develop-merge-global
                 ('tally', models.JSONField(blank=True, null=True)),
                 ('postproc', models.JSONField(blank=True, null=True)),
                 ('seats', models.PositiveIntegerField(blank=True, default=10, null=True)),
@@ -44,6 +64,10 @@ class Migration(migrations.Migration):
                 ('number', models.PositiveIntegerField(blank=True, null=True)),
                 ('option', models.TextField()),
                 ('question', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='options', to='voting.question')),
+<<<<<<< HEAD
+>>>>>>> 278e4ae (feat: Añadido tipo de postprocesado en votacion)
+=======
+>>>>>>> marolmmar1-develop-merge-global
             ],
         ),
     ]

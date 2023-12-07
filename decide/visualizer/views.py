@@ -12,14 +12,15 @@ class VisualizerView(View):
     template_name = 'visualizer/visualizer.html'
 
     def get(self, request, *args, **kwargs):
-        voting_id = self.kwargs.get('voting_id', 0)
+        vid = self.kwargs.get('voting_id', 0)
 
         try:
-            voting_data = Voting.objects.get(id=voting_id)
-            print(voting_data)
-            context = {'voting': voting_data}
+            r = mods.get('voting', params={'id': vid})
+            c = mods.get('census', params={'voting_id': vid})
+            context = {'voting': r}
+            context['voting'] = json.dumps(r[0])
+            context['census'] = json.dumps(c)
         except Exception as e:
             print(f"Error: {e}")
             raise Http404("Voting not found")
-
         return render(request, self.template_name, context)
