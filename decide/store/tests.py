@@ -201,15 +201,6 @@ class StoreTextCase(BaseTestCase):
         self.assertEqual(response.status_code, 401)
 
 class BackupTestCase(TestCase):
-    def setUp(self):
-        self.user = User.objects.create_superuser(
-            username='testuser',
-            password='testpassword',
-            email='testuser@example.com'
-        )
-
-    def tearDown(self):
-        self.user.delete()
 
     def test_backup_file_is_created(self):
         self.client = Client()
@@ -230,8 +221,8 @@ class BackupTestCase(TestCase):
 
         #Crear el backup
         backup_file_path = os.path.join(settings.DATABASE_BACKUP_DIR, 'test.psql.bin')
-        call_command('dbbackup', f'--output={backup_file_path}')
-        self.assertTrue(os.path.exists(backup_file_path), 'Backup file not found')
+        call_command('dbbackup', f'-O={backup_file_path}')
+        self.assertTrue(os.path.exists(backup_file_path), 'Backup fileto restore not found')
 
         restore_url = reverse('store:vote_restore_backup')
         response = self.client.post(restore_url, {'selected_backup': 'test.psql.bin'}) 
