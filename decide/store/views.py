@@ -80,6 +80,17 @@ class StoreView(generics.ListAPIView):
         b = vote.get("b")
 
         defs = {"a": a, "b": b}
+
+        # Después de guardar el voto, envías el mensaje a través del WebSocket.
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+        'votes',  # Este es el nombre del grupo al que estás enviando el mensaje.
+        {
+            'type': 'vote.added',  # Este es el tipo de mensaje que estás enviando.
+            'vote_id': vid,  # Aquí puedes enviar cualquier dato que necesites.
+        }
+)
+
         v, _ = Vote.objects.get_or_create(voting_id=vid, voter_id=uid,
                                           defaults=defs)
         v.a = a
