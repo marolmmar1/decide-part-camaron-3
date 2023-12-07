@@ -1,11 +1,7 @@
 import django_filters.rest_framework
 from django.conf import settings
 from django.utils import timezone
-<<<<<<< HEAD
 from django.shortcuts import get_object_or_404, render, redirect
-=======
-from django.shortcuts import get_object_or_404
->>>>>>> central/integracion-votaciones
 from rest_framework import generics, status
 from rest_framework.response import Response
 
@@ -13,7 +9,6 @@ from .models import Question, QuestionOption, Voting
 from .serializers import SimpleVotingSerializer, VotingSerializer
 from base.perms import UserIsStaff
 from base.models import Auth
-<<<<<<< HEAD
 from django.contrib.auth.decorators import user_passes_test
 from voting.forms import QuestionForm, QuestionYNForm
 
@@ -22,10 +17,6 @@ from voting.forms import QuestionForm, QuestionYNForm
 def staff_required(login_url):
     return user_passes_test(lambda u: u.is_staff, login_url=login_url)
 
-=======
-
-
->>>>>>> central/integracion-votaciones
 class VotingView(generics.ListCreateAPIView):
     queryset = Voting.objects.all()
     serializer_class = VotingSerializer
@@ -46,11 +37,11 @@ class VotingView(generics.ListCreateAPIView):
     def post(self, request, *args, **kwargs):
         self.permission_classes = (UserIsStaff,)
         self.check_permissions(request)
-<<<<<<< HEAD
-        for data in ['voting_type', 'desc', 'name','question', 'question_opt']:
-=======
-        for data in ['name', 'desc', 'question', 'question_opt', 'seats']:
->>>>>>> central/integracion-votaciones
+
+        for data in ['voting_type', 'desc', 'name','question', 'question_opt','seats']:
+            if request.data.get('voting_type') not in ['S', 'H', 'M', 'Q']:
+                return Response({}, status=status.HTTP_400_BAD_REQUEST)
+
             if not data in request.data:
                 return Response({}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -59,11 +50,9 @@ class VotingView(generics.ListCreateAPIView):
         for idx, q_opt in enumerate(request.data.get('question_opt')):
             opt = QuestionOption(question=question, option=q_opt, number=idx)
             opt.save()
-<<<<<<< HEAD
+
         voting = Voting(name=request.data.get('name'), desc=request.data.get('desc'), voting_type=request.data.get('voting_type'),
-=======
-        voting = Voting(name=request.data.get('name'), desc=request.data.get('desc'),
->>>>>>> central/integracion-votaciones
+
                 question=question)
         voting.save()
 
@@ -73,7 +62,6 @@ class VotingView(generics.ListCreateAPIView):
         voting.auths.add(auth)
         return Response({}, status=status.HTTP_201_CREATED)
 
-<<<<<<< HEAD
     def test_create_voting_API(self):
         self.login()
         data = {
@@ -89,8 +77,7 @@ class VotingView(generics.ListCreateAPIView):
 
         voting = Voting.objects.get(name='Example')
         self.assertEqual(voting.desc, 'Description example')
-=======
->>>>>>> central/integracion-votaciones
+
 
 class VotingUpdate(generics.RetrieveUpdateDestroyAPIView):
     queryset = Voting.objects.all()
@@ -142,8 +129,6 @@ class VotingUpdate(generics.RetrieveUpdateDestroyAPIView):
             msg = 'Action not found, try with start, stop or tally'
             st = status.HTTP_400_BAD_REQUEST
         return Response(msg, status=st)
-<<<<<<< HEAD
-
 
 @staff_required(login_url="/base")
 def create_question_YesNo(request):
@@ -162,5 +147,4 @@ def create_question_YesNo(request):
 
         except ValueError:
             return render(request, 'questions.html', {'form':QuestionForm})
-=======
->>>>>>> central/integracion-votaciones
+
