@@ -37,9 +37,11 @@ class VotingView(generics.ListCreateAPIView):
     def post(self, request, *args, **kwargs):
         self.permission_classes = (UserIsStaff,)
         self.check_permissions(request)
-        for data in ['voting_type', 'desc', 'name','question', 'question_opt']:
+
+        for data in ['voting_type', 'desc', 'name','question', 'question_opt','seats']:
             if request.data.get('voting_type') not in ['S', 'H', 'M', 'Q']:
                 return Response({}, status=status.HTTP_400_BAD_REQUEST)
+
             if not data in request.data:
                 return Response({}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -48,7 +50,9 @@ class VotingView(generics.ListCreateAPIView):
         for idx, q_opt in enumerate(request.data.get('question_opt')):
             opt = QuestionOption(question=question, option=q_opt, number=idx)
             opt.save()
+
         voting = Voting(name=request.data.get('name'), desc=request.data.get('desc'), voting_type=request.data.get('voting_type'),
+
                 question=question)
         voting.save()
 
@@ -73,6 +77,7 @@ class VotingView(generics.ListCreateAPIView):
 
         voting = Voting.objects.get(name='Example')
         self.assertEqual(voting.desc, 'Description example')
+
 
 class VotingUpdate(generics.RetrieveUpdateDestroyAPIView):
     queryset = Voting.objects.all()
@@ -125,7 +130,6 @@ class VotingUpdate(generics.RetrieveUpdateDestroyAPIView):
             st = status.HTTP_400_BAD_REQUEST
         return Response(msg, status=st)
 
-
 @staff_required(login_url="/base")
 def create_question_YesNo(request):
     if request.method == 'GET':
@@ -143,3 +147,4 @@ def create_question_YesNo(request):
 
         except ValueError:
             return render(request, 'questions.html', {'form':QuestionForm})
+

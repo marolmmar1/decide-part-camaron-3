@@ -2,12 +2,17 @@ from django.db import models
 from django.db.models import JSONField
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+<<<<<<< HEAD
 from django.core.exceptions import ValidationError
 
+=======
+import copy
+>>>>>>> central/integracion-votaciones
 
 from base import mods
 from base.models import Auth, Key
 
+<<<<<<< HEAD
 class Question(models.Model):
     desc = models.TextField()
     optionSiNo = models.BooleanField(default=False, help_text="Marca esta casilla si quieres limitar las opciones a 'Sí' o 'No'. No podrás añadir más opciones si esta casilla está marcada.")
@@ -109,16 +114,56 @@ class Voting(models.Model):
     desc = models.TextField(blank=True, null=True)
 
     question = models.ForeignKey(Question, related_name='voting', on_delete=models.CASCADE)
+=======
+
+class Question(models.Model):
+    desc = models.TextField()
+
+    def __str__(self):
+        return self.desc
+
+
+class QuestionOption(models.Model):
+    question = models.ForeignKey(
+        Question, related_name='options', on_delete=models.CASCADE)
+    number = models.PositiveIntegerField(blank=True, null=True)
+    option = models.TextField()
+
+    def save(self):
+        if not self.number:
+            self.number = self.question.options.count() + 2
+        return super().save()
+
+    def __str__(self):
+        return '{} ({})'.format(self.option, self.number)
+
+
+class Voting(models.Model):
+    name = models.CharField(max_length=200)
+    desc = models.TextField(blank=True, null=True)
+    question = models.ForeignKey(
+        Question, related_name='voting', on_delete=models.CASCADE)
+>>>>>>> central/integracion-votaciones
 
     start_date = models.DateTimeField(blank=True, null=True)
     end_date = models.DateTimeField(blank=True, null=True)
 
+<<<<<<< HEAD
     pub_key = models.OneToOneField(Key, related_name='voting', blank=True, null=True, on_delete=models.SET_NULL)
+=======
+    pub_key = models.OneToOneField(
+        Key, related_name='voting', blank=True, null=True, on_delete=models.SET_NULL)
+>>>>>>> central/integracion-votaciones
     auths = models.ManyToManyField(Auth, related_name='votings')
 
     tally = JSONField(blank=True, null=True)
     postproc = JSONField(blank=True, null=True)
 
+<<<<<<< HEAD
+=======
+    seats = models.PositiveIntegerField(blank=True, null=True, default=10)
+
+>>>>>>> central/integracion-votaciones
     def create_pubkey(self):
         if self.pub_key or not self.auths.count():
             return
@@ -126,7 +171,11 @@ class Voting(models.Model):
         auth = self.auths.first()
         data = {
             "voting": self.id,
+<<<<<<< HEAD
             "auths": [ {"name": a.name, "url": a.url} for a in self.auths.all() ],
+=======
+            "auths": [{"name": a.name, "url": a.url} for a in self.auths.all()],
+>>>>>>> central/integracion-votaciones
         }
         key = mods.post('mixnet', baseurl=auth.url, json=data)
         pk = Key(p=key["p"], g=key["g"], y=key["y"])
@@ -136,7 +185,12 @@ class Voting(models.Model):
 
     def get_votes(self, token=''):
         # gettings votes from store
+<<<<<<< HEAD
         votes = mods.get('store', params={'voting_id': self.id}, HTTP_AUTHORIZATION='Token ' + token)
+=======
+        votes = mods.get('store', params={
+                         'voting_id': self.id}, HTTP_AUTHORIZATION='Token ' + token)
+>>>>>>> central/integracion-votaciones
         # anon votes
         votes_format = []
         vote_list = []
@@ -163,9 +217,15 @@ class Voting(models.Model):
         auths = [{"name": a.name, "url": a.url} for a in self.auths.all()]
 
         # first, we do the shuffle
+<<<<<<< HEAD
         data = { "msgs": votes }
         response = mods.post('mixnet', entry_point=shuffle_url, baseurl=auth.url, json=data,
                 response=True)
+=======
+        data = {"msgs": votes}
+        response = mods.post('mixnet', entry_point=shuffle_url, baseurl=auth.url, json=data,
+                             response=True)
+>>>>>>> central/integracion-votaciones
         if response.status_code != 200:
             # TODO: manage error
             pass
@@ -173,7 +233,11 @@ class Voting(models.Model):
         # then, we can decrypt that
         data = {"msgs": response.json()}
         response = mods.post('mixnet', entry_point=decrypt_url, baseurl=auth.url, json=data,
+<<<<<<< HEAD
                 response=True)
+=======
+                             response=True)
+>>>>>>> central/integracion-votaciones
 
         if response.status_code != 200:
             # TODO: manage error
@@ -200,12 +264,64 @@ class Voting(models.Model):
                 'votes': votes
             })
 
+<<<<<<< HEAD
         data = { 'type': 'IDENTITY', 'options': opts }
+=======
+        total_seats = self.seats
+
+        self.do_dhont(opts, total_seats)
+        self.do_saintLague(opts, total_seats)
+        data = {'type': 'IDENTITY', 'options': opts}
+>>>>>>> central/integracion-votaciones
         postp = mods.post('postproc', json=data)
 
         self.postproc = postp
         self.save()
 
+<<<<<<< HEAD
+=======
+    def do_dhont(self, opts, total_seats):
+        for option in opts:
+            votes = option["votes"]
+            dhont_values = []
+            for seat in range(1, total_seats + 1):
+                dhont = round(votes / seat, 4)
+                dhont_values.append({
+                    "seat": seat,
+                    "percentaje": dhont
+                })
+
+            option["dhont"] = dhont_values
+            
+    def do_saintLague(self, opts, total_seats):
+        opts_aux = copy.deepcopy(opts)
+        
+        for option in opts:
+            option["saintLague"] = 0
+        
+        for i in range (1, total_seats + 1):
+            quotients = {option["option"]: option["votes"] / (2 * i - 1) for option in opts_aux}
+            best_option = max(quotients, key=quotients.get)
+            for option in opts_aux:
+                if option['option'] == best_option:
+                    option['votes'] /= (2 * i + 1)
+                    break
+            for option in opts:
+                if option['option'] == best_option:
+                    option['saintLague'] += 1
+                    break
+
+    def do_borda(self, opts):
+        n = len(opts)
+        for option in opts:
+            votes = option["votes"]
+            borda = 0
+            for i in range(n):
+                borda += (n - i) * votes[i]
+            option["borda"] = borda
+
+
+>>>>>>> central/integracion-votaciones
     def __str__(self):
         return self.name
     

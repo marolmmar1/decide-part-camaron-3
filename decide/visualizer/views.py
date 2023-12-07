@@ -15,9 +15,13 @@ class VisualizerView(TemplateView):
 
         try:
             r = mods.get('voting', params={'id': vid})
+<<<<<<< HEAD
             c = mods.get('census', params={'voting_id': vid})
             context['voting'] = json.dumps(r[0])
             context['census'] = json.dumps(c)
+=======
+            context['voting'] = json.dumps(r[0])
+>>>>>>> central/integracion-votaciones
         except:
             raise Http404
 
