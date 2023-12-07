@@ -17,8 +17,13 @@
 {% block extrahead %}
     {{ block.super }}
     <style>
+    .grid-container {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+    }
     .bar-container {
-        width: 10%;
+        width: 50%;
         background-color: #f3f3f3;
         padding: 4px;
         border: 1px solid #bbb;
@@ -34,13 +39,49 @@
 {% block content %}
     {{ block.super }}
     <h1>Dashboard</h1>
-    {% for vote in votes %}
-        <h2>Voting ID: {{ vote.voting_id }}</h2>
-        <p>Number of votes: {{ vote.total_votes }}</p>
-        <p>Percentage: {{ vote.percentage|floatformat:2 }}%</p>
+    <div class="grid-container">
+        {% for vote in votes %}
+            <div id="voting-{{ vote.voting_id }}">
+                <h2>Voting ID: {{ vote.voting_id }}</h2>
+                <p id="vote-count-{{ vote.voting_id }}">Number of votes: {{ vote.total_votes }}</p>
+                <p id="vote-percentage-{{ vote.voting_id }}">Percentage: {{ vote.percentage|floatformat:2 }}%</p>
 
-        <div class="bar-container">
-            <div class="bar" style="width: {{ vote.percentage }}%;"></div>
-        </div>
-    {% endfor %}
+                <div class="bar-container">
+                    <div class="bar" style="width: {{ vote.percentage }}%;"></div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <script>
+    // Crea una nueva conexión WebSocket.
+    var socket = new WebSocket('ws://localhost:8000/ws/votes/');
+
+    // Cuando la conexión se abre, muestra un mensaje en la consola.
+    socket.onopen = function(e) {
+      console.log("[open] Connection established");
+    };
+
+    // Cuando se recibe un mensaje del servidor, actualiza la interfaz de usuario.
+    socket.onmessage = function(event) {
+      console.log("[message] Data received from server: ", event.data);  // Agrega esta línea
+      var data = JSON.parse(event.data);
+      var voteCountElement = document.getElementById('vote-count-' + data.vote_id);
+      var votePercentageElement = document.getElementById('vote-percentage-' + data.vote_id);
+
+      voteCountElement.textContent = 'Number of votes: ' + data.vote_count;
+      votePercentageElement.textContent = 'Percentage: ' + data.vote_percentage.toFixed(2) + '%';
+
+    };
+
+    // Cuando la conexión se cierra, muestra un mensaje en la consola.
+    socket.onclose = function(event) {
+      console.log(`[close] Connection closed`);
+    };
+
+    // Cuando ocurre un error, muestra un mensaje en la consola.
+    socket.onerror = function(error) {
+      console.log(`[error] ${error.message}`);
+    };
+    </script>
 {% endblock %}
