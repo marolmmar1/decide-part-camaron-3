@@ -31,19 +31,20 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    "django.contrib.admin",
-    "django.contrib.auth",
-    "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
-    "dbbackup",  # django-dbbackup
-    "corsheaders",
-    "django_filters",
-    "rest_framework",
-    "rest_framework.authtoken",
-    "rest_framework_swagger",
-    "gateway",
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'dbbackup', # django-dbbackup
+    'corsheaders',
+    'django_filters',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'rest_framework_swagger',
+    'gateway',
+    'channels'
 ]
 
 REST_FRAMEWORK = {
@@ -100,8 +101,8 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "decide.wsgi.application"
-
+WSGI_APPLICATION = 'decide.wsgi.application'
+ASGI_APPLICATION = 'decide.asgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
