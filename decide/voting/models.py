@@ -129,6 +129,7 @@ VOTING_TYPES = [
 class Voting(models.Model):
     name = models.CharField(max_length=200)
     desc = models.TextField(blank=True, null=True)
+    voting_type = models.CharField(max_length=1, choices=VOTING_TYPES, default='S')
     question = models.ForeignKey(
         Question, related_name='voting', on_delete=models.CASCADE)
     postproc_type = models.CharField(

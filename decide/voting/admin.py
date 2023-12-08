@@ -65,7 +65,7 @@ class VotingTypeFilter(admin.SimpleListFilter):
             return queryset.filter(voting_type=self.value())
 
 class VotingAdmin(admin.ModelAdmin):
-    list_display = ('name', 'start_date', 'end_date', 'postproc_type', "voting_type")
+    list_display = ('name', 'start_date', 'end_date', 'postproc_type', 'voting_type')
     readonly_fields = ('start_date', 'end_date', 'pub_key',
                        'tally', 'postproc')
     date_hierarchy = 'start_date'
