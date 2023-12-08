@@ -80,7 +80,6 @@ def update_SiNo_Option(sender, instance, created, **kwargs):
                     question=instance, number=3, option="Depende")
                 op3.save()
 
-
 class QuestionOption(models.Model):
     question = models.ForeignKey(
         Question, related_name='options', on_delete=models.CASCADE)
@@ -125,38 +124,6 @@ VOTING_TYPES = [
     ('H', 'Hierarchy'),
     ('Q', 'Many Questions'),
 ]
-
-
-class Voting(models.Model):
-    voting_type = models.CharField(
-        max_length=1, choices=VOTING_TYPES, default='S')
-    name = models.CharField(max_length=200)
-    desc = models.TextField(blank=True, null=True)
-
-    question = models.ForeignKey(
-        Question, related_name='voting', on_delete=models.CASCADE)
-
-
-class Question(models.Model):
-    desc = models.TextField()
-
-    def __str__(self):
-        return self.desc
-
-
-class QuestionOption(models.Model):
-    question = models.ForeignKey(
-        Question, related_name='options', on_delete=models.CASCADE)
-    number = models.PositiveIntegerField(blank=True, null=True)
-    option = models.TextField()
-
-    def save(self):
-        if not self.number:
-            self.number = self.question.options.count() + 2
-        return super().save()
-
-    def __str__(self):
-        return '{} ({})'.format(self.option, self.number)
 
 
 class Voting(models.Model):
@@ -230,7 +197,7 @@ class Voting(models.Model):
         # then, we can decrypt that
         data = {"msgs": response.json()}
         response = mods.post('mixnet', entry_point=decrypt_url, baseurl=auth.url, json=data,
-                             response=True)
+                response=True)
 
         if response.status_code != 200:
             # TODO: manage error

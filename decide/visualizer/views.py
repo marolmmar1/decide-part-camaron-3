@@ -13,6 +13,7 @@ class VisualizerView(View):
 
     def get(self, request, *args, **kwargs):
         vid = self.kwargs.get('voting_id', 0)
+        context = {}
 
         try:
             r = mods.get('voting', params={'id': vid})

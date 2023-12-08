@@ -38,12 +38,15 @@ def hierarchy(modeladmin, request, queryset):
 def many_questions(modeladmin, request, queryset):
     queryset.update(voting_type='Q')
 
+
 class QuestionOptionInline(admin.TabularInline):
     model = QuestionOption
 
 
 class QuestionAdmin(admin.ModelAdmin):
     inlines = [QuestionOptionInline]
+
+admin.site.register(Question, QuestionAdmin)
 
 class VotingTypeFilter(admin.SimpleListFilter):
     title = 'voting type'
@@ -62,11 +65,13 @@ class VotingTypeFilter(admin.SimpleListFilter):
             return queryset.filter(voting_type=self.value())
 
 class VotingAdmin(admin.ModelAdmin):
-    list_display = ('name', 'start_date', 'end_date', 'postproc_type')
+    list_display = ('name', 'start_date', 'end_date', 'postproc_type', "voting_type")
     readonly_fields = ('start_date', 'end_date', 'pub_key',
                        'tally', 'postproc')
     date_hierarchy = 'start_date'
-    list_filter = (StartedFilter,)
+    list_filter = (StartedFilter, VotingTypeFilter)
     search_fields = ('name', )
 
     actions = [start, stop, tally]
+
+admin.site.register(Voting, VotingAdmin)
