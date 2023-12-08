@@ -40,6 +40,9 @@ class StoreView(generics.ListAPIView):
         vid = request.data.get("voting")
         voting = mods.get("voting", params={"id": vid})
 
+        vid = request.data.get('voting')
+        
+        voting = mods.get('voting', params={'id': vid})
         if not voting or not isinstance(voting, list):
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
         start_date = voting[0].get("start_date", None)
@@ -86,6 +89,7 @@ class StoreView(generics.ListAPIView):
                 v.save()
 
         defs = {"a": a, "b": b}
+<<<<<<< HEAD
         if voting[0].get("voting_type", None) == "H":
             census = mods.get(
                 "census/role/{}".format(vid), params={"voter_id": uid}, response=True
@@ -100,6 +104,15 @@ class StoreView(generics.ListAPIView):
                 v.a = a
                 v.b = b
                 v.save()
+=======
+
+        v, _ = Vote.objects.get_or_create(voting_id=vid, voter_id=uid,
+                                          defaults=defs)
+        v.a = a
+        v.b = b
+
+        v.save()
+>>>>>>> 818b0c6 (fix(controlPanel): fixed real-time data messaging for store dashboard)
 
         return Response({})
 
