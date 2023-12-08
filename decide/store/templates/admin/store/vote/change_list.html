@@ -1,66 +1,10 @@
 {% extends "admin/change_list.html" %}
 {% load static %}
 
-{% block object-tools-items %}
-    {{ block.super }}
-    <li>
-        <a href="{% url 'store:vote_create_backup' %}" class="button">Create a Backup</a>
-    </li>
-    <li>
-        <a href="{% url 'store:vote_restore_backup' %}" class="button">Restore Database</a>
-    </li>
-{% endblock %}
-
 {% block extrahead %}
     {{ block.super }}
-    <style>
-    .grid-container {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 10px;
-    }
-    .bar-container {
-        width: 50%;
-        background-color: #f3f3f3;
-        padding: 4px;
-        border: 1px solid #bbb;
-    }
-
-    .bar {
-        height: 3px; /* Reduce the height to make the bars smaller */
-        background-color: #4CAF50;
-    }
-    </style>
-{% endblock %}
-
-{% block content %}
-    {{ block.super }}
-    <h1>Dashboard</h1>
-    <div class="grid-container">
-        {% for vote in votes %}
-        <div id="voting-{{ vote.voting_id }}">
-            <h2>Voting ID: {{ vote.voting_id }}</h2>
-            <p id="vote-count-{{ vote.voting_id }}">Number of votes: {{ vote.total_votes }}</p>
-            <p id="vote-percentage-{{ vote.voting_id }}">Percentage: {{ vote.percentage|floatformat:2 }}%</p>
-    
-            <div class="bar-container">
-                <div class="bar" data-width="{{ vote.percentage }}"></div>
-            </div>
-        </div>
-    {% endfor %}
-    
-    </div>
-
+    {% load static %}
     <script>
-        //SCRIPT PARA QUE EL BAR DE LA BARRA DEPROGRSO NO DE ERROR
-        window.onload = function() {
-            var bars = document.querySelectorAll('.bar');
-            bars.forEach(function(bar) {
-                var width = bar.getAttribute('data-width');
-                bar.style.width = width + '%';
-            });
-        };
-    
 
         // Crea una nueva conexión WebSocket.
         var socket = new WebSocket('ws://localhost:8000/ws/votes/');
@@ -91,5 +35,63 @@
         socket.onerror = function(error) {
         console.log(`[error] ${error.message}`);
         };
+        
+        //SCRIPT PARA QUE EL BAR DE LA BARRA DEPROGRSO NO DE ERROR
+        window.onload = function() {
+            var bars = document.querySelectorAll('.bar');
+            bars.forEach(function(bar) {
+                var width = bar.getAttribute('data-width');
+                bar.style.width = width + '%';
+            });
+        };
+
     </script>
+
+
+    <style>
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        .bar-container {
+            width: 50%;
+            background-color: #f3f3f3;
+            padding: 4px;
+            border: 1px solid #bbb;
+        }
+    
+        .bar {
+            height: 3px; /* Reduce the height to make the bars smaller */
+            background-color: #4CAF50;
+        }
+    </style>
+{% endblock %}
+
+{% block object-tools-items %}
+    {{ block.super }}
+    <li>
+        <a href="{% url 'store:vote_create_backup' %}" class="button">Create a Backup</a>
+    </li>
+    <li>
+        <a href="{% url 'store:vote_restore_backup' %}" class="button">Restore Database</a>
+    </li>
+{% endblock %}
+
+{% block content %}
+    {{ block.super }}
+    <h1>Dashboard</h1>
+    <div class="grid-container">
+        {% for vote in votes %}
+            <div id="voting-{{ vote.voting_id }}">
+                <h2>Voting ID: {{ vote.voting_id }}</h2>
+                <p id="vote-count-{{ vote.voting_id }}">Number of votes: {{ vote.total_votes }}</p>
+                <p id="vote-percentage-{{ vote.voting_id }}">Percentage: {{ vote.percentage|floatformat:2 }}%</p>
+        
+                <div class="bar-container">
+                    <div class="bar" data-width="{{ vote.percentage }}"></div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
 {% endblock %}
