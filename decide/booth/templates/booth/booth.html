@@ -128,13 +128,13 @@
                     <div v-if="voting.voting_type == 'M'">
                         <ul id="M-voting">
                             <li v-for="opt in question.options">
-                                <select :name="'option-' + opt.number" :id="'option-' + opt.number">
-                                    <option v-for="index in voting.order_options" :value="index" :key="index">
-                                        [[ index ]]
-                                    </option>
-                                </select>             
                                 <p>Number: [[ opt.number ]]</p>
-                                <p>[[ opt.option ]]</p>
+                                <select :name="'option-' + opt.number" :id="'option-' + opt.number">
+                                    <option v-for="option in question.options" :value="option.number" :key="option.number">
+                                        [[ option.option ]]
+                                    </option>
+                                </select>            
+                                
                             </li>
                         </ul>
                     </div>
@@ -185,8 +185,8 @@
             data() {
                 return {
                     voting: voting,
-                    selected: "",
-                    questions: {{ questions|safe }},
+                    selected: {},
+                    questions: {{ questions|safe }}, // cuidao
                     signup: true,
                     successVote: false,
                     alertShow: false,
@@ -253,8 +253,7 @@
                             this.token = data.token;
                             this.getUser();
                             this.alertShow = false;
-                            this.signup = false;
-                            
+                            this.signup = false;                            
                         })
                         .catch(error => {
                             this.showAlert("danger", '{% trans "Error: " %}' + error);
@@ -305,51 +304,48 @@
                 decideSend(evt) {
                     evt.preventDefault();
 
-                    if (this.voting.voting_type == "M") {
+                    var votes = []; // Array to hold the votes for each question
+
+                    // Assume this.voting.questions is an array of questions
+                    for (let question of this.voting.questions) {
+                        if (question.voting_type == "M") {
                         if (!this.check_order_ok()) { this.showAlert("danger", 'Order of options not valid'); return; }
                         var l = document.getElementById("M-voting").getElementsByTagName("select");
-                        //For M type votings, we save a toString array with the indexes been the question positions and the values been the preferences
                         var enc = [...Array(l.length + 1).keys()];
                         enc.shift();
                         for (const i of l) {
                             enc[parseInt(i.id.replace('option-', ''))-1] = parseInt(i.value);
                         }
                         var v = this.decideEncrypt(enc.toString());
-
-                    } else {
-                        var v = this.decideEncrypt();
-                        
-                        var data = {
-                            voting: this.voting.id,
-                            voter: this.user.id,
-                            token: this.token
-
+                        } else {
+                        var v = this.decideEncrypt(this.selected.toString());
                         }
-                        for (var questionId in this.selected) {
-                            var cipher = this.decideEncrypt(questionId);
-                            data.votes.push({
-                                questionId: questionId,
-                                vote: {
-                                    a: cipher.alpha.toString(),
-                                    b: cipher.beta.toString()
-                                }
+
+                        // Add the vote for this question to the votes array
+                        votes.push({
+                        vote: {a: v.alpha.toString(), b: v.beta.toString()},
+                        question: question.id, // Assume each question has an id
                         });
-                         }
                     }
 
+                    var data = {
+                        votes: votes,
+                        voting: this.voting.id,
+                        voter: this.user.id,
+                        token: this.token
+                    }
 
                     this.postData("{% url "gateway" "store" "/" %}", data)
                         .then(data => {
-                            this.successVote = true;
-                            this.alertShow = false;
-                            this.showAlert("success", '{% trans "Congratulations. Your vote has been sent" %}');
+                        this.successVote = true;
+                        this.alertShow = false;
+                        this.showAlert("success", '{% trans "Congratulations. Your vote has been sent" %}');
                         })
                         .catch(error => {
-                            this.succesVote = false;
-                            this.showAlert("danger", '{% trans "Error: " %}' + error);
+                        this.succesVote = false;
+                        this.showAlert("danger", '{% trans "Error: " %}' + error);
                         });
-                    
-                },
+                    },
                 showAlert(lvl, msg) {
                     this.alertLvl = lvl;
                     this.alertMsg = msg;
