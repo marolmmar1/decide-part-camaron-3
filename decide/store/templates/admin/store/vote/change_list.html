@@ -28,7 +28,7 @@
 
         // Cuando se recibe un mensaje del servidor, actualiza la interfaz de usuario.
         socket.onmessage = function(event) {
-        console.log("[message] Data received from server: ", event.data);  // Agrega esta línea
+        console.log("[message] Data received from server: ", event.data);  
         var data = JSON.parse(event.data);
         var voteCountElement = document.getElementById('vote-count-' + data.vote_id);
         var votePercentageElement = document.getElementById('vote-percentage-' + data.vote_id);
@@ -74,7 +74,7 @@
         }
     
         .bar {
-            height: 3px; /* Reduce the height to make the bars smaller */
+            height: 3px;  
             background-color: #4CAF50;
         }
     </style>

@@ -22,14 +22,13 @@ class VoteAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
         
-        # Después de guardar el voto, envías el mensaje a través del WebSocket.
+         
         channel_layer = get_channel_layer()
-        print("HOLAAAAAAAAAA")
         async_to_sync(channel_layer.group_send)(
-            'votes',  # Este es el nombre del grupo al que estás enviando el mensaje.
+            'votes', 
             {
-                'type': 'vote.added',  # Este es el tipo de mensaje que estás enviando.
-                'vote_id': obj.voting_id,  # Aquí puedes enviar cualquier dato que necesites.
+                'type': 'vote.added',
+                'vote_id': obj.voting_id,
             }
         )
 
