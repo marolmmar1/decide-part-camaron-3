@@ -93,10 +93,15 @@ class StoreView(generics.ListAPIView):
         return Response({})
 
 
-def create_backup(request):
+def create_backup(request, backup_name=None):
     try:
-        subprocess.run('python manage.py dbbackup', shell=True, check=True)
-        messages.success(request, 'Backup created successfully.')
+        if backup_name:
+            command = f'python manage.py dbbackup --o={backup_name}.psql.bin'
+        else:
+            command = 'python manage.py dbbackup'
+
+        subprocess.run(command, shell=True, check=True)
+        messages.success(request, f'Backup "{backup_name}" created successfully.' if backup_name else 'Backup created successfully.')
     except Exception as e:
         messages.error(request, f'Error creating backup: {e}')
 
