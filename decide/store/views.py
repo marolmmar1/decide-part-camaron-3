@@ -16,6 +16,8 @@ from base import mods
 from base.perms import UserIsStaff
 from rest_framework.permissions import IsAuthenticated
 
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 class StoreView(generics.ListAPIView):
     queryset = Vote.objects.all()
@@ -88,6 +90,16 @@ class StoreView(generics.ListAPIView):
         v.b = b
 
         v.save()
+
+        # Send a message through Django Channels
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            'votes', 
+            {
+                'type': 'vote.added',
+                'vote_id': vid,
+            }
+        )
 
         return Response({})
 
