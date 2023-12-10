@@ -38,4 +38,4 @@ class PostProcView(APIView):
         if not postproc.results:
             return Response({}, status=400)
         else:
-            return Response({postproc.type: postproc.results})
+            return Response(postproc.results)

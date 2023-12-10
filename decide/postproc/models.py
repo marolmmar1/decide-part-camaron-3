@@ -67,7 +67,7 @@ class PostProcessing(models.Model):
             votes = option["votes"]
             borda = 0
             for i in range(n):
-                borda += (n - i) * votes[i]
+                borda += (n - i) * votes
             option["borda"] = borda
         self.results = opts
         self.save()

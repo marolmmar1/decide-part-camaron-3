@@ -80,6 +80,7 @@ def update_SiNo_Option(sender, instance, created, **kwargs):
                     question=instance, number=3, option="Depende")
                 op3.save()
 
+
 class QuestionOption(models.Model):
     question = models.ForeignKey(
         Question, related_name='options', on_delete=models.CASCADE)
@@ -129,7 +130,8 @@ VOTING_TYPES = [
 class Voting(models.Model):
     name = models.CharField(max_length=200)
     desc = models.TextField(blank=True, null=True)
-    voting_type = models.CharField(max_length=1, choices=VOTING_TYPES, default='S')
+    voting_type = models.CharField(
+        max_length=1, choices=VOTING_TYPES, default='S')
     question = models.ForeignKey(
         Question, related_name='voting', on_delete=models.CASCADE)
     postproc_type = models.CharField(
@@ -198,7 +200,7 @@ class Voting(models.Model):
         # then, we can decrypt that
         data = {"msgs": response.json()}
         response = mods.post('mixnet', entry_point=decrypt_url, baseurl=auth.url, json=data,
-                response=True)
+                             response=True)
 
         if response.status_code != 200:
             # TODO: manage error
@@ -226,14 +228,13 @@ class Voting(models.Model):
             })
 
         total_seats = self.seats
+
         data = {'type': 'IDENTITY', 'options': opts, 'voting_id': self.id,
                 'question_id': self.question.id, 'total_seats': self.seats, 'type': self.postproc_type}
-        postp = mods.post('postproc', json=data)
-        headers = {'Content-Type': 'application/json'}
-        response = requests.post(
-            'http://localhost:8000/postproc/', json=data, headers=headers)
 
-        self.postproc = response.json()
+        response = mods.post('postproc', json=data)
+
+        self.postproc = response
         self.save()
 
     def __str__(self):
