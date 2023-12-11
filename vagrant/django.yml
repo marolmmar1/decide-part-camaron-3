@@ -19,7 +19,6 @@
   shell: ~/venv/bin/python manage.py shell -c "from django.contrib.auth.models import User; User.objects.filter(username='admin') or User.objects.create_superuser('admin', 'admin@example.com', 'admin')"
   args:
     chdir: /home/decide/decide/decide
-<<<<<<< HEAD
 
 - name: Change permissions on decide (Make static directory tree readable)
   become: yes
@@ -29,5 +28,3 @@
     recurse: yes
     group: decide
     mode: "555"
-=======
->>>>>>> central/integracion-votaciones
