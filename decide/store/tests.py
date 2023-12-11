@@ -272,11 +272,8 @@ class BackupTestCase(TestCase):
     @transaction.atomic
     def test_backup_file_not_found(self):
         inexistent_backup_name = "non_existing_backup"
+        
         restore_url = reverse('store:vote_restore_backup')
-
-        # Realizar la petición POST con un respaldo que no existe
         response = self.client.post(restore_url, {'selected_backup': f'{inexistent_backup_name}.psql.bin'})
-
-        # Verificar que la respuesta es una redirección a la página 'admin:store_vote_changelist'
         self.assertEqual(response.status_code, 400) #bad request
 
