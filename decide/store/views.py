@@ -10,7 +10,7 @@ from django.conf import settings
 
 import subprocess
 from django.contrib import messages
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseBadRequest, HttpResponseRedirect
 from django.urls import reverse
 
 from .models import Vote
@@ -96,7 +96,8 @@ class StoreView(generics.ListAPIView):
 def create_backup(request, backup_name=None):
     try:
         if backup_name:
-            command = f'python manage.py dbbackup --o={backup_name}.psql.bin'
+            backup_path = os.path.join(settings.DATABASE_BACKUP_DIR, backup_name)
+            command = f'python manage.py dbbackup -O={backup_path}.psql.bin'
         else:
             command = 'python manage.py dbbackup'
 
@@ -117,10 +118,16 @@ def restore_backup(request):
     if request.method == 'POST':
         selected_backup = request.POST.get('selected_backup', '')
         try:
-            subprocess.run(['python', 'manage.py', 'dbrestore', '--noinput', '-i', selected_backup], check=True)
-            messages.success(request, f'Backup {selected_backup} restored successfully.')
+            backup_files = os.listdir(settings.DATABASE_BACKUP_DIR)
+            if selected_backup in backup_files:
+                subprocess.run(['python', 'manage.py', 'dbrestore', '--noinput', '-i', selected_backup], check=True)
+                messages.success(request, f'Backup {selected_backup} restored successfully.')
+            else:
+                messages.error(request, f'Error restoring backup: Backup file not found')
+                return HttpResponseBadRequest(f'Error restoring backup: Backup file not found: {selected_backup}')
         except Exception as e:
             messages.error(request, f'Error restoring backup: {e}')
+            return HttpResponseBadRequest(f'Error restoring backup: {e}')
 
     return HttpResponseRedirect(reverse('admin:store_vote_changelist'))
 

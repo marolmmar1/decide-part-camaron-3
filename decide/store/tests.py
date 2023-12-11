@@ -1,8 +1,9 @@
 import datetime
 import random
+import subprocess
 from django.contrib.auth.models import User
 from django.utils import timezone
-from django.test import TestCase, override_settings
+from django.test import TestCase
 from rest_framework.test import APIClient
 from rest_framework.test import APITestCase
 from django.urls import reverse
@@ -17,7 +18,6 @@ from mixnet.models import Key
 from voting.models import Question
 from voting.models import Voting
 
-from django.core.management import call_command
 from django.conf import settings
 from django.test import Client
 import os
@@ -205,25 +205,29 @@ class StoreTextCase(BaseTestCase):
 
 class BackupTestCase(TestCase):
 
+    @classmethod
+    def setUpClass(cls):
+        backup_savestate = 'testsave.psql.bin'
+        command = f'python manage.py dbbackup -o {backup_savestate}'
+        subprocess.run(command, shell=True, check=True)
+        return super().setUpClass()
+    
+    @classmethod
+    def tearDownClass(cls):
+        backup_savestate = 'testsave.psql.bin'
+        subprocess.run(['python', 'manage.py', 'dbrestore', '--noinput', '-i', backup_savestate], check=True)
+        return super().tearDownClass()
+    
     def setUp(self):
         self.client = Client()
-        self.token = Token.objects.create(user=User.objects.create_superuser('admin', 'admin@example.com', 'password123'))
         super().setUp()
 
     def tearDown(self):
         super().tearDown()    
 
-    def get_or_create_user(self, pk):
-        user, _ = User.objects.get_or_create(pk=pk)
-        user.username = 'user{}'.format(pk)
-        user.set_password('qwerty')
-        user.save()
-        return user
 
     @transaction.atomic
     def test_backup_file_is_created(self):
-        
-
         try:
             initial_backup_count = len(os.listdir(settings.DATABASE_BACKUP_DIR))
             self.client.get('/store/vote/create_backup/', format='json')
@@ -236,32 +240,27 @@ class BackupTestCase(TestCase):
     
     @transaction.atomic
     def test_backup_file_is_created_with_name(self):
-        
-
         try:
             backup_name = "test"
-            self.client.get(f'/store/vote/create_backup/{backup_name}', format='json')
+            self.client.post(f'/store/vote/create_backup/{backup_name}/', format='json')
             self.assertTrue(os.path.exists(os.path.join(settings.DATABASE_BACKUP_DIR,f'{backup_name}.psql.bin')), 'Backup file to restore not found')
 
         except Exception as e:
             self.fail(f'Unexpected exception: {e}')
 
+    @transaction.atomic
     def test_list_backup_page(self):
-        client = Client()
-
         url = reverse('store:vote_restore_backup_list')
-        response = client.get(url)
+        response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'list_backups.html')
 
     @transaction.atomic
     def test_backup_file_is_restored(self):
-        
-
         try:
             backup_name = "test"
-            self.client.get(f'/store/vote/create_backup/{backup_name}', format='json')
-            self.assertTrue(os.path.exists(os.path.join(settings.DATABASE_BACKUP_DIR,f'{backup_name}.psql.bin')), 'Backup file to restore not found')
+            self.client.get(f'/store/vote/create_backup/{backup_name}/', format='json')
+            self.assertTrue(os.path.exists(os.path.join(settings.DATABASE_BACKUP_DIR, f'{backup_name}.psql.bin')), 'Backup file to restore not found')
 
             restore_url = reverse('store:vote_restore_backup')
             response = self.client.post(restore_url, {'selected_backup': f'{backup_name}.psql.bin'}) 
@@ -269,25 +268,15 @@ class BackupTestCase(TestCase):
         
         except Exception as e:
             self.fail(f'Unexpected exception: {e}')
-
-    # @transaction.atomic
-    # def test_backup_is_effective(self):
-    #     self.client = APIClient()
         
-    #     try:
-    #         backup_name = "test"
-    #         self.client.get(f'/store/vote/create_backup/{backup_name}', format='json')
-    #         self.assertTrue(os.path.exists(os.path.join(settings.DATABASE_BACKUP_DIR,f'{backup_name}.psql.bin')), 'Backup file to restore not found')
+    @transaction.atomic
+    def test_backup_file_not_found(self):
+        inexistent_backup_name = "non_existing_backup"
+        restore_url = reverse('store:vote_restore_backup')
 
-    #         pk=random.randint(100, 300)
-    #         user = self.get_or_create_user(pk=pk)
+        # Realizar la petición POST con un respaldo que no existe
+        response = self.client.post(restore_url, {'selected_backup': f'{inexistent_backup_name}.psql.bin'})
 
-    #         restore_url = reverse('store:vote_restore_backup')
-    #         response = self.client.post(restore_url, {'selected_backup': 'test.psql.bin'}) 
-    #         self.assertEqual(response.status_code, 302)
+        # Verificar que la respuesta es una redirección a la página 'admin:store_vote_changelist'
+        self.assertEqual(response.status_code, 400) #bad request
 
-    #         user = User.objects.get(pk=pk)
-    #         self.assertIsNone(user)
-        
-    #     except Exception as e:
-    #         self.fail(f'Unexpected exception: {e}')
