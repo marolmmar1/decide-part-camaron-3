@@ -4,21 +4,13 @@ services:
   db:
     restart: always
     container_name: decide_db
-<<<<<<< HEAD
-    image: postgres:14.9-alpine
-=======
     image: postgres:11.18-bullseye
->>>>>>> central/integracion-votaciones
     volumes:
       - db:/var/lib/postgresql/data
     networks:
       - decide
     environment:
-<<<<<<< HEAD
-      - POSTGRES_PASSWORD=postgres
-=======
       - POSTGRES_PASSWORD=
->>>>>>> central/integracion-votaciones
   web:
     restart: always
     container_name: decide_web
