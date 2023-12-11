@@ -4,7 +4,6 @@ from django.utils import timezone
 from django.shortcuts import get_object_or_404, render, redirect
 from rest_framework import generics, status
 from rest_framework.response import Response
-
 from .models import Question, QuestionOption, Voting
 from .serializers import SimpleVotingSerializer, VotingSerializer
 from base.perms import UserIsStaff
@@ -13,15 +12,16 @@ from django.contrib.auth.decorators import user_passes_test
 from voting.forms import QuestionForm, QuestionYNForm
 
 
-
 def staff_required(login_url):
     return user_passes_test(lambda u: u.is_staff, login_url=login_url)
+
 
 class VotingView(generics.ListCreateAPIView):
     queryset = Voting.objects.all()
     serializer_class = VotingSerializer
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
     filterset_fields = ('id', )
+    print("asodhasdhsad")
 
     def get(self, request, *args, **kwargs):
         idpath = kwargs.get('voting_id')
@@ -31,17 +31,17 @@ class VotingView(generics.ListCreateAPIView):
             version = settings.DEFAULT_VERSION
         if version == 'v2':
             self.serializer_class = SimpleVotingSerializer
-
+    
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         self.permission_classes = (UserIsStaff,)
         self.check_permissions(request)
 
-        for data in ['voting_type', 'desc', 'name','question', 'question_opt','seats']:
-            if request.data.get('voting_type') not in ['S', 'H', 'M', 'Q']:
-                return Response({}, status=status.HTTP_400_BAD_REQUEST)
-
+        if request.data.get('voting_type') not in ['S', 'H', 'M', 'Q']:
+            return Response({}, status=status.HTTP_400_BAD_REQUEST)
+    
+        for data in ['voting_type', 'desc', 'name', 'question', 'question_opt', 'seats', 'postproc_type']:
             if not data in request.data:
                 return Response({}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -53,11 +53,11 @@ class VotingView(generics.ListCreateAPIView):
 
         voting = Voting(name=request.data.get('name'), desc=request.data.get('desc'), voting_type=request.data.get('voting_type'),
 
-                question=question)
+                        question=question)
         voting.save()
 
         auth, _ = Auth.objects.get_or_create(url=settings.BASEURL,
-                                          defaults={'me': True, 'name': 'test auth'})
+                                             defaults={'me': True, 'name': 'test auth'})
         auth.save()
         voting.auths.add(auth)
         return Response({}, status=status.HTTP_201_CREATED)
@@ -130,10 +130,11 @@ class VotingUpdate(generics.RetrieveUpdateDestroyAPIView):
             st = status.HTTP_400_BAD_REQUEST
         return Response(msg, status=st)
 
+
 @staff_required(login_url="/base")
 def create_question_YesNo(request):
     if request.method == 'GET':
-        return render(request, 'createQuestion.html', {'form':QuestionForm})
+        return render(request, 'createQuestion.html', {'form': QuestionForm})
     else:
         try:
             form = QuestionForm(request.POST)
@@ -146,5 +147,4 @@ def create_question_YesNo(request):
             return redirect('questions')
 
         except ValueError:
-            return render(request, 'questions.html', {'form':QuestionForm})
-
+            return render(request, 'questions.html', {'form': QuestionForm})

@@ -239,3 +239,8 @@ class Voting(models.Model):
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        if self.voting_type != 'S' and self.postproc_type != 'NON':
+            raise ValidationError("Las técnicas de postprocesado no se pueden aplicar a votaciones no Simples")
+        super().save(*args, **kwargs)
