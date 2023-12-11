@@ -309,22 +309,23 @@
                     // Assume this.voting.questions is an array of questions
                     for (let question of this.voting.questions) {
                         if (question.voting_type == "M") {
-                        if (!this.check_order_ok()) { this.showAlert("danger", 'Order of options not valid'); return; }
-                        var l = document.getElementById("M-voting").getElementsByTagName("select");
-                        var enc = [...Array(l.length + 1).keys()];
-                        enc.shift();
-                        for (const i of l) {
-                            enc[parseInt(i.id.replace('option-', ''))-1] = parseInt(i.value);
-                        }
-                        var v = this.decideEncrypt(enc.toString());
+                            if (!this.check_order_ok()) { this.showAlert("danger", 'Order of options not valid'); return; }
+                            var l = document.getElementById("M-voting").getElementsByTagName("select");
+                            var enc = [...Array(l.length + 1).keys()];
+                            enc.shift();
+                            for (const i of l) {
+                                enc[parseInt(i.id.replace('option-', ''))-1] = parseInt(i.value);
+                            }
+                            console.log('enc:', enc);  // Log the value of enc
+                            var v = this.decideEncrypt(enc.toString());
                         } else {
-                        var v = this.decideEncrypt(this.selected.toString());
+                            console.log('this.selected:', Vue.toRaw(this.selected));
+                            var v = this.decideEncrypt(this.selected[0].toString());
                         }
 
                         // Add the vote for this question to the votes array
                         votes.push({
-                        vote: {a: v.alpha.toString(), b: v.beta.toString()},
-                        question: question.id, // Assume each question has an id
+                            vote: {a: v.alpha.toString(), b: v.beta.toString()},
                         });
                     }
 

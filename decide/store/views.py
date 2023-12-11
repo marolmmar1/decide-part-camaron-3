@@ -46,6 +46,7 @@ class StoreView(generics.ListAPIView):
 
         uid = request.data.get('voter')
         votes = request.data.get('votes')  # Expect 'votes' to be an array
+        print("VOTES VOTES VOTES ", votes)
 
         if not vid or not uid or not votes:
             return Response({}, status=status.HTTP_400_BAD_REQUEST)
@@ -67,15 +68,17 @@ class StoreView(generics.ListAPIView):
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
 
         for vote in votes:
-            a = vote.get("a")
-            b = vote.get("b")
+            nested_vote = vote.get("vote")
+            if nested_vote:
+                a = nested_vote.get("a")
+                b = nested_vote.get("b")
 
-            defs = { "a": a, "b": b }
-            v, _ = Vote.objects.get_or_create(voting_id=vid, voter_id=uid,
-                                            defaults=defs)
-            v.a = a
-            v.b = b
-            v.save()
+                defs = {"a": a, "b": b}
+                v, _ = Vote.objects.get_or_create(voting_id=vid, voter_id=uid, defaults=defs)
+                v.a = a
+                v.b = b
+                v.save()
+
 
 
         
@@ -91,5 +94,5 @@ class StoreView(generics.ListAPIView):
                 v.a = a
                 v.b = b
                 v.save()
-        print(votes)
+
         return  Response({})
