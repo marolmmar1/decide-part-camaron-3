@@ -215,7 +215,6 @@ class StoreTextCase(BaseTestCase):
         response = self.client.post("/store/", data, format="json")
         self.assertEqual(response.status_code, 401)
 
-<<<<<<< HEAD
     def test_store_vote_two_questions(self):
         VOTING_PK = 345
         CTE_A = 96
@@ -298,7 +297,6 @@ class BackupTestCase(TestCase):
     def setUp(self):
         self.client = Client()
         super().setUp()
-=======
 
 class DjangoChannelsTest(TestCase):
 
@@ -309,16 +307,11 @@ class DjangoChannelsTest(TestCase):
         question = Question.objects.create(desc='Test Question')
         self.voting = Voting.objects.create(name='Test Voting', question=question)
         self.voting.save()
-<<<<<<< HEAD
->>>>>>> 95da887 (feat(controlPanel): django channels tests on store for real-time data)
-=======
         census = Census.objects.create(voting_id=self.voting.id, voter_id=user.id)
->>>>>>> 7a4b91e (fix(controlPanel): added setUp for additional tests)
 
     def tearDown(self):
         super().tearDown()
 
-<<<<<<< HEAD
     @transaction.atomic
     def test_backup_file_is_created(self):
         try:
@@ -441,7 +434,6 @@ class DjangoChannelsTest(TestCase):
             delete_url, {"selected_backup": f"{inexistent_backup_name}.psql.bin"}
         )
         self.assertEqual(response.status_code, 400)  # bad request
-=======
     def get_or_create_user(self, pk):
         user, _ = User.objects.get_or_create(pk=pk)
         user.username = 'user{}'.format(pk)
@@ -503,4 +495,3 @@ class DjangoChannelsTest(TestCase):
         # Desconecta
         await communicator.disconnect()
         
->>>>>>> 95da887 (feat(controlPanel): django channels tests on store for real-time data)
