@@ -1,0 +1,6 @@
+name: render-deployment
+
+on:
+    push:
+        branches:
+            - develop
