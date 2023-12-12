@@ -20,7 +20,6 @@ from channels.testing import WebsocketCommunicator
 from channels.routing import URLRouter
 from django.urls import re_path
 from .consumers import VoteConsumer
-from asgiref.sync import sync_to_async
 from channels.layers import get_channel_layer
 
 
@@ -206,14 +205,12 @@ class DjangoChannelsTest(TestCase):
 
     def setUp(self):
         super().setUp()
-        self.question = Question(desc='qwerty')
-        self.question.save()
-        self.voting = Voting(pk=5001,
-                             name='voting example',
-                             question=self.question,
-                             start_date=timezone.now(),
-        )
+        # Crea un usuario, una votación y un censo
+        user = self.get_or_create_user(1)
+        question = Question.objects.create(desc='Test Question')
+        self.voting = Voting.objects.create(name='Test Voting', question=question)
         self.voting.save()
+        census = Census.objects.create(voting_id=self.voting.id, voter_id=user.id)
 
     def tearDown(self):
         super().tearDown()
@@ -251,12 +248,6 @@ class DjangoChannelsTest(TestCase):
         # Crea un comunicador WebSocket para la ruta del consumidor de votos
         communicator = WebsocketCommunicator(application, 'ws/votes/')
 
-        # Crea un usuario, una votación y un censo
-        user = await sync_to_async(self.get_or_create_user)(1)
-        question = await sync_to_async(Question.objects.create)(desc='Test Question')
-        voting = await sync_to_async(Voting.objects.create)(name='Test Voting', question=question)
-        await sync_to_async(Census.objects.create)(voting_id=voting.id, voter_id=user.id)
-
         # Conecta al WebSocket
         connected, _ = await communicator.connect()
         self.assertTrue(connected)
@@ -267,7 +258,7 @@ class DjangoChannelsTest(TestCase):
             'votes', 
             {
                 'type': 'vote.added',
-                'vote_id': voting.id,
+                'vote_id': self.voting.id,
             }
         )
 
@@ -277,7 +268,7 @@ class DjangoChannelsTest(TestCase):
         # Verifica que el mensaje sea correcto
         self.assertEqual(response, {
             'message': 'Vote received',
-            'vote_id': voting.id,
+            'vote_id': self.voting.id,
             'vote_count': 0,
             'vote_percentage': 0.0,
         })
