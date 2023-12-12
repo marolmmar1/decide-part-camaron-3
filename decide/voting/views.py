@@ -21,7 +21,6 @@ class VotingView(generics.ListCreateAPIView):
     serializer_class = VotingSerializer
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
     filterset_fields = ('id', )
-    print("asodhasdhsad")
 
     def get(self, request, *args, **kwargs):
         idpath = kwargs.get('voting_id')

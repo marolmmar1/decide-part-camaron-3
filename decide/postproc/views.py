@@ -27,11 +27,14 @@ class PostProcView(APIView):
         question_id = request.data.get("question_id")
         type = request.data.get("type")
 
-        postproc = PostProcessing.objects.create(
-            voting_id=voting_id,
-            question_id=question_id,
-            type=type,
-        )
+        try:
+            postproc = PostProcessing.objects.get(voting_id=voting_id)
+        except PostProcessing.DoesNotExist:
+            postproc = PostProcessing.objects.create(
+                voting_id=voting_id,
+                question_id=question_id,
+                type=type,
+            )
 
         postproc.do(opts, total_seats)
 
