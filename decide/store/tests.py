@@ -17,7 +17,12 @@ from django.conf import settings
 from django.test import Client
 import os
 from django.db import transaction
-
+from channels.testing import WebsocketCommunicator
+from channels.routing import URLRouter
+from django.urls import re_path
+from .consumers import VoteConsumer
+from asgiref.sync import sync_to_async
+from channels.layers import get_channel_layer
 
 class StoreTextCase(BaseTestCase):
     def setUp(self):
@@ -211,6 +216,7 @@ class StoreTextCase(BaseTestCase):
         response = self.client.post("/store/", data, format="json")
         self.assertEqual(response.status_code, 401)
 
+<<<<<<< HEAD
     def test_store_vote_two_questions(self):
         VOTING_PK = 345
         CTE_A = 96
@@ -293,10 +299,26 @@ class BackupTestCase(TestCase):
     def setUp(self):
         self.client = Client()
         super().setUp()
+=======
+
+class DjangoChannelsTest(TestCase):
+
+    def setUp(self):
+        super().setUp()
+        self.question = Question(desc='qwerty')
+        self.question.save()
+        self.voting = Voting(pk=5001,
+                             name='voting example',
+                             question=self.question,
+                             start_date=timezone.now(),
+        )
+        self.voting.save()
+>>>>>>> 95da887 (feat(controlPanel): django channels tests on store for real-time data)
 
     def tearDown(self):
         super().tearDown()
 
+<<<<<<< HEAD
     @transaction.atomic
     def test_backup_file_is_created(self):
         try:
@@ -419,3 +441,72 @@ class BackupTestCase(TestCase):
             delete_url, {"selected_backup": f"{inexistent_backup_name}.psql.bin"}
         )
         self.assertEqual(response.status_code, 400)  # bad request
+=======
+    def get_or_create_user(self, pk):
+        user, _ = User.objects.get_or_create(pk=pk)
+        user.username = 'user{}'.format(pk)
+        user.set_password('qwerty')
+        user.save()
+        return user
+    
+    async def test_vote_consumer_connection(self):
+        # Define la ruta del WebSocket para el consumidor de votos
+        application = URLRouter([
+            re_path(r'ws/votes/$', VoteConsumer.as_asgi()),
+        ])
+
+        # Crea un comunicador WebSocket para la ruta del consumidor de votos
+        communicator = WebsocketCommunicator(application, 'ws/votes/')
+
+        # Intenta conectar al WebSocket
+        connected, _ = await communicator.connect()
+        self.assertTrue(connected)
+
+        # Desconecta
+        await communicator.disconnect()
+
+    async def test_vote_consumer_message(self):
+
+        # Define la ruta del WebSocket para el consumidor de votos
+        application = URLRouter([
+            re_path(r'ws/votes/$', VoteConsumer.as_asgi()),
+        ])
+
+        # Crea un comunicador WebSocket para la ruta del consumidor de votos
+        communicator = WebsocketCommunicator(application, 'ws/votes/')
+
+        # Crea un usuario, una votación y un censo
+        user = await sync_to_async(self.get_or_create_user)(1)
+        question = await sync_to_async(Question.objects.create)(desc='Test Question')
+        voting = await sync_to_async(Voting.objects.create)(name='Test Voting', question=question)
+        await sync_to_async(Census.objects.create)(voting_id=voting.id, voter_id=user.id)
+
+        # Conecta al WebSocket
+        connected, _ = await communicator.connect()
+        self.assertTrue(connected)
+
+        # Manda mensaje por Django Channels
+        channel_layer = get_channel_layer()
+        await channel_layer.group_send(
+            'votes', 
+            {
+                'type': 'vote.added',
+                'vote_id': voting.id,
+            }
+        )
+
+        # Recibe el mensaje del WebSocket
+        response = await communicator.receive_json_from()
+        
+        # Verifica que el mensaje sea correcto
+        self.assertEqual(response, {
+            'message': 'Vote received',
+            'vote_id': voting.id,
+            'vote_count': 0,
+            'vote_percentage': 0.0,
+        })
+
+        # Desconecta
+        await communicator.disconnect()
+        
+>>>>>>> 95da887 (feat(controlPanel): django channels tests on store for real-time data)
