@@ -302,8 +302,7 @@ class DjangoChannelsTest(TestCase):
 
     def setUp(self):
         super().setUp()
-        # Crea un usuario, una votación y un censo
-        user = self.get_or_create_user(1)
+        # Crea una pregunta y una votación
         question = Question.objects.create(desc='Test Question')
         self.voting = Voting.objects.create(name='Test Voting', question=question)
         self.voting.save()

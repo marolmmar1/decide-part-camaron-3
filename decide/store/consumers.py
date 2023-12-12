@@ -1,7 +1,6 @@
 from channels.generic.websocket import AsyncWebsocketConsumer
 from asgiref.sync import sync_to_async
 import json
-from voting.models import Voting
 from census.models import Census
 from store.models import Vote
 
