@@ -210,7 +210,6 @@ class DjangoChannelsTest(TestCase):
         question = Question.objects.create(desc='Test Question')
         self.voting = Voting.objects.create(name='Test Voting', question=question)
         self.voting.save()
-        census = Census.objects.create(voting_id=self.voting.id, voter_id=user.id)
 
     def tearDown(self):
         super().tearDown()

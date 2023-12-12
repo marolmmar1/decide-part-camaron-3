@@ -1,6 +1,5 @@
 from channels.generic.websocket import AsyncWebsocketConsumer
 from asgiref.sync import sync_to_async
-from django.db.models import Count
 import json
 from voting.models import Voting
 from census.models import Census
@@ -32,9 +31,6 @@ class VoteConsumer(AsyncWebsocketConsumer):
 
     async def vote_added(self, event):
         vote_id = event['vote_id']
-
-        # Busca la votación en la base de datos
-        voting = await sync_to_async(Voting.objects.get)(id=vote_id)
 
         # Cuenta los votos para esta votación
         vote_count = await sync_to_async(Vote.objects.filter(voting_id=vote_id).count)()
