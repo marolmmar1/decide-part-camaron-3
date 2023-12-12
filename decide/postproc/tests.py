@@ -9,6 +9,7 @@ import json
 from django.core.serializers import serialize
 from django.db.models import JSONField
 from django.core.serializers.json import DjangoJSONEncoder
+from django.core.exceptions import ValidationError
 
 from base import mods
 from django.contrib.auth.models import User
@@ -92,7 +93,7 @@ class PostProcTestCase(BaseTestCase):
                 mods.post('store', json=data)
         return clear
 
-    def test_complete_voting(self):
+    def test_correct_postproc(self):
         v = self.create_voting('DHO', 'S')
         self.create_voters(v)
 
@@ -117,3 +118,12 @@ class PostProcTestCase(BaseTestCase):
             for j in range(len(dhont[i]['dhont'])):
                 self.assertEquals(
                     dhont[i]['dhont'][j], expected[i]['dhont'][j], 'Métricas no coinciden')
+
+    def test_invalid_config_voting(self):
+        try:
+            error_voting = self.create_voting('DHO', 'M')
+        except ValidationError as e:
+            self.assertEqual(e.message, 'Las técnicas de postprocesado no se pueden aplicar a votaciones no Simples')
+        else:
+            self.fail(
+                "Se esperaba una excepción ValidationError, pero no se lanzó")
