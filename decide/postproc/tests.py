@@ -8,6 +8,7 @@ import random
 import json
 from django.core.serializers import serialize
 from django.db.models import JSONField
+from django.core.serializers.json import DjangoJSONEncoder
 
 from base import mods
 from django.contrib.auth.models import User
@@ -77,7 +78,7 @@ class PostProcTestCase(BaseTestCase):
         clear = {}
         for opt in v.question.options.all():
             clear[opt.number] = 0
-            for i in range(random.randint(0, 5)):
+            for i in range(5):
                 a, b = self.encrypt_msg(opt.number, v)
                 data = {
                     'voting': v.id,
@@ -106,15 +107,13 @@ class PostProcTestCase(BaseTestCase):
 
         postproc = PostProcessing.objects.get(voting=v)
         postproc.do(v.postproc, v.seats)
-        print(postproc.results)
 
-        correct_result = {'dhont': [{'seat': 1, 'percentaje': 1.0}, {'seat': 2, 'percentaje': 0.5}, {'seat': 3, 'percentaje': 0.3333}, {'seat': 4, 'percentaje': 0.25}, {'seat': 5, 'percentaje': 0.2}, {'seat': 6, 'percentaje': 0.1667}, {'seat': 7, 'percentaje': 0.1429}, {'seat': 8, 'percentaje': 0.125}, {'seat': 9, 'percentaje': 0.1111}, {'seat': 10, 'percentaje': 0.1}]}, {'option': 'option 2', 'number': 3, 'votes': 3, 'dhont': [{'seat': 1, 'percentaje': 3.0}, {'seat': 2, 'percentaje': 1.5}, {'seat': 3, 'percentaje': 1.0}, {'seat': 4, 'percentaje': 0.75}, {'seat': 5, 'percentaje': 0.6}, {'seat': 6, 'percentaje': 0.5}, {'seat': 7, 'percentaje': 0.4286}, {'seat': 8, 'percentaje': 0.375}, {'seat': 9, 'percentaje': 0.3333}, {'seat': 10, 'percentaje': 0.3}]}, {'option': 'option 3', 'number': 4, 'votes': 2, 'dhont': [{'seat': 1, 'percentaje': 2.0}, {'seat': 2, 'percentaje': 1.0}, {'seat': 3, 'percentaje': 0.6667}, {'seat': 4, 'percentaje': 0.5}, {'seat': 5, 'percentaje': 0.4}, {
-            'seat': 6, 'percentaje': 0.3333}, {'seat': 7, 'percentaje': 0.2857}, {'seat': 8, 'percentaje': 0.25}, {'seat': 9, 'percentaje': 0.2222}, {'seat': 10, 'percentaje': 0.2}]}, {'option': 'option 4', 'number': 5, 'votes': 4, 'dhont': [{'seat': 1, 'percentaje': 4.0}, {'seat': 2, 'percentaje': 2.0}, {'seat': 3, 'percentaje': 1.3333}, {'seat': 4, 'percentaje': 1.0}, {'seat': 5, 'percentaje': 0.8}, {'seat': 6, 'percentaje': 0.6667}, {'seat': 7, 'percentaje': 0.5714}, {'seat': 8, 'percentaje': 0.5}, {'seat': 9, 'percentaje': 0.4444}, {'seat': 10, 'percentaje': 0.4}]}, {'option': 'option 5', 'number': 6, 'votes': 1, 'dhont': [{'seat': 1, 'percentaje': 1.0}, {'seat': 2, 'percentaje': 0.5}, {'seat': 3, 'percentaje': 0.3333}, {'seat': 4, 'percentaje': 0.25}, {'seat': 5, 'percentaje': 0.2}, {'seat': 6, 'percentaje': 0.1667}, {'seat': 7, 'percentaje': 0.1429}, {'seat': 8, 'percentaje': 0.125}, {'seat': 9, 'percentaje': 0.1111}, {'seat': 10, 'percentaje': 0.1}]}
+        dhont = postproc.results
 
-        serialized_mi_dhont = serialize('json', [compare_value[0]['dhont']], cls=DjangoJSONEncoder)
-        serialized_otro_dhont = serialize('json', [correct_result['dhont']], cls=DjangoJSONEncoder)
+        expected = [{'dhont': [{'seat': 1, 'percentaje': 5.0}, {'seat': 2, 'percentaje': 2.5}, {'seat': 3, 'percentaje': 1.6667}, {'seat': 4, 'percentaje': 1.25}, {'seat': 5, 'percentaje': 1.0}, {'seat': 6, 'percentaje': 0.8333}, {'seat': 7, 'percentaje': 0.7143}, {'seat': 8, 'percentaje': 0.625}, {'seat': 9, 'percentaje': 0.5556}, {'seat': 10, 'percentaje': 0.5}]}, {'dhont': [{'seat': 1, 'percentaje': 5.0}, {'seat': 2, 'percentaje': 2.5}, {'seat': 3, 'percentaje': 1.6667}, {'seat': 4, 'percentaje': 1.25}, {'seat': 5, 'percentaje': 1.0}, {'seat': 6, 'percentaje': 0.8333}, {'seat': 7, 'percentaje': 0.7143}, {'seat': 8, 'percentaje': 0.625}, {'seat': 9, 'percentaje': 0.5556}, {'seat': 10, 'percentaje': 0.5}]}, {'dhont': [{'seat': 1, 'percentaje': 5.0}, {'seat': 2, 'percentaje': 2.5}, {'seat': 3, 'percentaje': 1.6667}, {'seat': 4, 'percentaje': 1.25}, {'seat': 5, 'percentaje': 1.0}, {
+            'seat': 6, 'percentaje': 0.8333}, {'seat': 7, 'percentaje': 0.7143}, {'seat': 8, 'percentaje': 0.625}, {'seat': 9, 'percentaje': 0.5556}, {'seat': 10, 'percentaje': 0.5}]}, {'dhont': [{'seat': 1, 'percentaje': 5.0}, {'seat': 2, 'percentaje': 2.5}, {'seat': 3, 'percentaje': 1.6667}, {'seat': 4, 'percentaje': 1.25}, {'seat': 5, 'percentaje': 1.0}, {'seat': 6, 'percentaje': 0.8333}, {'seat': 7, 'percentaje': 0.7143}, {'seat': 8, 'percentaje': 0.625}, {'seat': 9, 'percentaje': 0.5556}, {'seat': 10, 'percentaje': 0.5}]}, {'dhont': [{'seat': 1, 'percentaje': 5.0}, {'seat': 2, 'percentaje': 2.5}, {'seat': 3, 'percentaje': 1.6667}, {'seat': 4, 'percentaje': 1.25}, {'seat': 5, 'percentaje': 1.0}, {'seat': 6, 'percentaje': 0.8333}, {'seat': 7, 'percentaje': 0.7143}, {'seat': 8, 'percentaje': 0.625}, {'seat': 9, 'percentaje': 0.5556}, {'seat': 10, 'percentaje': 0.5}]}]
 
-        # Verifica la igualdad usando assertJSONEqual
-        self.assertJSONEqual(serialized_mi_dhont, serialized_otro_dhont)
-
-
+        for i in range(len(dhont)):
+            for j in range(len(dhont[i]['dhont'])):
+                self.assertEquals(
+                    dhont[i]['dhont'][j], expected[i]['dhont'][j], 'Métricas no coinciden')
