@@ -208,6 +208,11 @@ class BackupTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         backup_savestate = 'testsave.psql.bin'
+        backup_files = list(os.listdir(settings.DATABASE_BACKUP_DIR))
+
+        if backup_savestate in backup_files:
+            os.remove(os.path.join(settings.DATABASE_BACKUP_DIR, backup_savestate))
+        
         command = f'python manage.py dbbackup -o {backup_savestate}'
         subprocess.run(command, shell=True, check=True)
         return super().setUpClass()
@@ -216,6 +221,12 @@ class BackupTestCase(TestCase):
     def tearDownClass(cls):
         backup_savestate = 'testsave.psql.bin'
         subprocess.run(['python', 'manage.py', 'dbrestore', '--noinput', '-i', backup_savestate], check=True)
+
+        backup_files = list(os.listdir(settings.DATABASE_BACKUP_DIR))
+        for file in backup_files:
+            if "test" in file:
+                os.remove(os.path.join(settings.DATABASE_BACKUP_DIR, file))
+        
         return super().tearDownClass()
     
     def setUp(self):
@@ -229,12 +240,19 @@ class BackupTestCase(TestCase):
     @transaction.atomic
     def test_backup_file_is_created(self):
         try:
-            initial_backup_count = len(os.listdir(settings.DATABASE_BACKUP_DIR))
+            backup_files = list(os.listdir(settings.DATABASE_BACKUP_DIR))
+            initial_backup_count = len(backup_files)
             self.client.get('/store/vote/create_backup/', format='json')
-            updated_backup_count = len(os.listdir(settings.DATABASE_BACKUP_DIR))
+            new_backup_files = list(os.listdir(settings.DATABASE_BACKUP_DIR))
+            updated_backup_count = len(new_backup_files)
 
             self.assertEqual(updated_backup_count, initial_backup_count + 1, 'No new backup file created.')
 
+            #deletes the new created backup file
+            for file in new_backup_files:
+                if file not in backup_files:
+                    os.remove(os.path.join(settings.DATABASE_BACKUP_DIR, file))
+                    break
         except Exception as e:
             self.fail(f'Unexpected exception: {e}')
     
@@ -244,7 +262,6 @@ class BackupTestCase(TestCase):
             backup_name = "test"
             self.client.post(f'/store/vote/create_backup/{backup_name}/', format='json')
             self.assertTrue(os.path.exists(os.path.join(settings.DATABASE_BACKUP_DIR,f'{backup_name}.psql.bin')), 'Backup file to restore not found')
-
         except Exception as e:
             self.fail(f'Unexpected exception: {e}')
 
@@ -270,10 +287,35 @@ class BackupTestCase(TestCase):
             self.fail(f'Unexpected exception: {e}')
         
     @transaction.atomic
-    def test_backup_file_not_found(self):
+    def test_backup_file_not_found_in_restore(self):
         inexistent_backup_name = "non_existing_backup"
         
         restore_url = reverse('store:vote_restore_backup')
         response = self.client.post(restore_url, {'selected_backup': f'{inexistent_backup_name}.psql.bin'})
         self.assertEqual(response.status_code, 400) #bad request
+    
+    @transaction.atomic
+    def test_delete_backup(self):
+        try:
+            backup_name = "test"
+            self.client.get(f'/store/vote/create_backup/{backup_name}/', format='json')
+            self.assertTrue(os.path.exists(os.path.join(settings.DATABASE_BACKUP_DIR, f'{backup_name}.psql.bin')), 'Backup file to delete not found')
 
+            delete_url = reverse('store:delete_backup', kwargs={'selected_backup': f'{backup_name}.psql.bin'})
+            response = self.client.post(delete_url, {'selected_backup': f'{backup_name}.psql.bin'})
+
+            self.assertEqual(response.status_code, 302)
+
+            self.assertNotIn(f'{backup_name}.psql.bin', os.listdir(settings.DATABASE_BACKUP_DIR))
+
+        except Exception as e:
+            self.fail(f'Unexpected exception: {e}')
+
+    @transaction.atomic
+    def test_backup_file_not_found_in_delete(self):
+        inexistent_backup_name = "non_existing_backup"
+        
+        delete_url = reverse('store:delete_backup', kwargs={'selected_backup': f'{inexistent_backup_name}.psql.bin'})
+        response = self.client.post(delete_url, {'selected_backup': f'{inexistent_backup_name}.psql.bin'})
+        self.assertEqual(response.status_code, 400) #bad request
+        
