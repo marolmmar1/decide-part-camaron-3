@@ -1,6 +1,6 @@
 from django.db import models
 
-from voting.models import Voting, Question, Type
+from voting.models import Voting, Question
 from django.utils.translation import gettext_lazy as _
 import copy
 from django.utils import timezone

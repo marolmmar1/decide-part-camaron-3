@@ -4,17 +4,12 @@ import subprocess
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.test import TestCase
-from rest_framework.test import APIClient
-from rest_framework.test import APITestCase
 from django.urls import reverse
 
 from .models import Vote
 from .serializers import VoteSerializer
-from base import mods
-from base.models import Auth
 from base.tests import BaseTestCase
 from census.models import Census
-from mixnet.models import Key
 from voting.models import Question
 from voting.models import Voting
 
@@ -22,7 +17,6 @@ from django.conf import settings
 from django.test import Client
 import os
 from django.db import transaction
-from rest_framework.authtoken.models import Token
 
 
 class StoreTextCase(BaseTestCase):
@@ -35,7 +29,7 @@ class StoreTextCase(BaseTestCase):
                              name='voting example',
                              question=self.question,
                              start_date=timezone.now(),
-        )
+                             )
         self.voting.save()
 
     def tearDown(self):
@@ -43,7 +37,7 @@ class StoreTextCase(BaseTestCase):
 
     def gen_voting(self, pk):
         voting = Voting(pk=pk, name='v1', question=self.question, start_date=timezone.now(),
-                end_date=timezone.now() + datetime.timedelta(days=1))
+                        end_date=timezone.now() + datetime.timedelta(days=1))
         voting.save()
 
     def get_or_create_user(self, pk):
@@ -68,7 +62,7 @@ class StoreTextCase(BaseTestCase):
             data = {
                 "voting": v,
                 "voter": random_user,
-                "vote": { "a": a, "b": b }
+                "vote": {"a": a, "b": b}
             }
             response = self.client.post('/store/', data, format='json')
             self.assertEqual(response.status_code, 200)
@@ -80,7 +74,7 @@ class StoreTextCase(BaseTestCase):
         data = {
             "voting": 1,
             "voter": 1,
-            "vote": { "a": 1, "b": 1 }
+            "vote": {"a": 1, "b": 1}
         }
         response = self.client.post('/store/', data, format='json')
         self.assertEqual(response.status_code, 401)
@@ -95,7 +89,7 @@ class StoreTextCase(BaseTestCase):
         data = {
             "voting": VOTING_PK,
             "voter": 1,
-            "vote": { "a": CTE_A, "b": CTE_B }
+            "vote": {"a": CTE_A, "b": CTE_B}
         }
         user = self.get_or_create_user(1)
         self.login(user=user.username)
@@ -123,48 +117,56 @@ class StoreTextCase(BaseTestCase):
         votes = response.json()
 
         self.assertEqual(len(votes), Vote.objects.count())
-        self.assertEqual(votes[0], VoteSerializer(Vote.objects.all().first()).data)
+        self.assertEqual(votes[0], VoteSerializer(
+            Vote.objects.all().first()).data)
 
     def test_filter(self):
         votings, voters = self.gen_votes()
         v = votings[0]
 
-        response = self.client.get('/store/?voting_id={}'.format(v), format='json')
+        response = self.client.get(
+            '/store/?voting_id={}'.format(v), format='json')
         self.assertEqual(response.status_code, 401)
 
         self.login(user='noadmin')
-        response = self.client.get('/store/?voting_id={}'.format(v), format='json')
+        response = self.client.get(
+            '/store/?voting_id={}'.format(v), format='json')
         self.assertEqual(response.status_code, 403)
 
         self.login()
-        response = self.client.get('/store/?voting_id={}'.format(v), format='json')
+        response = self.client.get(
+            '/store/?voting_id={}'.format(v), format='json')
         self.assertEqual(response.status_code, 200)
         votes = response.json()
 
         self.assertEqual(len(votes), Vote.objects.filter(voting_id=v).count())
 
         v = voters[0]
-        response = self.client.get('/store/?voter_id={}'.format(v), format='json')
+        response = self.client.get(
+            '/store/?voter_id={}'.format(v), format='json')
         self.assertEqual(response.status_code, 200)
         votes = response.json()
 
         self.assertEqual(len(votes), Vote.objects.filter(voter_id=v).count())
 
     def test_hasvote(self):
-        votings, voters = self.gen_votes()
+        self.gen_votes()
         vo = Vote.objects.first()
         v = vo.voting_id
         u = vo.voter_id
 
-        response = self.client.get('/store/?voting_id={}&voter_id={}'.format(v, u), format='json')
+        response = self.client.get(
+            '/store/?voting_id={}&voter_id={}'.format(v, u), format='json')
         self.assertEqual(response.status_code, 401)
 
         self.login(user='noadmin')
-        response = self.client.get('/store/?voting_id={}&voter_id={}'.format(v, u), format='json')
+        response = self.client.get(
+            '/store/?voting_id={}&voter_id={}'.format(v, u), format='json')
         self.assertEqual(response.status_code, 403)
 
         self.login()
-        response = self.client.get('/store/?voting_id={}&voter_id={}'.format(v, u), format='json')
+        response = self.client.get(
+            '/store/?voting_id={}&voter_id={}'.format(v, u), format='json')
         self.assertEqual(response.status_code, 200)
         votes = response.json()
 
@@ -176,7 +178,7 @@ class StoreTextCase(BaseTestCase):
         data = {
             "voting": 5001,
             "voter": 1,
-            "vote": { "a": 30, "b": 55 }
+            "vote": {"a": 30, "b": 55}
         }
         census = Census(voting_id=5001, voter_id=1)
         census.save()
@@ -213,31 +215,32 @@ class BackupTestCase(TestCase):
         backup_files = list(os.listdir(settings.DATABASE_BACKUP_DIR))
 
         if backup_savestate in backup_files:
-            os.remove(os.path.join(settings.DATABASE_BACKUP_DIR, backup_savestate))
-        
+            os.remove(os.path.join(
+                settings.DATABASE_BACKUP_DIR, backup_savestate))
+
         command = f'python manage.py dbbackup -o {backup_savestate}'
         subprocess.run(command, shell=True, check=True)
         return super().setUpClass()
-    
+
     @classmethod
     def tearDownClass(cls):
         backup_savestate = 'testsave.psql.bin'
-        subprocess.run(['python', 'manage.py', 'dbrestore', '--noinput', '-i', backup_savestate], check=True)
+        subprocess.run(['python', 'manage.py', 'dbrestore',
+                       '--noinput', '-i', backup_savestate], check=True)
 
         backup_files = list(os.listdir(settings.DATABASE_BACKUP_DIR))
         for file in backup_files:
             if "test" in file:
                 os.remove(os.path.join(settings.DATABASE_BACKUP_DIR, file))
-        
+
         return super().tearDownClass()
-    
+
     def setUp(self):
         self.client = Client()
         super().setUp()
 
     def tearDown(self):
-        super().tearDown()    
-
+        super().tearDown()
 
     @transaction.atomic
     def test_backup_file_is_created(self):
@@ -248,22 +251,25 @@ class BackupTestCase(TestCase):
             new_backup_files = list(os.listdir(settings.DATABASE_BACKUP_DIR))
             updated_backup_count = len(new_backup_files)
 
-            self.assertEqual(updated_backup_count, initial_backup_count + 1, 'No new backup file created.')
+            self.assertEqual(
+                updated_backup_count, initial_backup_count + 1, 'No new backup file created.')
 
-            #deletes the new created backup file
+            # deletes the new created backup file
             for file in new_backup_files:
                 if file not in backup_files:
                     os.remove(os.path.join(settings.DATABASE_BACKUP_DIR, file))
                     break
         except Exception as e:
             self.fail(f'Unexpected exception: {e}')
-    
+
     @transaction.atomic
     def test_backup_file_is_created_with_name(self):
         try:
             backup_name = "test"
-            self.client.post(f'/store/vote/create_backup/{backup_name}/', format='json')
-            self.assertTrue(os.path.exists(os.path.join(settings.DATABASE_BACKUP_DIR,f'{backup_name}.psql.bin')), 'Backup file to restore not found')
+            self.client.post(
+                f'/store/vote/create_backup/{backup_name}/', format='json')
+            self.assertTrue(os.path.exists(os.path.join(
+                settings.DATABASE_BACKUP_DIR, f'{backup_name}.psql.bin')), 'Backup file to restore not found')
         except Exception as e:
             self.fail(f'Unexpected exception: {e}')
 
@@ -278,37 +284,46 @@ class BackupTestCase(TestCase):
     def test_backup_file_is_restored(self):
         try:
             backup_name = "test"
-            self.client.get(f'/store/vote/create_backup/{backup_name}/', format='json')
-            self.assertTrue(os.path.exists(os.path.join(settings.DATABASE_BACKUP_DIR, f'{backup_name}.psql.bin')), 'Backup file to restore not found')
+            self.client.get(
+                f'/store/vote/create_backup/{backup_name}/', format='json')
+            self.assertTrue(os.path.exists(os.path.join(
+                settings.DATABASE_BACKUP_DIR, f'{backup_name}.psql.bin')), 'Backup file to restore not found')
 
             restore_url = reverse('store:vote_restore_backup')
-            response = self.client.post(restore_url, {'selected_backup': f'{backup_name}.psql.bin'}) 
+            response = self.client.post(
+                restore_url, {'selected_backup': f'{backup_name}.psql.bin'})
             self.assertEqual(response.status_code, 302)
-        
+
         except Exception as e:
             self.fail(f'Unexpected exception: {e}')
-        
+
     @transaction.atomic
     def test_backup_file_not_found_in_restore(self):
         inexistent_backup_name = "non_existing_backup"
-        
+
         restore_url = reverse('store:vote_restore_backup')
-        response = self.client.post(restore_url, {'selected_backup': f'{inexistent_backup_name}.psql.bin'})
-        self.assertEqual(response.status_code, 400) #bad request
-    
+        response = self.client.post(
+            restore_url, {'selected_backup': f'{inexistent_backup_name}.psql.bin'})
+        self.assertEqual(response.status_code, 400)  # bad request
+
     @transaction.atomic
     def test_delete_backup(self):
         try:
             backup_name = "test"
-            self.client.get(f'/store/vote/create_backup/{backup_name}/', format='json')
-            self.assertTrue(os.path.exists(os.path.join(settings.DATABASE_BACKUP_DIR, f'{backup_name}.psql.bin')), 'Backup file to delete not found')
+            self.client.get(
+                f'/store/vote/create_backup/{backup_name}/', format='json')
+            self.assertTrue(os.path.exists(os.path.join(
+                settings.DATABASE_BACKUP_DIR, f'{backup_name}.psql.bin')), 'Backup file to delete not found')
 
-            delete_url = reverse('store:delete_backup', kwargs={'selected_backup': f'{backup_name}.psql.bin'})
-            response = self.client.post(delete_url, {'selected_backup': f'{backup_name}.psql.bin'})
+            delete_url = reverse('store:delete_backup', kwargs={
+                                 'selected_backup': f'{backup_name}.psql.bin'})
+            response = self.client.post(
+                delete_url, {'selected_backup': f'{backup_name}.psql.bin'})
 
             self.assertEqual(response.status_code, 302)
 
-            self.assertNotIn(f'{backup_name}.psql.bin', os.listdir(settings.DATABASE_BACKUP_DIR))
+            self.assertNotIn(f'{backup_name}.psql.bin',
+                             os.listdir(settings.DATABASE_BACKUP_DIR))
 
         except Exception as e:
             self.fail(f'Unexpected exception: {e}')
@@ -316,8 +331,9 @@ class BackupTestCase(TestCase):
     @transaction.atomic
     def test_backup_file_not_found_in_delete(self):
         inexistent_backup_name = "non_existing_backup"
-        
-        delete_url = reverse('store:delete_backup', kwargs={'selected_backup': f'{inexistent_backup_name}.psql.bin'})
-        response = self.client.post(delete_url, {'selected_backup': f'{inexistent_backup_name}.psql.bin'})
-        self.assertEqual(response.status_code, 400) #bad request
-        
+
+        delete_url = reverse('store:delete_backup', kwargs={
+                             'selected_backup': f'{inexistent_backup_name}.psql.bin'})
+        response = self.client.post(
+            delete_url, {'selected_backup': f'{inexistent_backup_name}.psql.bin'})
+        self.assertEqual(response.status_code, 400)  # bad request

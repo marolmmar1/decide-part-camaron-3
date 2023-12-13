@@ -1,15 +1,12 @@
 from django.db import models
 
-from base import mods
-
 ROLES = [
-    ('0','Only for Hierchical Votings. Select this if voting isn`t Hierchical'),
+    ('0', 'Only for Hierchical Votings. Select this if voting isn`t Hierchical'),
     ('1', 'Balanceado'),
     ('2', 'Colaborador'),
     ('3', 'Coordinador'),
     ('4', 'Presidente'),
 ]
-
 
 
 class Census(models.Model):

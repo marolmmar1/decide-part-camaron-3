@@ -1,14 +1,6 @@
-from django.test import TestCase
 from django.utils import timezone
 from rest_framework.test import APIClient
-from rest_framework.test import APITestCase
 from base.tests import BaseTestCase
-import itertools
-import random
-import json
-from django.core.serializers import serialize
-from django.db.models import JSONField
-from django.core.serializers.json import DjangoJSONEncoder
 from django.core.exceptions import ValidationError
 
 from base import mods
@@ -121,9 +113,10 @@ class PostProcTestCase(BaseTestCase):
 
     def test_invalid_config_voting(self):
         try:
-            error_voting = self.create_voting('DHO', 'M')
+            self.create_voting('DHO', 'M')
         except ValidationError as e:
-            self.assertEqual(e.message, 'Las técnicas de postprocesado no se pueden aplicar a votaciones no Simples')
+            self.assertEqual(
+                e.message, 'Las técnicas de postprocesado no se pueden aplicar a votaciones no Simples')
         else:
             self.fail(
                 "Se esperaba una excepción ValidationError, pero no se lanzó")

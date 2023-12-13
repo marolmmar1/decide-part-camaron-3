@@ -5,15 +5,9 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.test import TestCase
-from django.db import IntegrityError
-from rest_framework.test import APIClient
-from rest_framework.test import APITestCase
 
 from selenium import webdriver
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.keys import Keys
 
 from base import mods
 from base.tests import BaseTestCase
@@ -22,7 +16,6 @@ from mixnet.mixcrypt import ElGamal
 from mixnet.mixcrypt import MixCrypt
 from mixnet.models import Auth
 from voting.models import Voting, Question, QuestionOption
-from datetime import datetime
 from django.core.exceptions import ValidationError
 
 
@@ -45,7 +38,8 @@ class VotingTestCase(BaseTestCase):
         q = Question(desc='test question')
         q.save()
         for i in range(5):
-            opt = QuestionOption(question=q, option='option {}'.format(i+1), number=i+2)
+            opt = QuestionOption(
+                question=q, option='option {}'.format(i+1), number=i+2)
             opt.save()
         v = Voting(name='test voting', question=q)
         v.save()
@@ -72,17 +66,15 @@ class VotingTestCase(BaseTestCase):
         user.save()
         return user
 
-
     def test_to_string(self):
-        #Crea un objeto votacion
+        # Crea un objeto votacion
         v = self.create_voting()
-        #Verifica que el nombre de la votacion es test voting
-        self.assertEquals(str(v),"test voting")
-        #Verifica que la descripcion de la pregunta sea test question
-        self.assertEquals(str(v.question),"test question")
-        #Verifica que la primera opcion es option1 (2)
-        self.assertEquals(str(v.question.options.all()[0]),"option 1 (2)")
-
+        # Verifica que el nombre de la votacion es test voting
+        self.assertEquals(str(v), "test voting")
+        # Verifica que la descripcion de la pregunta sea test question
+        self.assertEquals(str(v.question), "test question")
+        # Verifica que la primera opcion es option1 (2)
+        self.assertEquals(str(v.question.options.all()[0]), "option 1 (2)")
 
     def store_votes(self, v):
         voters = list(Census.objects.filter(voting_id=v.id))
@@ -96,7 +88,7 @@ class VotingTestCase(BaseTestCase):
                 data = {
                     'voting': v.id,
                     'voter': voter.voter_id,
-                    'vote': { 'a': a, 'b': b },
+                    'vote': {'a': a, 'b': b},
                 }
                 clear[opt.number] += 1
                 user = self.get_or_create_user(voter.voter_id)
@@ -161,93 +153,107 @@ class VotingTestCase(BaseTestCase):
         voting = self.create_voting()
 
         data = {'action': 'start'}
-        #response = self.client.post('/voting/{}/'.format(voting.pk), data, format='json')
-        #self.assertEqual(response.status_code, 401)
+        # response = self.client.post('/voting/{}/'.format(voting.pk), data, format='json')
+        # self.assertEqual(response.status_code, 401)
 
         # login with user no admin
         self.login(user='noadmin')
-        response = self.client.put('/voting/{}/'.format(voting.pk), data, format='json')
+        response = self.client.put(
+            '/voting/{}/'.format(voting.pk), data, format='json')
         self.assertEqual(response.status_code, 403)
 
         # login with user admin
         self.login()
         data = {'action': 'bad'}
-        response = self.client.put('/voting/{}/'.format(voting.pk), data, format='json')
+        response = self.client.put(
+            '/voting/{}/'.format(voting.pk), data, format='json')
         self.assertEqual(response.status_code, 400)
 
         # STATUS VOTING: not started
         for action in ['stop', 'tally']:
             data = {'action': action}
-            response = self.client.put('/voting/{}/'.format(voting.pk), data, format='json')
+            response = self.client.put(
+                '/voting/{}/'.format(voting.pk), data, format='json')
             self.assertEqual(response.status_code, 400)
             self.assertEqual(response.json(), 'Voting is not started')
 
         data = {'action': 'start'}
-        response = self.client.put('/voting/{}/'.format(voting.pk), data, format='json')
+        response = self.client.put(
+            '/voting/{}/'.format(voting.pk), data, format='json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), 'Voting started')
 
         # STATUS VOTING: started
         data = {'action': 'start'}
-        response = self.client.put('/voting/{}/'.format(voting.pk), data, format='json')
+        response = self.client.put(
+            '/voting/{}/'.format(voting.pk), data, format='json')
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json(), 'Voting already started')
 
         data = {'action': 'tally'}
-        response = self.client.put('/voting/{}/'.format(voting.pk), data, format='json')
+        response = self.client.put(
+            '/voting/{}/'.format(voting.pk), data, format='json')
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json(), 'Voting is not stopped')
 
         data = {'action': 'stop'}
-        response = self.client.put('/voting/{}/'.format(voting.pk), data, format='json')
+        response = self.client.put(
+            '/voting/{}/'.format(voting.pk), data, format='json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), 'Voting stopped')
 
         # STATUS VOTING: stopped
         data = {'action': 'start'}
-        response = self.client.put('/voting/{}/'.format(voting.pk), data, format='json')
+        response = self.client.put(
+            '/voting/{}/'.format(voting.pk), data, format='json')
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json(), 'Voting already started')
 
         data = {'action': 'stop'}
-        response = self.client.put('/voting/{}/'.format(voting.pk), data, format='json')
+        response = self.client.put(
+            '/voting/{}/'.format(voting.pk), data, format='json')
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json(), 'Voting already stopped')
 
         data = {'action': 'tally'}
-        response = self.client.put('/voting/{}/'.format(voting.pk), data, format='json')
+        response = self.client.put(
+            '/voting/{}/'.format(voting.pk), data, format='json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), 'Voting tallied')
 
         # STATUS VOTING: tallied
         data = {'action': 'start'}
-        response = self.client.put('/voting/{}/'.format(voting.pk), data, format='json')
+        response = self.client.put(
+            '/voting/{}/'.format(voting.pk), data, format='json')
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json(), 'Voting already started')
 
         data = {'action': 'stop'}
-        response = self.client.put('/voting/{}/'.format(voting.pk), data, format='json')
+        response = self.client.put(
+            '/voting/{}/'.format(voting.pk), data, format='json')
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json(), 'Voting already stopped')
 
         data = {'action': 'tally'}
-        response = self.client.put('/voting/{}/'.format(voting.pk), data, format='json')
+        response = self.client.put(
+            '/voting/{}/'.format(voting.pk), data, format='json')
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json(), 'Voting already tallied')
 
-
     def test_update_voting_405(self):
         v = self.create_voting()
-        data = {} #El campo action es requerido en la request
+        data = {}  # El campo action es requerido en la request
         self.login()
-        response = self.client.post('/voting/{}/'.format(v.pk), data, format= 'json')
+        response = self.client.post(
+            '/voting/{}/'.format(v.pk), data, format='json')
         self.assertEquals(response.status_code, 405)
+
 
 class VotingModelTestCase(BaseTestCase):
     def setUp(self):
         q = Question(desc='Descripcion')
         q.save()
-        
+
         opt1 = QuestionOption(question=q, option='opcion 1')
         opt1.save()
         opt1 = QuestionOption(question=q, option='opcion 2')
@@ -262,9 +268,10 @@ class VotingModelTestCase(BaseTestCase):
         self.v = None
 
     def testExist(self):
-        v=Voting.objects.get(name='Votacion')
+        v = Voting.objects.get(name='Votacion')
         self.assertEquals(v.question.options.all()[0].option, "opcion 1")
-        
+
+
 class VotingTypeTestCase(BaseTestCase):
 
     def test_create_voting_with_invalid_voting_type(self):
@@ -277,18 +284,20 @@ class VotingTypeTestCase(BaseTestCase):
         opt2.save()
 
         with self.assertRaises(ValidationError):
-            self.v = Voting(name='Votacion_Type', voting_type='INVALID', question=q)
-            self.v.full_clean() 
-            self.v.save()  
+            self.v = Voting(name='Votacion_Type',
+                            voting_type='INVALID', question=q)
+            self.v.full_clean()
+            self.v.save()
 
         votings_with_invalid_type = Voting.objects.filter(name='Votacion_Type')
         self.assertEqual(votings_with_invalid_type.count(), 0)
+
 
 class VotingHierarchyModelTestCase(BaseTestCase):
     def setUp(self):
         q = Question(desc='Descripcion')
         q.save()
-        
+
         opt1 = QuestionOption(question=q, option='opcion hierarchy 1')
         opt1.save()
         opt1 = QuestionOption(question=q, option='opcion hierarchy 2')
@@ -303,14 +312,16 @@ class VotingHierarchyModelTestCase(BaseTestCase):
         self.v = None
 
     def testExist(self):
-        v=Voting.objects.get(name='Votacion_Hierarchy')
-        self.assertEquals(v.question.options.all()[0].option, "opcion hierarchy 1")
+        v = Voting.objects.get(name='Votacion_Hierarchy')
+        self.assertEquals(v.question.options.all()[
+                          0].option, "opcion hierarchy 1")
         self.assertEquals(v.voting_type, "H")
+
 
 class LogInSuccessTests(StaticLiveServerTestCase):
 
     def setUp(self):
-        #Load base test functionality for decide
+        # Load base test functionality for decide
         self.base = BaseTestCase()
         self.base.setUp()
 
@@ -337,12 +348,14 @@ class LogInSuccessTests(StaticLiveServerTestCase):
         self.cleaner.find_element(By.ID, "id_password").send_keys("decide")
 
         self.cleaner.find_element(By.ID, "id_password").send_keys("Keys.ENTER")
-        self.assertTrue(self.cleaner.current_url == self.live_server_url+"/admin/")
+        self.assertTrue(self.cleaner.current_url ==
+                        self.live_server_url+"/admin/")
+
 
 class LogInErrorTests(StaticLiveServerTestCase):
 
     def setUp(self):
-        #Load base test functionality for decide
+        # Load base test functionality for decide
         self.base = BaseTestCase()
         self.base.setUp()
 
@@ -361,16 +374,19 @@ class LogInErrorTests(StaticLiveServerTestCase):
     def usernameWrongLogIn(self):
         self.cleaner.get(self.live_server_url+"/admin/login/?next=/admin/")
         self.cleaner.set_window_size(1280, 720)
-        
+
         self.cleaner.find_element(By.ID, "id_username").click()
-        self.cleaner.find_element(By.ID, "id_username").send_keys("usuarioNoExistente")
+        self.cleaner.find_element(
+            By.ID, "id_username").send_keys("usuarioNoExistente")
 
         self.cleaner.find_element(By.ID, "id_password").click()
-        self.cleaner.find_element(By.ID, "id_password").send_keys("usuarioNoExistente")
+        self.cleaner.find_element(
+            By.ID, "id_password").send_keys("usuarioNoExistente")
 
         self.cleaner.find_element(By.ID, "id_password").send_keys("Keys.ENTER")
 
-        self.assertTrue(self.cleaner.find_element_by_xpath('/html/body/div/div[2]/div/div[1]/p').text == 'Please enter the correct username and password for a staff account. Note that both fields may be case-sensitive.')
+        self.assertTrue(self.cleaner.find_element_by_xpath(
+            '/html/body/div/div[2]/div/div[1]/p').text == 'Please enter the correct username and password for a staff account. Note that both fields may be case-sensitive.')
 
     def passwordWrongLogIn(self):
         self.cleaner.get(self.live_server_url+"/admin/login/?next=/admin/")
@@ -380,16 +396,19 @@ class LogInErrorTests(StaticLiveServerTestCase):
         self.cleaner.find_element(By.ID, "id_username").send_keys("decide")
 
         self.cleaner.find_element(By.ID, "id_password").click()
-        self.cleaner.find_element(By.ID, "id_password").send_keys("wrongPassword")
+        self.cleaner.find_element(
+            By.ID, "id_password").send_keys("wrongPassword")
 
         self.cleaner.find_element(By.ID, "id_password").send_keys("Keys.ENTER")
 
-        self.assertTrue(self.cleaner.find_element_by_xpath('/html/body/div/div[2]/div/div[1]/p').text == 'Please enter the correct username and password for a staff account. Note that both fields may be case-sensitive.')
+        self.assertTrue(self.cleaner.find_element_by_xpath(
+            '/html/body/div/div[2]/div/div[1]/p').text == 'Please enter the correct username and password for a staff account. Note that both fields may be case-sensitive.')
+
 
 class QuestionsTests(StaticLiveServerTestCase):
 
     def setUp(self):
-        #Load base test functionality for decide
+        # Load base test functionality for decide
         self.base = BaseTestCase()
         self.base.setUp()
 
@@ -418,20 +437,23 @@ class QuestionsTests(StaticLiveServerTestCase):
         self.cleaner.find_element(By.ID, "id_password").send_keys("Keys.ENTER")
 
         self.cleaner.get(self.live_server_url+"/admin/voting/question/add/")
-        
+
         self.cleaner.find_element(By.ID, "id_desc").click()
         self.cleaner.find_element(By.ID, "id_desc").send_keys('Test')
         self.cleaner.find_element(By.ID, "id_options-0-number").click()
         self.cleaner.find_element(By.ID, "id_options-0-number").send_keys('1')
         self.cleaner.find_element(By.ID, "id_options-0-option").click()
-        self.cleaner.find_element(By.ID, "id_options-0-option").send_keys('test1')
+        self.cleaner.find_element(
+            By.ID, "id_options-0-option").send_keys('test1')
         self.cleaner.find_element(By.ID, "id_options-1-number").click()
         self.cleaner.find_element(By.ID, "id_options-1-number").send_keys('2')
         self.cleaner.find_element(By.ID, "id_options-1-option").click()
-        self.cleaner.find_element(By.ID, "id_options-1-option").send_keys('test2')
+        self.cleaner.find_element(
+            By.ID, "id_options-1-option").send_keys('test2')
         self.cleaner.find_element(By.NAME, "_save").click()
 
-        self.assertTrue(self.cleaner.current_url == self.live_server_url+"/admin/voting/question/")
+        self.assertTrue(self.cleaner.current_url ==
+                        self.live_server_url+"/admin/voting/question/")
 
     def createCensusEmptyError(self):
         self.cleaner.get(self.live_server_url+"/admin/login/?next=/admin/")
@@ -449,8 +471,11 @@ class QuestionsTests(StaticLiveServerTestCase):
 
         self.cleaner.find_element(By.NAME, "_save").click()
 
-        self.assertTrue(self.cleaner.find_element_by_xpath('/html/body/div/div[3]/div/div[1]/div/form/div/p').text == 'Please correct the errors below.')
-        self.assertTrue(self.cleaner.current_url == self.live_server_url+"/admin/voting/question/add/")
+        self.assertTrue(self.cleaner.find_element_by_xpath(
+            '/html/body/div/div[3]/div/div[1]/div/form/div/p').text == 'Please correct the errors below.')
+        self.assertTrue(self.cleaner.current_url ==
+                        self.live_server_url+"/admin/voting/question/add/")
+
 
 class VotingModelTestCaseOptionSiNo(BaseTestCase):
     def setUp(self):
@@ -461,6 +486,7 @@ class VotingModelTestCaseOptionSiNo(BaseTestCase):
         self.v.save()
 
         super().setUp()
+
     def tearDown(self):
         super().tearDown()
         self.v = None
@@ -470,11 +496,13 @@ class VotingModelTestCaseOptionSiNo(BaseTestCase):
         self.assertTrue(v.question.options.count() == 2)
         self.assertEquals(v.question.options.all()[0].option, "Sí")
         self.assertEquals(v.question.options.all()[1].option, "No")
-    
+
     def test_cannot_add_more_options(self):
         with self.assertRaises(ValidationError):
-            new_option = QuestionOption(question=self.v.question, number=3, option="Maybe")
+            new_option = QuestionOption(
+                question=self.v.question, number=3, option="Maybe")
             new_option.save()
+
     def test_cannot_delete_predefined_options(self):
         initial_option_count = self.v.question.options.count()
 
@@ -509,7 +537,8 @@ class VotingModelTestCaseOptionSiNo(BaseTestCase):
         self.v.question.save()
 
         with self.assertRaises(ValidationError):
-            new_option = QuestionOption(question=self.v.question, number=4, option="Maybe")
+            new_option = QuestionOption(
+                question=self.v.question, number=4, option="Maybe")
             new_option.save()
 
     def test_can_add_third_option(self):
@@ -518,12 +547,14 @@ class VotingModelTestCaseOptionSiNo(BaseTestCase):
         self.v.question.save()
 
         # Añadir una tercera opción
-        new_option = QuestionOption(question=self.v.question, number=3, option="Depende")
+        new_option = QuestionOption(
+            question=self.v.question, number=3, option="Depende")
         new_option.save()
 
         # Verificar que la tercera opción se ha añadido correctamente
         options = self.v.question.options.values_list('option', flat=True)
         self.assertIn("Depende", options)
+
 
 class VotingModelTestCaseThirdOption(TestCase):
     def setUp(self):
@@ -542,7 +573,8 @@ class VotingModelTestCaseThirdOption(TestCase):
         self.q.save()
 
         # Añadir una tercera opción
-        new_option = QuestionOption(question=self.q, number=3, option="Depende")
+        new_option = QuestionOption(
+            question=self.q, number=3, option="Depende")
         new_option.save()
 
         # Cambiar third_option a False
@@ -558,7 +590,8 @@ class VotingModelTestCaseThirdOption(TestCase):
 
     def test_can_set_third_option_true_if_more_than_two_options_defined(self):
         # Añadir una tercera opción
-        new_option = QuestionOption(question=self.q, number=3, option="Depende")
+        new_option = QuestionOption(
+            question=self.q, number=3, option="Depende")
         new_option.save()
 
         # Cambiar third_option a True
@@ -572,7 +605,8 @@ class VotingModelTestCaseThirdOption(TestCase):
         self.q.third_option = True
         self.q.save()
 
-        new_option = QuestionOption(question=self.q, number=3, option="Depende")
+        new_option = QuestionOption(
+            question=self.q, number=3, option="Depende")
         new_option.save()
 
         self.q.third_option = False
@@ -583,4 +617,3 @@ class VotingModelTestCaseThirdOption(TestCase):
         self.q.save()
 
         self.assertTrue(self.q.third_option)
-

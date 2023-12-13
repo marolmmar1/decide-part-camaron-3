@@ -9,7 +9,7 @@ from .serializers import SimpleVotingSerializer, VotingSerializer
 from base.perms import UserIsStaff
 from base.models import Auth
 from django.contrib.auth.decorators import user_passes_test
-from voting.forms import QuestionForm, QuestionYNForm
+from voting.forms import QuestionForm
 
 
 def staff_required(login_url):
@@ -30,7 +30,7 @@ class VotingView(generics.ListCreateAPIView):
             version = settings.DEFAULT_VERSION
         if version == 'v2':
             self.serializer_class = SimpleVotingSerializer
-    
+
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
@@ -39,7 +39,7 @@ class VotingView(generics.ListCreateAPIView):
 
         if request.data.get('voting_type') not in ['S', 'H', 'M', 'Q']:
             return Response({}, status=status.HTTP_400_BAD_REQUEST)
-    
+
         for data in ['voting_type', 'desc', 'name', 'question', 'question_opt', 'seats', 'postproc_type']:
             if not data in request.data:
                 return Response({}, status=status.HTTP_400_BAD_REQUEST)
