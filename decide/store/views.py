@@ -94,6 +94,8 @@ class StoreView(generics.ListAPIView):
 
 def create_backup(request, backup_name=None):
     try:
+        if not os.path.exists(settings.DATABASE_BACKUP_DIR):
+            os.makedirs(settings.DATABASE_BACKUP_DIR)
         if backup_name:
             backup_path = os.path.join(settings.DATABASE_BACKUP_DIR, backup_name)
             command = f'python manage.py dbbackup -O={backup_path}.psql.bin'

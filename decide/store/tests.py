@@ -207,6 +207,8 @@ class BackupTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls):
+        if not os.path.exists(settings.DATABASE_BACKUP_DIR):
+            os.makedirs(settings.DATABASE_BACKUP_DIR)
         backup_savestate = 'testsave.psql.bin'
         backup_files = list(os.listdir(settings.DATABASE_BACKUP_DIR))
 
