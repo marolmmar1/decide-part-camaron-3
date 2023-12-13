@@ -118,7 +118,8 @@ DATABASES = {
     }
 }
 DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
-DBBACKUP_STORAGE_OPTIONS = {'location': BASE_DIR + '/store/backup'}
+DATABASE_BACKUP_DIR = BASE_DIR + '/store/backup'
+DBBACKUP_STORAGE_OPTIONS = {'location': DATABASE_BACKUP_DIR}
 
 
 # Password validation
