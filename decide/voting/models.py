@@ -185,9 +185,9 @@ class Voting(models.Model):
 
     def do_postproc(self):
         tally = self.tally
+        opts = []
         for question in self.questions.all():
             options = question.options.all()
-            opts = []
             for opt in options:
                 if isinstance(tally, list):
                     votes = tally.count(opt.number)
@@ -203,6 +203,7 @@ class Voting(models.Model):
         postp = mods.post('postproc', json=data)
 
         self.postproc = postp
+        print(postp)
         self.save()
 
     def __str__(self):

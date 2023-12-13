@@ -306,9 +306,9 @@
 
                     var votes = []; // Array to hold the votes for each question
 
-                    // Assume this.voting.questions is an array of questions
+                    
                     for (let question of this.voting.questions) {
-                        if (question.voting_type == "M") {
+                        if (voting.voting_type == "M") {
                             if (!this.check_order_ok()) { this.showAlert("danger", 'Order of options not valid'); return; }
                             var l = document.getElementById("M-voting").getElementsByTagName("select");
                             var enc = [...Array(l.length + 1).keys()];
