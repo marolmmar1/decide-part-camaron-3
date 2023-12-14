@@ -498,7 +498,6 @@ class VotingModelTestCaseOptionSiNo(BaseTestCase):
         for question in self.v.questions.all():
             options = question.options.all()
             initial_option_count = options.count()
-
             # Intentar eliminar la opción "Sí"
             yes_option = options.get(option="Sí")
             with self.assertRaises(ValidationError):
@@ -527,6 +526,7 @@ class VotingModelTestCaseOptionSiNo(BaseTestCase):
             # Verificar que las opciones se han actualizado correctamente
             options = question.options.values_list('option', flat=True)
             self.assertIn("Depende", options)
+
 
     def test_cannot_add_more_than_three_options(self):
         for question in self.v.questions.all():
@@ -567,31 +567,24 @@ class VotingModelTestCaseThirdOption(TestCase):
         self.q.third_option = True
         self.q.save()
 
-        # Añadir una tercera opción
         new_option = QuestionOption(question=self.q, number=3, option="Depende")
         new_option.save()
 
-        # Cambiar third_option a False
         self.q.third_option = False
 
-        # Antes de guardar, eliminar la tercera opción
         new_option.delete()
 
-        # Ahora se puede guardar sin errores
         self.q.save()
 
         self.assertFalse(self.q.third_option)
 
     def test_can_set_third_option_true_if_more_than_two_options_defined(self):
-        # Añadir una tercera opción
         new_option = QuestionOption(question=self.q, number=3, option="Depende")
         new_option.save()
 
-        # Cambiar third_option a True
         self.q.third_option = True
         self.q.save()
 
-        # Verificar que third_option es True
         self.assertTrue(self.q.third_option)
 
     def test_can_toggle_third_option(self):
@@ -609,4 +602,3 @@ class VotingModelTestCaseThirdOption(TestCase):
         self.q.save()
 
         self.assertTrue(self.q.third_option)
-
