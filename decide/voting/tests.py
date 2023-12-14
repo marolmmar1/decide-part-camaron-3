@@ -661,31 +661,24 @@ class VotingModelTestCaseThirdOption(TestCase):
         self.q.third_option = True
         self.q.save()
 
-        # Añadir una tercera opción
         new_option = QuestionOption(question=self.q, number=3, option="Depende")
         new_option.save()
 
-        # Cambiar third_option a False
         self.q.third_option = False
 
-        # Antes de guardar, eliminar la tercera opción
         new_option.delete()
 
-        # Ahora se puede guardar sin errores
         self.q.save()
 
         self.assertFalse(self.q.third_option)
 
     def test_can_set_third_option_true_if_more_than_two_options_defined(self):
-        # Añadir una tercera opción
         new_option = QuestionOption(question=self.q, number=3, option="Depende")
         new_option.save()
 
-        # Cambiar third_option a True
         self.q.third_option = True
         self.q.save()
 
-        # Verificar que third_option es True
         self.assertTrue(self.q.third_option)
 
     def test_can_toggle_third_option(self):
@@ -703,4 +696,3 @@ class VotingModelTestCaseThirdOption(TestCase):
         self.q.save()
 
         self.assertTrue(self.q.third_option)
-
