@@ -105,12 +105,15 @@ def create_backup(request, backup_name=None):
 
         subprocess.run(command, shell=True, check=True)
         messages.success(
-            request, f'Backup "{backup_name}" created successfully.' if backup_name else 'Backup created successfully.')
+            request,
+            f'Backup "{backup_name}" created successfully.'
+            if backup_name
+            else "Backup created successfully.",
+        )
     except Exception as e:
         messages.error(request, f"Error creating backup: {e}")
 
     return HttpResponseRedirect(reverse("admin:store_vote_changelist"))
-
 
 
 def list_backups(request):
@@ -118,7 +121,6 @@ def list_backups(request):
     backup_files = list(os.listdir(backup_dir))
 
     return render(request, "list_backups.html", {"backup_files": backup_files})
-
 
 
 def restore_backup(request):
@@ -155,10 +157,9 @@ def restore_backup(request):
     return HttpResponseRedirect(reverse("admin:store_vote_changelist"))
 
 
-
 def delete_backups(request):
     backup_files = list(os.listdir(settings.DATABASE_BACKUP_DIR))
-    return render(request, 'delete_backups.html', {'backups': backup_files})
+    return render(request, "delete_backups.html", {"backups": backup_files})
 
 
 def delete_selected_backup(request, selected_backup):
@@ -187,7 +188,6 @@ def delete_selected_backup(request, selected_backup):
         return render(
             request, "confirm_delete.html", {"selected_backup": selected_backup}
         )
-
 
 
 class VoteHistoryView(generics.ListAPIView):

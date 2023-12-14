@@ -110,8 +110,7 @@ class StoreTextCase(BaseTestCase):
         votes = response.json()
 
         self.assertEqual(len(votes), Vote.objects.count())
-        self.assertEqual(votes[0], VoteSerializer(
-            Vote.objects.all().first()).data)
+        self.assertEqual(votes[0], VoteSerializer(Vote.objects.all().first()).data)
 
     def test_filter(self):
         votings, voters = self.gen_votes()

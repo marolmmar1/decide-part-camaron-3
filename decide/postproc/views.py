@@ -4,21 +4,20 @@ from postproc.models import PostProcessing
 
 
 class PostProcView(APIView):
-
     def post(self, request):
         """
-         * options: [
-            {
-             option: str,
-             number: int,
-             votes: int,
-             ...extraparams
-            }
-           ]
-         * total_seats: int
-         * voting_id: int
-         * question_id: int
-         * type: str
+        * options: [
+           {
+            option: str,
+            number: int,
+            votes: int,
+            ...extraparams
+           }
+          ]
+        * total_seats: int
+        * voting_id: int
+        * question_id: int
+        * type: str
         """
 
         opts = request.data.get("options")

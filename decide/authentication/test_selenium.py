@@ -12,7 +12,6 @@ from selenium.webdriver.common.keys import Keys
 
 
 class AdminTestCase(StaticLiveServerTestCase):
-
     def setUp(self):
         # Crea un usuario admin y otro no admin
         self.base = BaseTestCase()
@@ -32,32 +31,27 @@ class AdminTestCase(StaticLiveServerTestCase):
         self.base.tearDown()
 
     def test_simpleCorrectLogin(self):
-       # Abre la ruta del navegador
-        self.driver.get(f'{self.live_server_url}/admin/')
-       # Busca los elementos y “escribe”
-        self.driver.find_element(By.ID, 'id_username').send_keys("admin")
-        self.driver.find_element(
-            By.ID, 'id_password').send_keys("qwerty", Keys.ENTER)
+        # Abre la ruta del navegador
+        self.driver.get(f"{self.live_server_url}/admin/")
+        # Busca los elementos y “escribe”
+        self.driver.find_element(By.ID, "id_username").send_keys("admin")
+        self.driver.find_element(By.ID, "id_password").send_keys("qwerty", Keys.ENTER)
 
-       # Verifica que nos hemos logado porque aparece la barra de herramientas superior
-        self.assertTrue(
-            len(self.driver.find_elements(By.ID, 'user-tools')) == 1)
+        # Verifica que nos hemos logado porque aparece la barra de herramientas superior
+        self.assertTrue(len(self.driver.find_elements(By.ID, "user-tools")) == 1)
 
     def test_simpleWrongLogin(self):
+        self.driver.get(f"{self.live_server_url}/admin/")
+        self.driver.find_element(By.ID, "id_username").send_keys("WRONG")
+        self.driver.find_element(By.ID, "id_password").send_keys("WRONG")
+        self.driver.find_element(By.ID, "login-form").submit()
 
-        self.driver.get(f'{self.live_server_url}/admin/')
-        self.driver.find_element(By.ID, 'id_username').send_keys("WRONG")
-        self.driver.find_element(By.ID, 'id_password').send_keys("WRONG")
-        self.driver.find_element(By.ID, 'login-form').submit()
-
-       # Si no, aparece este error
-        self.assertTrue(len(self.driver.find_elements(
-            By.CLASS_NAME, 'errornote')) == 1)
+        # Si no, aparece este error
+        self.assertTrue(len(self.driver.find_elements(By.CLASS_NAME, "errornote")) == 1)
         time.sleep(5)
 
 
 class VisualizerTestCase(StaticLiveServerTestCase):
-
     def setUp(self):
         self.base = BaseTestCase()
         self.base.setUp()
@@ -72,11 +66,10 @@ class VisualizerTestCase(StaticLiveServerTestCase):
         self.base.tearDown()
 
     def test_simpleVisualizer(self):
-        q = Question(desc='test question')
+        q = Question(desc="test question")
         q.save()
-        v = Voting(name='test voting', question=q)
+        v = Voting(name="test voting", question=q)
         v.save()
-        self.driver.get(
-            f'{self.live_server_url}/visualizer/{v.pk}/')
+        self.driver.get(f"{self.live_server_url}/visualizer/{v.pk}/")
         vState = self.driver.find_element(By.TAG_NAME, "h2").text
         self.assertTrue(vState, "Votación no comenzada")

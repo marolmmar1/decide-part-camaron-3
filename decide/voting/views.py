@@ -37,10 +37,18 @@ class VotingView(generics.ListCreateAPIView):
         self.permission_classes = (UserIsStaff,)
         self.check_permissions(request)
 
-        if request.data.get('voting_type') not in ['S', 'H', 'M', 'Q']:
+        if request.data.get("voting_type") not in ["S", "H", "M", "Q"]:
             return Response({}, status=status.HTTP_400_BAD_REQUEST)
 
-        for data in ['voting_type', 'desc', 'name', 'question', 'question_opt', 'seats', 'postproc_type']:
+        for data in [
+            "voting_type",
+            "desc",
+            "name",
+            "question",
+            "question_opt",
+            "seats",
+            "postproc_type",
+        ]:
             if not data in request.data:
                 return Response({}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -50,13 +58,17 @@ class VotingView(generics.ListCreateAPIView):
             opt = QuestionOption(question=question, option=q_opt, number=idx)
             opt.save()
 
-        voting = Voting(name=request.data.get('name'), desc=request.data.get('desc'), voting_type=request.data.get('voting_type'),
-
-                        question=question)
+        voting = Voting(
+            name=request.data.get("name"),
+            desc=request.data.get("desc"),
+            voting_type=request.data.get("voting_type"),
+            question=question,
+        )
         voting.save()
 
-        auth, _ = Auth.objects.get_or_create(url=settings.BASEURL,
-                                             defaults={'me': True, 'name': 'test auth'})
+        auth, _ = Auth.objects.get_or_create(
+            url=settings.BASEURL, defaults={"me": True, "name": "test auth"}
+        )
         auth.save()
         voting.auths.add(auth)
         return Response({}, status=status.HTTP_201_CREATED)
@@ -64,18 +76,18 @@ class VotingView(generics.ListCreateAPIView):
     def test_create_voting_API(self):
         self.login()
         data = {
-            'voting_type': 'S',
-            'name': 'Example',
-            'desc': 'Description example',
-            'question': 'I want a ',
-            'question_opt': ['cat', 'dog', 'horse']
+            "voting_type": "S",
+            "name": "Example",
+            "desc": "Description example",
+            "question": "I want a ",
+            "question_opt": ["cat", "dog", "horse"],
         }
 
-        response = self.client.post('/voting/', data, format='json')
+        response = self.client.post("/voting/", data, format="json")
         self.assertEqual(response.status_code, 201)
 
-        voting = Voting.objects.get(name='Example')
-        self.assertEqual(voting.desc, 'Description example')
+        voting = Voting.objects.get(name="Example")
+        self.assertEqual(voting.desc, "Description example")
 
 
 class VotingUpdate(generics.RetrieveUpdateDestroyAPIView):
@@ -132,18 +144,18 @@ class VotingUpdate(generics.RetrieveUpdateDestroyAPIView):
 
 @staff_required(login_url="/base")
 def create_question_YesNo(request):
-    if request.method == 'GET':
-        return render(request, 'createQuestion.html', {'form': QuestionForm})
+    if request.method == "GET":
+        return render(request, "createQuestion.html", {"form": QuestionForm})
     else:
         try:
             form = QuestionForm(request.POST)
             q = form.save()
             q.optionSiNo = True
-            if 'third_option' in request.POST:
+            if "third_option" in request.POST:
                 q.third_option = True
             q.save()
 
-            return redirect('questions')
+            return redirect("questions")
 
         except ValueError:
-            return render(request, 'questions.html', {'form': QuestionForm})
+            return render(request, "questions.html", {"form": QuestionForm})

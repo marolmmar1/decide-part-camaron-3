@@ -10,22 +10,23 @@ from rest_framework.status import (
 )
 
 from base.perms import UserIsStaff, IsReadOnly
+
 # from rest_framework.permissions import OR
 from .models import Census
 
 
 class CensusCreate(generics.ListCreateAPIView):
-    permission_classes = [IsReadOnly|UserIsStaff]
+    permission_classes = [IsReadOnly | UserIsStaff]
     permission_classes = (UserIsStaff,)
 
     def create(self, request, *args, **kwargs):
-        voting_id = request.data.get('voting_id')
-        voters = request.data.get('voters')
-        role = request.data.get('role','0')
+        voting_id = request.data.get("voting_id")
+        voters = request.data.get("voters")
+        role = request.data.get("role", "0")
         try:
             for voter in voters:
                 if not (isinstance(role, str)) or (len(role) != 1):
-                    return Response('Invalid role value.', status=ST_400)
+                    return Response("Invalid role value.", status=ST_400)
                 census = Census(voting_id=voting_id, voter_id=voter, role=role)
                 census.save()
         except IntegrityError:
@@ -52,15 +53,15 @@ class CensusDetail(generics.RetrieveDestroyAPIView):
         try:
             Census.objects.get(voting_id=voting_id, voter_id=voter)
         except ObjectDoesNotExist:
-            return Response('Invalid voter', status=ST_401)
-        return Response('Valid voter')
-    
+            return Response("Invalid voter", status=ST_401)
+        return Response("Valid voter")
+
+
 class CensusRole(generics.RetrieveAPIView):
-    
     def retrieve(self, request, voting_id, *args, **kwargs):
-        voter = request.GET.get('voter_id')
+        voter = request.GET.get("voter_id")
         try:
             census = Census.objects.get(voting_id=voting_id, voter_id=voter)
         except ObjectDoesNotExist:
-            return Response('Invalid voter', status=ST_401)
+            return Response("Invalid voter", status=ST_401)
         return Response(census.role)

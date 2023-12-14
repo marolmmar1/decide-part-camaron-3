@@ -23,10 +23,15 @@ class BoothView(TemplateView):
                 r[0]["pub_key"][k] = str(v)
 
             voting = Voting.objects.filter(id=vid).get()
-            context['voting_obj'] = voting
-            order_options = [i + 1 for i in range(QuestionOption.objects.filter(question=voting.question).count())]
-            r[0]['order_options'] = order_options
-            context['voting'] = json.dumps(r[0])
+            context["voting_obj"] = voting
+            order_options = [
+                i + 1
+                for i in range(
+                    QuestionOption.objects.filter(question=voting.question).count()
+                )
+            ]
+            r[0]["order_options"] = order_options
+            context["voting"] = json.dumps(r[0])
 
         except Exception as e:
             print(e)

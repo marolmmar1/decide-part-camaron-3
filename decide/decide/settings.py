@@ -59,16 +59,16 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 MODULES = [
-    'authentication',
-    'base',
-    'booth',
-    'census',
-    'mixnet',
-    'postproc',
-    'store',
-    'visualizer',
-    'voting',
-    'dbbackup',
+    "authentication",
+    "base",
+    "booth",
+    "census",
+    "mixnet",
+    "postproc",
+    "store",
+    "visualizer",
+    "voting",
+    "dbbackup",
 ]
 
 BASEURL = "http://localhost:8000"
