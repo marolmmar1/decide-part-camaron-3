@@ -74,7 +74,10 @@
         <a href="{% url 'store:vote_create_backup' %}" class="button">Create a Backup</a>
     </li>
     <li>
-        <a href="{% url 'store:vote_restore_backup' %}" class="button">Restore Database</a>
+        <a href="{% url 'store:vote_restore_backup_list' %}" class="button">Restore Database</a>
+    </li>
+    <li>
+        <a href="{% url 'store:delete_backups' %}" class="historylink">Eliminar Backups</a>
     </li>
 {% endblock %}
 
