@@ -291,6 +291,7 @@
                     for (const i of comp) {
                         if (!minflicto.includes(i)) { res = false; }
                     }
+                    
                     return res;
                 },
                 decideSend(evt) {
@@ -298,15 +299,22 @@
 
                     if (this.voting.voting_type == "M") {
                         if (!this.check_order_ok()) { this.showAlert("danger", 'Order of options not valid'); return; }
+                        
                         var l = document.getElementById("M-voting").getElementsByTagName("select");
+
                         //For M type votings, we save a toString array with the indexes been the question positions and the values been the preferences
                         var enc = [...Array(l.length + 1).keys()];
                         enc.shift();
+
                         for (const i of l) {
                             enc[parseInt(i.id.replace('option-', ''))-1] = parseInt(i.value);
                         }
-                        //console.log(enc.toString())
-                        var v = this.decideEncrypt(enc.toString());
+
+                        //console.log('[' + enc.toString() + ']')
+                        var v = this.decideEncrypt(enc.toString()
+                            .replace(',', '1010101'));
+                        //Can only encrypt numbers. 1010101 is extremely weird to appear in the votes by itself, so we use it as a coma marker
+                        console.log(v);
 
                     } else {
                         var v = this.decideEncrypt(this.selected.toString());

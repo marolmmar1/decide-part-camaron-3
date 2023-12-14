@@ -155,6 +155,8 @@ class Voting(models.Model):
         The tally is a shuffle and then a decrypt
         '''
 
+        print("enteeeeeeeeeeeeeeer")
+
         votes = self.get_votes(token)
 
         auth = self.auths.first()
@@ -180,6 +182,17 @@ class Voting(models.Model):
             pass
 
         self.tally = response.json()
+
+        if self.voting_type == 'M':
+            t = self.tally.copy()
+            self.tally = []
+            for vote in t:
+                v = str(vote).split('1010101')
+                v = [int(i) for i in v]
+                self.tally.append(v)
+        
+        #print(self.tally)
+
         self.save()
 
         self.do_postproc()
@@ -191,7 +204,12 @@ class Voting(models.Model):
         opts = []
         for opt in options:
             if isinstance(tally, list):
-                votes = tally.count(opt.number)
+                if self.voting_type == 'M':
+                    votes = 0
+                    for i in tally:
+                        votes += i[opt.number-1]/len(options)
+                else:
+                    votes = tally.count(opt.number)
             else:
                 votes = 0
             opts.append({
