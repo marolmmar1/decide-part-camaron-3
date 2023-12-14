@@ -109,6 +109,8 @@ class PostProcessing(models.Model):
             self.dhondt(opts, total_seats)
         elif self.type == self.Type.SAINT:
             self.saint(opts, total_seats)
+        elif self.type == self.Type.DROOP:
+            self.droop(opts, total_seats)
         else:
             self.results = None
         self.end_date = timezone.now()
