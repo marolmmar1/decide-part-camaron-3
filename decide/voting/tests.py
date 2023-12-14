@@ -29,110 +29,15 @@ from voting.models import Voting, Question, QuestionOption
 from datetime import datetime
 from django.core.exceptions import ValidationError
 
-class TestTestselenium():
-  def setUp(self):
-    self.driver = webdriver.Chrome()
-    self.vars = {}
-  
-  def tearDown(self):
-    self.driver.quit()
-  
-  def wait_for_window(self, timeout = 2):
-    time.sleep(round(timeout / 1000))
-    wh_now = self.driver.window_handles
-    wh_then = self.vars["window_handles"]
-    if len(wh_now) > len(wh_then):
-      return set(wh_now).difference(set(wh_then)).pop()
-  
-  def test_testselenium(self):
-    self.driver.get("http://127.0.0.1:8000/admin/login/?next=/admin/")
-    self.driver.set_window_size(1311, 606)
-    self.driver.find_element(By.ID, "id_username").click()
-    self.driver.find_element(By.ID, "id_username").click()
-    element = self.driver.find_element(By.ID, "id_username")
-    actions = ActionChains(self.driver)
-    actions.double_click(element).perform()
-    self.driver.find_element(By.ID, "id_username").send_keys("admin")
-    self.driver.find_element(By.CSS_SELECTOR, ".form-row:nth-child(3) > .required").click()
-    self.driver.find_element(By.ID, "id_password").click()
-    self.driver.find_element(By.ID, "id_password").send_keys("admin")
-    self.driver.find_element(By.CSS_SELECTOR, ".submit-row > input").click()
-    self.driver.find_element(By.LINK_TEXT, "Votings").click()
-    self.driver.find_element(By.CSS_SELECTOR, "li > .addlink").click()
-    dropdown = self.driver.find_element(By.ID, "id_voting_type")
-    dropdown.find_element(By.XPATH, "//option[. = 'Single Choice']").click()
-    element = self.driver.find_element(By.ID, "id_voting_type")
-    actions = ActionChains(self.driver)
-    actions.move_to_element(element).click_and_hold().perform()
-    element = self.driver.find_element(By.ID, "id_voting_type")
-    actions = ActionChains(self.driver)
-    actions.move_to_element(element).perform()
-    element = self.driver.find_element(By.ID, "id_voting_type")
-    actions = ActionChains(self.driver)
-    actions.move_to_element(element).release().perform()
-    self.driver.find_element(By.ID, "id_name").click()
-    self.driver.find_element(By.ID, "id_name").send_keys("Votacion Atleti")
-    self.driver.find_element(By.ID, "id_desc").click()
-    self.driver.find_element(By.ID, "id_desc").click()
-    element = self.driver.find_element(By.ID, "id_desc")
-    actions = ActionChains(self.driver)
-    actions.double_click(element).perform()
-    element = self.driver.find_element(By.ID, "id_question")
-    actions = ActionChains(self.driver)
-    actions.move_to_element(element).click_and_hold().perform()
-    element = self.driver.find_element(By.ID, "id_question")
-    actions = ActionChains(self.driver)
-    actions.move_to_element(element).perform()
-    element = self.driver.find_element(By.ID, "id_question")
-    actions = ActionChains(self.driver)
-    actions.move_to_element(element).release().perform()
-    self.driver.find_element(By.ID, "id_question").click()
-    self.vars["window_handles"] = self.driver.window_handles
-    self.driver.find_element(By.CSS_SELECTOR, "#add_id_question > img").click()
-    self.vars["win3994"] = self.wait_for_window(2000)
-    self.vars["root"] = self.driver.current_window_handle
-    self.driver.switch_to.window(self.vars["win3994"])
-    self.driver.find_element(By.ID, "id_desc").click()
-    self.driver.find_element(By.ID, "id_desc").click()
-    element = self.driver.find_element(By.ID, "id_desc")
-    actions = ActionChains(self.driver)
-    actions.double_click(element).perform()
-    self.driver.find_element(By.ID, "id_desc").send_keys("pregunta")
-    self.driver.find_element(By.CSS_SELECTOR, ".field-optionSiNo .vCheckboxLabel").click()
-    self.driver.find_element(By.NAME, "_save").click()
-    self.driver.switch_to.window(self.vars["root"])
-    self.vars["window_handles"] = self.driver.window_handles
-    self.driver.find_element(By.CSS_SELECTOR, "#add_id_auths > img").click()
-    self.vars["win4212"] = self.wait_for_window(2000)
-    if self.vars["win4212"] in self.driver.window_handles:
-        self.driver.switch_to.window(self.vars["win4212"])
-    else:
-        print("La ventana no existe o ya ha sido cerrada.")
-    self.driver.find_element(By.ID, "id_url").click()
-    self.driver.find_element(By.ID, "id_url").click()
-    element = self.driver.find_element(By.ID, "id_url")
-    actions = ActionChains(self.driver)
-    actions.double_click(element).perform()
-    self.driver.find_element(By.ID, "id_url").send_keys("http://127.0.0.1:8000")
-    self.driver.find_element(By.ID, "id_name").click()
-    self.driver.find_element(By.ID, "id_name").click()
-    element = self.driver.find_element(By.ID, "id_name")
-    actions = ActionChains(self.driver)
-    actions.double_click(element).perform()
-    self.driver.find_element(By.ID, "id_name").send_keys("url")
-    self.driver.find_element(By.NAME, "_save").click()
-    self.driver.switch_to.window(self.vars["root"])
-    self.driver.find_element(By.NAME, "_save").click()
-    self.driver.find_element(By.LINK_TEXT, "Questions").click()
-    self.driver.find_element(By.LINK_TEXT, "pregunta").click()
-    self.driver.find_element(By.NAME, "_save").click()
-  
 
 class TestTestselenium1():
   def setUp(self):
     self.driver = webdriver.Chrome()
     self.vars = {}
-  
+    options = webdriver.ChromeOptions()
+    options.headless = True
+    self.driver = webdriver.Chrome(options=options)
+
   def tearDown(self):
     self.driver.quit()
   
@@ -208,6 +113,9 @@ class TestTestselenium2():
   def setUp(self):
     self.driver = webdriver.Chrome()
     self.vars = {}
+    options = webdriver.ChromeOptions()
+    options.headless = True
+    self.driver = webdriver.Chrome(options=options)
   
   def tearDown(self):
     self.driver.quit()
