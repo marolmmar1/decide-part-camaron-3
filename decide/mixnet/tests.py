@@ -144,7 +144,6 @@ class MixnetCase(APITestCase):
         shuffled = response.json()
 
         data = {"msgs": shuffled, "pk": key, "force-last": False}
-<<<<<<< HEAD
         clear1 = response.json()
         data = {"msgs": clear1, "pk": key}
         response = self.client.post('/mixnet/decrypt/2/', data, format='json')
