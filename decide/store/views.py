@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework import generics
 import os
-from django.shortcuts import redirect, render
+from django.shortcuts import render
 from django.conf import settings
 
 import subprocess
@@ -93,66 +93,103 @@ class StoreView(generics.ListAPIView):
 
         return Response({})
 
+
 def create_backup(request, backup_name=None):
     try:
         if not os.path.exists(settings.DATABASE_BACKUP_DIR):
             os.makedirs(settings.DATABASE_BACKUP_DIR)
         if backup_name:
             backup_path = os.path.join(settings.DATABASE_BACKUP_DIR, backup_name)
-            command = f'python manage.py dbbackup -O={backup_path}.psql.bin'
+            command = f"python manage.py dbbackup -O={backup_path}.psql.bin"
         else:
-            command = 'python manage.py dbbackup'
+            command = "python manage.py dbbackup"
 
         subprocess.run(command, shell=True, check=True)
-        messages.success(request, f'Backup "{backup_name}" created successfully.' if backup_name else 'Backup created successfully.')
+        messages.success(
+            request,
+            f'Backup "{backup_name}" created successfully.'
+            if backup_name
+            else "Backup created successfully.",
+        )
     except Exception as e:
         messages.error(request, f"Error creating backup: {e}")
 
     return HttpResponseRedirect(reverse("admin:store_vote_changelist"))
 
+
 def list_backups(request):
     backup_dir = settings.DATABASE_BACKUP_DIR
     backup_files = list(os.listdir(backup_dir))
 
-    return render(request, 'list_backups.html', {'backup_files': backup_files})
+    return render(request, "list_backups.html", {"backup_files": backup_files})
+
 
 def restore_backup(request):
-    if request.method == 'POST':
-        selected_backup = request.POST.get('selected_backup', '')
+    if request.method == "POST":
+        selected_backup = request.POST.get("selected_backup", "")
         try:
             backup_files = os.listdir(settings.DATABASE_BACKUP_DIR)
             if selected_backup in backup_files:
-                subprocess.run(['python', 'manage.py', 'dbrestore', '--noinput', '-i', selected_backup], check=True)
-                messages.success(request, f'Backup {selected_backup} restored successfully.')
+                subprocess.run(
+                    [
+                        "python",
+                        "manage.py",
+                        "dbrestore",
+                        "--noinput",
+                        "-i",
+                        selected_backup,
+                    ],
+                    check=True,
+                )
+                messages.success(
+                    request, f"Backup {selected_backup} restored successfully."
+                )
             else:
-                messages.error(request, f'Error restoring backup: Backup file not found')
-                return HttpResponseBadRequest(f'Error restoring backup: Backup file not found: {selected_backup}')
+                messages.error(
+                    request, f"Error restoring backup: Backup file not found"
+                )
+                return HttpResponseBadRequest(
+                    f"Error restoring backup: Backup file not found: {selected_backup}"
+                )
         except Exception as e:
-            messages.error(request, f'Error restoring backup: {e}')
-            return HttpResponseBadRequest(f'Error restoring backup: {e}')
+            messages.error(request, f"Error restoring backup: {e}")
+            return HttpResponseBadRequest(f"Error restoring backup: {e}")
 
     return HttpResponseRedirect(reverse("admin:store_vote_changelist"))
 
+
 def delete_backups(request):
-    backup_files = list(os.listdir(settings.DATABASE_BACKUP_DIR)) 
-    return render(request, 'delete_backups.html', {'backups': backup_files})
+    backup_files = list(os.listdir(settings.DATABASE_BACKUP_DIR))
+    return render(request, "delete_backups.html", {"backups": backup_files})
+
 
 def delete_selected_backup(request, selected_backup):
-    if request.method == 'POST':
-        selected_backup = request.POST.get('selected_backup', None)
+    if request.method == "POST":
+        selected_backup = request.POST.get("selected_backup", None)
         if selected_backup:
             backup_path = os.path.join(settings.DATABASE_BACKUP_DIR, selected_backup)
-            if os.path.exists(backup_path) and backup_path.endswith(".psql.bin") and not ".." in backup_path:
+            if (
+                os.path.exists(backup_path)
+                and backup_path.endswith(".psql.bin")
+                and not ".." in backup_path
+            ):
                 os.remove(backup_path)
-                messages.success(request, f'Backup "{selected_backup}" deleted successfully.')
+                messages.success(
+                    request, f'Backup "{selected_backup}" deleted successfully.'
+                )
             else:
-                messages.error(request, 'Error deleting backup: Backup file not found')
-                return HttpResponseBadRequest(f'Error deleting backup: Backup file not found: {selected_backup}')     
+                messages.error(request, "Error deleting backup: Backup file not found")
+                return HttpResponseBadRequest(
+                    f"Error deleting backup: Backup file not found: {selected_backup}"
+                )
         else:
-            messages.error(request, 'No backup selected for deletion.')
-        return HttpResponseRedirect(reverse('store:delete_backups'))
+            messages.error(request, "No backup selected for deletion.")
+        return HttpResponseRedirect(reverse("store:delete_backups"))
     else:
-        return render(request, 'confirm_delete.html', {'selected_backup': selected_backup})
+        return render(
+            request, "confirm_delete.html", {"selected_backup": selected_backup}
+        )
+
 
 class VoteHistoryView(generics.ListAPIView):
     serializer_class = VoteSerializer
