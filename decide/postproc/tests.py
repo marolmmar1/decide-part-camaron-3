@@ -34,7 +34,6 @@ from django.conf import settings
 
 
 class PostProcTestCase(BaseTestCase):
-
     def setUp(self):
         self.client = APIClient()
         mods.mock_query(self.client)
@@ -56,14 +55,14 @@ class PostProcTestCase(BaseTestCase):
         q.save()
         for i in range(5):
             opt = QuestionOption(
-                question=q, option='option {}'.format(i+1), number=i+2)
+                    question=q, option='option {}'.format(i+1), number=i+2)
             opt.save()
         v = Voting(name='test voting', question=q,
-                   postproc_type=postproc, voting_type=type)
+                       postproc_type=postproc, voting_type=type)
         v.save()
 
         a, _ = Auth.objects.get_or_create(url=settings.BASEURL, defaults={
-                                          'me': True, 'name': 'test auth'})
+                                              'me': True, 'name': 'test auth'})
         a.save()
         v.auths.add(a)
 
@@ -71,7 +70,8 @@ class PostProcTestCase(BaseTestCase):
 
     def create_voters(self, v):
         for i in range(100):
-            u, _ = User.objects.get_or_create(username='testvoter{}'.format(i))
+            u, _ = User.objects.get_or_create(
+                    username='testvoter{}'.format(i))
             u.is_active = True
             u.save()
             c = Census(voter_id=u.id, voting_id=v.id)
@@ -117,12 +117,10 @@ class PostProcTestCase(BaseTestCase):
 
         self.login()  # set token
         v.tally_votes(self.token)
-
         postproc = PostProcessing.objects.get(voting=v)
-        postproc.do(v.postproc, v.seats)
 
         dhont = postproc.results
-        
+
         print(dhont)
 
         expected = [{'dhont': [{'seat': 1, 'percentaje': 5.0}, {'seat': 2, 'percentaje': 2.5}, {'seat': 3, 'percentaje': 1.6667}, {'seat': 4, 'percentaje': 1.25}, {'seat': 5, 'percentaje': 1.0}, {'seat': 6, 'percentaje': 0.8333}, {'seat': 7, 'percentaje': 0.7143}, {'seat': 8, 'percentaje': 0.625}, {'seat': 9, 'percentaje': 0.5556}, {'seat': 10, 'percentaje': 0.5}]}, {'dhont': [{'seat': 1, 'percentaje': 5.0}, {'seat': 2, 'percentaje': 2.5}, {'seat': 3, 'percentaje': 1.6667}, {'seat': 4, 'percentaje': 1.25}, {'seat': 5, 'percentaje': 1.0}, {'seat': 6, 'percentaje': 0.8333}, {'seat': 7, 'percentaje': 0.7143}, {'seat': 8, 'percentaje': 0.625}, {'seat': 9, 'percentaje': 0.5556}, {'seat': 10, 'percentaje': 0.5}]}, {'dhont': [{'seat': 1, 'percentaje': 5.0}, {'seat': 2, 'percentaje': 2.5}, {'seat': 3, 'percentaje': 1.6667}, {'seat': 4, 'percentaje': 1.25}, {'seat': 5, 'percentaje': 1.0}, {
@@ -340,7 +338,7 @@ class TestSimulaciondhontFallido(StaticLiveServerTestCase):
             By.CSS_SELECTOR, "option:nth-child(3)").click()
         self.driver.find_element(By.NAME, "index").click()
         sleep(8)
-        self.driver.get(f'{self.live_server_url}/booth/1')
+        self.driver.get(f'{self.live_server_url}/booth/2')
         sleep(5)
         self.driver.find_element(
             By.CSS_SELECTOR, ".navbar-toggler-icon").click()
