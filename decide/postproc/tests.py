@@ -1,27 +1,15 @@
 from django.utils import timezone
 from rest_framework.test import APIClient
 from base.tests import BaseTestCase
-import itertools
-import random
-import json
-from django.core.serializers import serialize
-from django.db.models import JSONField
-from django.core.serializers.json import DjangoJSONEncoder
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.core.exceptions import ValidationError
-import pytest
 import time
-import json
 
 from time import sleep
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.support import expected_conditions
-from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 from base import mods
 from django.contrib.auth.models import User, Permission
@@ -217,7 +205,6 @@ class PostProcTestCase(BaseTestCase):
         else:
             self.fail("Se esperaba una excepción ValidationError, pero no se lanzó")
 
-
     def test_droop_wikipedia_example(self):
         # validating the functionality of the function using the wikipedia example
         test = [
@@ -412,11 +399,10 @@ class PostProcTestsSaintLague(BaseTestCase):
                 "Las técnicas de postprocesado no se pueden aplicar a votaciones no Simples",
             )
         else:
-            self.fail(
-                "Se esperaba una excepción ValidationError, pero no se lanzó")
+            self.fail("Se esperaba una excepción ValidationError, pero no se lanzó")
+
 
 class TestSimulaciondhontFallido(StaticLiveServerTestCase):
-
     def setUp(self):
         self.base = BaseTestCase()
         self.base.setUp()
@@ -424,8 +410,8 @@ class TestSimulaciondhontFallido(StaticLiveServerTestCase):
         options.headless = False
         self.vars = {}
         self.driver = webdriver.Chrome(options=options)
-        user_admin = User(username='adminB', is_staff=True, is_superuser=True)
-        user_admin.set_password('qwertyA')
+        user_admin = User(username="adminB", is_staff=True, is_superuser=True)
+        user_admin.set_password("qwertyA")
         user_admin.save()
         todos_los_permisos = Permission.objects.all()
         user_admin.user_permissions.add(*todos_los_permisos)
@@ -446,13 +432,12 @@ class TestSimulaciondhontFallido(StaticLiveServerTestCase):
             return set(wh_now).difference(set(wh_then)).pop()
 
     def test_simulaciondhont(self):
-        self.driver.get(f'{self.live_server_url}/admin/')
+        self.driver.get(f"{self.live_server_url}/admin/")
         self.driver.set_window_size(1348, 696)
         self.driver.find_element(By.ID, "id_username").click()
         self.driver.find_element(By.ID, "id_username").send_keys("adminB")
         self.driver.find_element(By.ID, "id_password").send_keys("qwertyA")
-        self.driver.find_element(
-            By.CSS_SELECTOR, ".submit-row > input").click()
+        self.driver.find_element(By.CSS_SELECTOR, ".submit-row > input").click()
         self.driver.find_element(By.CSS_SELECTOR, ".content").click()
         self.driver.find_element(By.CSS_SELECTOR, ".model-voting > th").click()
         self.driver.find_element(By.LINK_TEXT, "Votings").click()
@@ -461,7 +446,8 @@ class TestSimulaciondhontFallido(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "id_name").send_keys("Dhont")
         self.driver.find_element(By.ID, "id_desc").click()
         self.driver.find_element(By.ID, "id_desc").send_keys(
-            "Testing con Dhont 3 opciones Si, No, Depende")
+            "Testing con Dhont 3 opciones Si, No, Depende"
+        )
         self.driver.find_element(By.ID, "id_voting_type").click()
         self.driver.find_element(By.ID, "id_question").click()
         self.vars["window_handles"] = self.driver.window_handles
@@ -472,9 +458,11 @@ class TestSimulaciondhontFallido(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "id_desc").click()
         self.driver.find_element(By.ID, "id_desc").send_keys("Funcionará?")
         self.driver.find_element(
-            By.CSS_SELECTOR, ".field-optionSiNo .vCheckboxLabel").click()
+            By.CSS_SELECTOR, ".field-optionSiNo .vCheckboxLabel"
+        ).click()
         self.driver.find_element(
-            By.CSS_SELECTOR, ".field-third_option > .checkbox-row").click()
+            By.CSS_SELECTOR, ".field-third_option > .checkbox-row"
+        ).click()
         self.driver.find_element(By.ID, "id_third_option").click()
         self.driver.find_element(By.NAME, "_save").click()
         self.driver.switch_to.window(self.vars["root"])
@@ -482,40 +470,37 @@ class TestSimulaciondhontFallido(StaticLiveServerTestCase):
         dropdown = self.driver.find_element(By.ID, "id_postproc_type")
         dropdown.find_element(By.XPATH, "//option[. = 'DHONDT']").click()
         self.driver.find_element(
-            By.CSS_SELECTOR, "#id_postproc_type > option:nth-child(3)").click()
+            By.CSS_SELECTOR, "#id_postproc_type > option:nth-child(3)"
+        ).click()
         self.vars["window_handles"] = self.driver.window_handles
-        self.driver.find_element(
-            By.CSS_SELECTOR, "#add_id_auths > img").click()
+        self.driver.find_element(By.CSS_SELECTOR, "#add_id_auths > img").click()
         self.vars["win6358"] = self.wait_for_window(2000)
         self.driver.switch_to.window(self.vars["win6358"])
         self.driver.find_element(By.ID, "id_name").click()
         self.driver.find_element(By.ID, "id_name").send_keys("perico")
         self.driver.find_element(By.ID, "id_url").send_keys(Keys.DOWN)
-        self.driver.find_element(By.ID, "id_url").send_keys(
-            "http://localhost:8000")
+        self.driver.find_element(By.ID, "id_url").send_keys("http://localhost:8000")
         self.driver.find_element(By.ID, "id_me").click()
         self.driver.find_element(By.NAME, "_save").click()
         self.driver.switch_to.window(self.vars["root"])
         self.driver.find_element(By.ID, "id_seats").click()
         self.driver.find_element(By.ID, "id_seats").send_keys("15")
         self.driver.find_element(By.NAME, "_save").click()
-        self.driver.get(f'{self.live_server_url}/admin/census/census/')
+        self.driver.get(f"{self.live_server_url}/admin/census/census/")
         self.driver.find_element(By.CSS_SELECTOR, "li > .addlink").click()
         self.driver.find_element(By.ID, "id_voting_id").send_keys("1")
         self.driver.find_element(By.ID, "id_voter_id").send_keys(self.id)
         self.driver.find_element(By.NAME, "_save").click()
-        self.driver.get(f'{self.live_server_url}/admin/voting/voting/')
+        self.driver.get(f"{self.live_server_url}/admin/voting/voting/")
         self.driver.find_element(By.NAME, "_selected_action").click()
         dropdown = self.driver.find_element(By.NAME, "action")
         dropdown.find_element(By.XPATH, "//option[. = 'Start']").click()
-        self.driver.find_element(
-            By.CSS_SELECTOR, "option:nth-child(3)").click()
+        self.driver.find_element(By.CSS_SELECTOR, "option:nth-child(3)").click()
         self.driver.find_element(By.NAME, "index").click()
         sleep(8)
-        self.driver.get(f'{self.live_server_url}/booth/4')
+        self.driver.get(f"{self.live_server_url}/booth/4")
         sleep(5)
-        self.driver.find_element(
-            By.CSS_SELECTOR, ".navbar-toggler-icon").click()
+        self.driver.find_element(By.CSS_SELECTOR, ".navbar-toggler-icon").click()
         sleep(3)
         self.driver.find_element(By.CSS_SELECTOR, ".btn-secondary").click()
         sleep(3)
@@ -529,11 +514,12 @@ class TestSimulaciondhontFallido(StaticLiveServerTestCase):
         sleep(2)
         alert_element = self.driver.find_element(By.CLASS_NAME, "alert-danger")
         div_contenido = alert_element.find_element(By.XPATH, ".//div").text
-        self.assertEquals(div_contenido, "Error: Unauthorized",
-                          "Usuario no Autenticado")
+        self.assertEquals(
+            div_contenido, "Error: Unauthorized", "Usuario no Autenticado"
+        )
 
     def test_testerror(self):
-        self.driver.get(f'{self.live_server_url}/admin/')
+        self.driver.get(f"{self.live_server_url}/admin/")
         self.driver.set_window_size(1348, 696)
         self.driver.find_element(By.ID, "id_username").click()
         self.driver.find_element(By.ID, "id_username").send_keys("adminB")
@@ -547,12 +533,16 @@ class TestSimulaciondhontFallido(StaticLiveServerTestCase):
         dropdown = self.driver.find_element(By.ID, "id_postproc_type")
         dropdown.find_element(By.XPATH, "//option[. = 'DHONDT']").click()
         sleep(2)
-        self.driver.find_element(By.CSS_SELECTOR, "#id_postproc_type > option:nth-child(2)").click()
+        self.driver.find_element(
+            By.CSS_SELECTOR, "#id_postproc_type > option:nth-child(2)"
+        ).click()
         self.driver.find_element(By.CSS_SELECTOR, ".field-voting_type > div").click()
         self.driver.find_element(By.ID, "id_voting_type").click()
         dropdown = self.driver.find_element(By.ID, "id_voting_type")
         dropdown.find_element(By.XPATH, "//option[. = 'Multiple Choice']").click()
-        self.driver.find_element(By.CSS_SELECTOR, "#id_voting_type > option:nth-child(2)").click()
+        self.driver.find_element(
+            By.CSS_SELECTOR, "#id_voting_type > option:nth-child(2)"
+        ).click()
         self.vars["window_handles"] = self.driver.window_handles
         self.driver.find_element(By.CSS_SELECTOR, "#add_id_auths > img").click()
         self.vars["win9368"] = self.wait_for_window(2000)
@@ -580,6 +570,9 @@ class TestSimulaciondhontFallido(StaticLiveServerTestCase):
         self.driver.find_element(By.NAME, "_save").click()
         self.driver.switch_to.window(self.vars["root"])
         self.driver.find_element(By.NAME, "_save").click()
-        
+
         sleep(3)
-        assert "validationerror" in self.driver.page_source or "500" in self.driver.page_source
+        assert (
+            "validationerror" in self.driver.page_source
+            or "500" in self.driver.page_source
+        )
