@@ -14,7 +14,6 @@ from django.conf import settings
 
 
 class PostProcTestCase(BaseTestCase):
-
     def setUp(self):
         self.client = APIClient()
         mods.mock_query(self.client)
@@ -32,18 +31,21 @@ class PostProcTestCase(BaseTestCase):
         return k.encrypt(msg)
 
     def create_voting(self, postproc, type):
-        q = Question(desc='test question')
+        q = Question(desc="test question")
         q.save()
         for i in range(5):
             opt = QuestionOption(
-                question=q, option='option {}'.format(i+1), number=i+2)
+                question=q, option="option {}".format(i + 1), number=i + 2
+            )
             opt.save()
-        v = Voting(name='test voting', question=q,
-                   postproc_type=postproc, voting_type=type)
+        v = Voting(
+            name="test voting", question=q, postproc_type=postproc, voting_type=type
+        )
         v.save()
 
-        a, _ = Auth.objects.get_or_create(url=settings.BASEURL, defaults={
-                                          'me': True, 'name': 'test auth'})
+        a, _ = Auth.objects.get_or_create(
+            url=settings.BASEURL, defaults={"me": True, "name": "test auth"}
+        )
         a.save()
         v.auths.add(a)
 
@@ -51,7 +53,7 @@ class PostProcTestCase(BaseTestCase):
 
     def create_voters(self, v):
         for i in range(100):
-            u, _ = User.objects.get_or_create(username='testvoter{}'.format(i))
+            u, _ = User.objects.get_or_create(username="testvoter{}".format(i))
             u.is_active = True
             u.save()
             c = Census(voter_id=u.id, voting_id=v.id)
@@ -59,8 +61,8 @@ class PostProcTestCase(BaseTestCase):
 
     def get_or_create_user(self, pk):
         user, _ = User.objects.get_or_create(pk=pk)
-        user.username = 'user{}'.format(pk)
-        user.set_password('qwerty')
+        user.username = "user{}".format(pk)
+        user.set_password("qwerty")
         user.save()
         return user
 
@@ -74,15 +76,15 @@ class PostProcTestCase(BaseTestCase):
             for i in range(5):
                 a, b = self.encrypt_msg(opt.number, v)
                 data = {
-                    'voting': v.id,
-                    'voter': voter.voter_id,
-                    'vote': {'a': a, 'b': b},
+                    "voting": v.id,
+                    "voter": voter.voter_id,
+                    "vote": {"a": a, "b": b},
                 }
                 clear[opt.number] += 1
                 user = self.get_or_create_user(voter.voter_id)
                 self.login(user=user.username)
                 voter = voters.pop()
-                mods.post('store', json=data)
+                mods.post("store", json=data)
         return clear
 
     # def test_correct_postproc(self):
@@ -124,85 +126,22 @@ class PostProcTestCase(BaseTestCase):
     def test_droop_wikipedia_example(self):
         # validating the functionality of the function using the wikipedia example
         test = [
-            {
-                "option": "Partido A",
-                "number": 1,
-                "votes": 391000
-            },
-            {
-                "option": "Partido B",
-                "number": 2,
-                "votes": 311000
-            },
-            {
-                "option": "Partido C",
-                "number": 3,
-                "votes": 184000
-            },
-            {
-                "option": "Partido D",
-                "number": 4,
-                "votes": 73000
-            },
-            {
-                "option": "Partido E",
-                "number": 5,
-                "votes": 27000
-            },
-            {
-                "option": "Partido F",
-                "number": 6,
-                "votes": 12000
-            },
-            {
-                "option": "Partido G",
-                "number": 7,
-                "votes": 2000
-            }
+            {"option": "Partido A", "number": 1, "votes": 391000},
+            {"option": "Partido B", "number": 2, "votes": 311000},
+            {"option": "Partido C", "number": 3, "votes": 184000},
+            {"option": "Partido D", "number": 4, "votes": 73000},
+            {"option": "Partido E", "number": 5, "votes": 27000},
+            {"option": "Partido F", "number": 6, "votes": 12000},
+            {"option": "Partido G", "number": 7, "votes": 2000},
         ]
         expected_result = [
-            {
-                'option': 'Partido A',
-                'number': 1,
-                'votes': 391000,
-                'droop': 8
-            },
-            {
-                'option': 'Partido B',
-                'number': 2,
-                'votes': 311000,
-                'droop': 7
-            },
-            {
-                'option': 'Partido C',
-                'number': 3,
-                'votes': 184000,
-                'droop': 4
-            },
-            {
-                'option': 'Partido D',
-                'number': 4,
-                'votes': 73000,
-                'droop': 2
-            },
-            {
-                'option': 'Partido E',
-                'number': 5,
-                'votes': 27000,
-                'droop': 0
-            },
-            {
-                'option': 'Partido F',
-                'number': 6,
-                'votes': 12000,
-                'droop': 0
-            },
-            {
-                'option': 'Partido G',
-                'number': 7,
-                'votes': 2000,
-                'droop': 0
-            }
+            {"option": "Partido A", "number": 1, "votes": 391000, "droop": 8},
+            {"option": "Partido B", "number": 2, "votes": 311000, "droop": 7},
+            {"option": "Partido C", "number": 3, "votes": 184000, "droop": 4},
+            {"option": "Partido D", "number": 4, "votes": 73000, "droop": 2},
+            {"option": "Partido E", "number": 5, "votes": 27000, "droop": 0},
+            {"option": "Partido F", "number": 6, "votes": 12000, "droop": 0},
+            {"option": "Partido G", "number": 7, "votes": 2000, "droop": 0},
         ]
         seats = 21
         droop = PostProcessing.droop(None, opts=test, total_seats=seats)
@@ -295,13 +234,13 @@ class PostProcTestsSaintLague(BaseTestCase):
 
         self.assertEqual(len(opts), len(instance.results))
 
-        total_seats_assigned = sum(option["saintLague"]
-                                   for option in instance.results)
+        total_seats_assigned = sum(option["saintLague"] for option in instance.results)
         self.assertEqual(total_seats, total_seats_assigned)
 
         for option in instance.results:
             expected_seats = round(
-                (option["votes"] / sum(o["votes"] for o in opts)) * total_seats)
+                (option["votes"] / sum(o["votes"] for o in opts)) * total_seats
+            )
             self.assertEqual(option["saintLague"], expected_seats)
 
     def test_correct_postproc_saint_lague(self):
@@ -320,14 +259,13 @@ class PostProcTestsSaintLague(BaseTestCase):
         postproc = PostProcessing.objects.get(voting=v)
 
         saint_lague = postproc.results
-        results_expected = [{'option': 'option 1', 'number': 2, 'votes': 5, 'saintLague': 2},
-                            {'option': 'option 2', 'number': 3,
-                                'votes': 5, 'saintLague': 2},
-                            {'option': 'option 3', 'number': 4,
-                                'votes': 5, 'saintLague': 2},
-                            {'option': 'option 4', 'number': 5,
-                                'votes': 5, 'saintLague': 2},
-                            {'option': 'option 5', 'number': 6, 'votes': 5, 'saintLague': 2}]
+        results_expected = [
+            {"option": "option 1", "number": 2, "votes": 5, "saintLague": 2},
+            {"option": "option 2", "number": 3, "votes": 5, "saintLague": 2},
+            {"option": "option 3", "number": 4, "votes": 5, "saintLague": 2},
+            {"option": "option 4", "number": 5, "votes": 5, "saintLague": 2},
+            {"option": "option 5", "number": 6, "votes": 5, "saintLague": 2},
+        ]
 
         self.assertEqual(saint_lague, results_expected)
 
@@ -340,5 +278,4 @@ class PostProcTestsSaintLague(BaseTestCase):
                 "Las técnicas de postprocesado no se pueden aplicar a votaciones no Simples",
             )
         else:
-            self.fail(
-                "Se esperaba una excepción ValidationError, pero no se lanzó")
+            self.fail("Se esperaba una excepción ValidationError, pero no se lanzó")
