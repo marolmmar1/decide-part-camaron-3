@@ -38,7 +38,9 @@ class PostProcView(APIView):
 
         postproc.do(opts, total_seats)
 
+        results = {"type_postproc": postproc.type, "results": postproc.results}
+
         if not postproc.results:
             return Response({}, status=400)
         else:
-            return Response(postproc.results)
+            return Response(results)

@@ -229,7 +229,7 @@ class Voting(models.Model):
 
         total_seats = self.seats
 
-        data = {'type': 'IDENTITY', 'options': opts, 'voting_id': self.id,
+        data = {'options': opts, 'voting_id': self.id,
                 'question_id': self.question.id, 'total_seats': self.seats, 'type': self.postproc_type}
 
         response = mods.post('postproc', json=data)
@@ -242,5 +242,6 @@ class Voting(models.Model):
 
     def save(self, *args, **kwargs):
         if self.voting_type != 'S' and self.postproc_type != 'NON':
-            raise ValidationError("Las técnicas de postprocesado no se pueden aplicar a votaciones no Simples")
+            raise ValidationError(
+                "Las técnicas de postprocesado no se pueden aplicar a votaciones no Simples")
         super().save(*args, **kwargs)
