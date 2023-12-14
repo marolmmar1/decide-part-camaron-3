@@ -18,19 +18,16 @@ from mixnet.models import Key
 from voting.models import Question
 from voting.models import Voting
 
-<<<<<<< HEAD
 from channels.testing import WebsocketCommunicator
 from channels.routing import URLRouter
 from django.urls import re_path
 from .consumers import VoteConsumer
 from channels.layers import get_channel_layer
-=======
 from django.conf import settings
 from django.test import Client
 import os
 from django.db import transaction
 from rest_framework.authtoken.models import Token
->>>>>>> backup
 
 
 class StoreTextCase(BaseTestCase):
