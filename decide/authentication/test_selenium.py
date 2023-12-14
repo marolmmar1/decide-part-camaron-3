@@ -3,7 +3,6 @@ from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 
 from voting.models import Voting, Question
 
-from base.tests import BaseTestCase
 import time
 
 from selenium import webdriver

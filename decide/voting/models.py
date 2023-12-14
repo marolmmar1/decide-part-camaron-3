@@ -4,7 +4,6 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
-from django.utils.translation import gettext_lazy as _
 from base import mods
 from base.models import Auth, Key
 
@@ -244,8 +243,6 @@ class Voting(models.Model):
             else:
                 votes = 0
             opts.append({"option": opt.option, "number": opt.number, "votes": votes})
-
-        self.seats
 
         data = {
             "options": opts,

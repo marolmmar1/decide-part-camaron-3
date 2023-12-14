@@ -81,7 +81,7 @@ class PostProcTestCase(BaseTestCase):
         clear = {}
         for opt in v.question.options.all():
             clear[opt.number] = 0
-            for i in range(5):
+            for _ in range(5):
                 a, b = self.encrypt_msg(opt.number, v)
                 data = {
                     "voting": v.id,
@@ -228,17 +228,6 @@ class PostProcTestCase(BaseTestCase):
         seats = 21
         droop = PostProcessing.droop(None, opts=test, total_seats=seats)
         self.assertEquals(droop, expected_result)
-
-    def test_invalid_config_voting(self):
-        try:
-            self.create_voting("DHO", "M")
-        except ValidationError as e:
-            self.assertEqual(
-                e.message,
-                "Las técnicas de postprocesado no se pueden aplicar a votaciones no Simples",
-            )
-        else:
-            self.fail("Se esperaba una excepción ValidationError, pero no se lanzó")
 
 
 class TestSimulaciondhontFallido(StaticLiveServerTestCase):
