@@ -3,6 +3,7 @@ from django.db import models
 from voting.models import Voting, Question
 from django.utils.translation import gettext_lazy as _
 import copy
+import math
 from django.utils import timezone
 
 
@@ -12,6 +13,7 @@ class PostProcessing(models.Model):
         BORDA = "BOR", _("BORDA")
         DHONDT = "DHO", _("DHONDT")
         SAINT = "PAR", _("SAINT")
+        DROOP = "DRO", _("DROOP")
     voting = models.ForeignKey(Voting, null=True, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, null=True, on_delete=models.CASCADE)
     type = models.CharField(
@@ -71,6 +73,33 @@ class PostProcessing(models.Model):
             option["borda"] = borda
         self.results = opts
         self.save()
+
+    def droop(self, opts, total_seats):
+        n = total_seats
+        m = sum([option["votes"] for option in opts])
+        q = 1 + (m / (n + 1))
+        droop = {}
+        seats_oc = 0
+        for option in opts:
+            droop_option = {}
+            ei = math.floor(option["votes"] / q)
+            seats_oc += ei
+            ri = option["votes"] - q*ei
+            droop_option["ei"] = ei
+            droop_option["ri"] = ri
+            droop[option["option"]] = droop_option
+            option['droop'] = ei  
+        residual = n - seats_oc
+        best_ri = sorted(droop.items(), key=lambda x: x[1]["ri"], reverse=True)[:residual]
+        best_options = [option[0] for option in best_ri]
+        for option in opts:
+            if option["option"] in best_options:
+                option['droop'] += 1 
+        if self != None:
+            self.results = opts
+            self.save()
+        return opts
+
 
     def do(self, opts, total_seats):
         self.start_date = timezone.now()

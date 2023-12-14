@@ -19,6 +19,7 @@ class Type(models.TextChoices):
     BORDA = "BOR", _("BORDA")
     DHONDT = "DHO", _("DHONDT")
     SAINT = "PAR", _("SAINT")
+    DROOP = "DRO", _("DROOP")
 
 
 class Question(models.Model):
