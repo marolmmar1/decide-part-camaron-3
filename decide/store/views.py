@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework import generics
 import os
-from django.shortcuts import redirect, render
+from django.shortcuts import render
 from django.conf import settings
 
 import subprocess
@@ -24,7 +24,7 @@ class StoreView(generics.ListAPIView):
     queryset = Vote.objects.all()
     serializer_class = VoteSerializer
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
-    filterset_fields = ('voting_id', 'voter_id')
+    filterset_fields = ("voting_id", "voter_id")
 
     def get(self, request):
         self.permission_classes = (UserIsStaff,)
@@ -33,19 +33,19 @@ class StoreView(generics.ListAPIView):
 
     def post(self, request):
         """
-         * voting: id
-         * voter: id
-         * vote: { "a": int, "b": int }
+        * voting: id
+        * voter: id
+        * vote: { "a": int, "b": int }
         """
 
-        vid = request.data.get('voting')
-        voting = mods.get('voting', params={'id': vid})
+        vid = request.data.get("voting")
+        voting = mods.get("voting", params={"id": vid})
         if not voting or not isinstance(voting, list):
             # print("por aqui 35")
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
-        start_date = voting[0].get('start_date', None)
+        start_date = voting[0].get("start_date", None)
         # print ("Start date: "+  start_date)
-        end_date = voting[0].get('end_date', None)
+        end_date = voting[0].get("end_date", None)
         # print ("End date: ", end_date)
         not_started = not start_date or timezone.now() < parse_datetime(start_date)
         # print (not_started)
@@ -54,8 +54,8 @@ class StoreView(generics.ListAPIView):
             # print("por aqui 42")
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
 
-        uid = request.data.get('voter')
-        vote = request.data.get('vote')
+        uid = request.data.get("voter")
+        vote = request.data.get("vote")
 
         if not vid or not uid or not vote:
             return Response({}, status=status.HTTP_400_BAD_REQUEST)
@@ -65,16 +65,18 @@ class StoreView(generics.ListAPIView):
             token = request.auth.key
         else:
             token = "NO-AUTH-VOTE"
-        voter = mods.post('authentication',
-                          entry_point='/getuser/', json={'token': token})
-        voter_id = voter.get('id', None)
+        voter = mods.post(
+            "authentication", entry_point="/getuser/", json={"token": token}
+        )
+        voter_id = voter.get("id", None)
         if not voter_id or voter_id != uid:
             # print("por aqui 59")
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
 
         # the user is in the census
-        perms = mods.get('census/{}'.format(vid),
-                         params={'voter_id': uid}, response=True)
+        perms = mods.get(
+            "census/{}".format(vid), params={"voter_id": uid}, response=True
+        )
         if perms.status_code == 401:
             # print("por aqui 65")
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
@@ -83,8 +85,7 @@ class StoreView(generics.ListAPIView):
         b = vote.get("b")
 
         defs = {"a": a, "b": b}
-        v, _ = Vote.objects.get_or_create(voting_id=vid, voter_id=uid,
-                                          defaults=defs)
+        v, _ = Vote.objects.get_or_create(voting_id=vid, voter_id=uid, defaults=defs)
         v.a = a
         v.b = b
 
@@ -92,66 +93,103 @@ class StoreView(generics.ListAPIView):
 
         return Response({})
 
+
 def create_backup(request, backup_name=None):
     try:
         if not os.path.exists(settings.DATABASE_BACKUP_DIR):
             os.makedirs(settings.DATABASE_BACKUP_DIR)
         if backup_name:
             backup_path = os.path.join(settings.DATABASE_BACKUP_DIR, backup_name)
-            command = f'python manage.py dbbackup -O={backup_path}.psql.bin'
+            command = f"python manage.py dbbackup -O={backup_path}.psql.bin"
         else:
-            command = 'python manage.py dbbackup'
+            command = "python manage.py dbbackup"
 
         subprocess.run(command, shell=True, check=True)
-        messages.success(request, f'Backup "{backup_name}" created successfully.' if backup_name else 'Backup created successfully.')
+        messages.success(
+            request,
+            f'Backup "{backup_name}" created successfully.'
+            if backup_name
+            else "Backup created successfully.",
+        )
     except Exception as e:
-        messages.error(request, f'Error creating backup: {e}')
+        messages.error(request, f"Error creating backup: {e}")
 
-    return HttpResponseRedirect(reverse('admin:store_vote_changelist'))
+    return HttpResponseRedirect(reverse("admin:store_vote_changelist"))
+
 
 def list_backups(request):
     backup_dir = settings.DATABASE_BACKUP_DIR
     backup_files = list(os.listdir(backup_dir))
 
-    return render(request, 'list_backups.html', {'backup_files': backup_files})
+    return render(request, "list_backups.html", {"backup_files": backup_files})
+
 
 def restore_backup(request):
-    if request.method == 'POST':
-        selected_backup = request.POST.get('selected_backup', '')
+    if request.method == "POST":
+        selected_backup = request.POST.get("selected_backup", "")
         try:
             backup_files = os.listdir(settings.DATABASE_BACKUP_DIR)
             if selected_backup in backup_files:
-                subprocess.run(['python', 'manage.py', 'dbrestore', '--noinput', '-i', selected_backup], check=True)
-                messages.success(request, f'Backup {selected_backup} restored successfully.')
+                subprocess.run(
+                    [
+                        "python",
+                        "manage.py",
+                        "dbrestore",
+                        "--noinput",
+                        "-i",
+                        selected_backup,
+                    ],
+                    check=True,
+                )
+                messages.success(
+                    request, f"Backup {selected_backup} restored successfully."
+                )
             else:
-                messages.error(request, f'Error restoring backup: Backup file not found')
-                return HttpResponseBadRequest(f'Error restoring backup: Backup file not found: {selected_backup}')
+                messages.error(
+                    request, f"Error restoring backup: Backup file not found"
+                )
+                return HttpResponseBadRequest(
+                    f"Error restoring backup: Backup file not found: {selected_backup}"
+                )
         except Exception as e:
-            messages.error(request, f'Error restoring backup: {e}')
-            return HttpResponseBadRequest(f'Error restoring backup: {e}')
+            messages.error(request, f"Error restoring backup: {e}")
+            return HttpResponseBadRequest(f"Error restoring backup: {e}")
 
-    return HttpResponseRedirect(reverse('admin:store_vote_changelist'))
+    return HttpResponseRedirect(reverse("admin:store_vote_changelist"))
+
 
 def delete_backups(request):
-    backup_files = list(os.listdir(settings.DATABASE_BACKUP_DIR)) 
-    return render(request, 'delete_backups.html', {'backups': backup_files})
+    backup_files = list(os.listdir(settings.DATABASE_BACKUP_DIR))
+    return render(request, "delete_backups.html", {"backups": backup_files})
+
 
 def delete_selected_backup(request, selected_backup):
-    if request.method == 'POST':
-        selected_backup = request.POST.get('selected_backup', None)
+    if request.method == "POST":
+        selected_backup = request.POST.get("selected_backup", None)
         if selected_backup:
             backup_path = os.path.join(settings.DATABASE_BACKUP_DIR, selected_backup)
-            if os.path.exists(backup_path) and backup_path.endswith(".psql.bin") and not ".." in backup_path:
+            if (
+                os.path.exists(backup_path)
+                and backup_path.endswith(".psql.bin")
+                and not ".." in backup_path
+            ):
                 os.remove(backup_path)
-                messages.success(request, f'Backup "{selected_backup}" deleted successfully.')
+                messages.success(
+                    request, f'Backup "{selected_backup}" deleted successfully.'
+                )
             else:
-                messages.error(request, 'Error deleting backup: Backup file not found')
-                return HttpResponseBadRequest(f'Error deleting backup: Backup file not found: {selected_backup}')     
+                messages.error(request, "Error deleting backup: Backup file not found")
+                return HttpResponseBadRequest(
+                    f"Error deleting backup: Backup file not found: {selected_backup}"
+                )
         else:
-            messages.error(request, 'No backup selected for deletion.')
-        return HttpResponseRedirect(reverse('store:delete_backups'))
+            messages.error(request, "No backup selected for deletion.")
+        return HttpResponseRedirect(reverse("store:delete_backups"))
     else:
-        return render(request, 'confirm_delete.html', {'selected_backup': selected_backup})
+        return render(
+            request, "confirm_delete.html", {"selected_backup": selected_backup}
+        )
+
 
 class VoteHistoryView(generics.ListAPIView):
     serializer_class = VoteSerializer
@@ -160,4 +198,4 @@ class VoteHistoryView(generics.ListAPIView):
     def get_queryset(self):
         # Filtra los votos del usuario actual
         user = self.request.user
-        return Vote.objects.filter(voter_id=user.id).order_by('-voted')
+        return Vote.objects.filter(voter_id=user.id).order_by("-voted")
