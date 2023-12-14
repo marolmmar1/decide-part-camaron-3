@@ -19,7 +19,7 @@ from django.urls import path, include
 from rest_framework_swagger.views import get_swagger_view
 from voting import views
 
-schema_view = get_swagger_view(title='Decide API')
+schema_view = get_swagger_view(title="Decide API")
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -32,6 +32,4 @@ from store import views
 urlpatterns += [path('history/', views.VoteHistoryView.as_view())]
 
 for module in settings.MODULES:
-    urlpatterns += [
-        path('{}/'.format(module), include('{}.urls'.format(module)))
-    ]
+    urlpatterns += [path("{}/".format(module), include("{}.urls".format(module)))]

@@ -23,7 +23,7 @@ class PostProcessing(models.Model):
     results = models.JSONField(blank=True, null=True)
 
     class Meta:
-        unique_together = (('voting_id', 'question_id', 'type'),)
+        unique_together = (("voting_id", "question_id", "type"),)
 
     def __str__(self):
         return f"{self.type} - v{self.voting_id} - q{self.question_id} - \n \t results: {self.results}"

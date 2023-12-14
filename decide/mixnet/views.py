@@ -13,6 +13,7 @@ class MixnetViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows mixnets to be viewed or edited.
     """
+
     queryset = Mixnet.objects.all()
     serializer_class = MixnetSerializer
 
@@ -35,9 +36,9 @@ class MixnetViewSet(viewsets.ModelViewSet):
         dbauths = []
         for auth in auths:
             isme = auth["url"] == settings.BASEURL
-            a, _ = Auth.objects.get_or_create(name=auth["name"],
-                                              url=auth["url"],
-                                              me=isme)
+            a, _ = Auth.objects.get_or_create(
+                name=auth["name"], url=auth["url"], me=isme
+            )
             dbauths.append(a)
 
         mn = Mixnet(voting_id=voting, auth_position=position)
@@ -65,13 +66,12 @@ class MixnetViewSet(viewsets.ModelViewSet):
 
 
 class Shuffle(APIView):
-
     def post(self, request, voting_id):
         """
-         * voting_id: id
-         * msgs: [ [int, int] ]
-         * pk: { "p": int, "g": int, "y": int } / nullable
-         * position: int / nullable
+        * voting_id: id
+        * msgs: [ [int, int] ]
+        * pk: { "p": int, "g": int, "y": int } / nullable
+        * position: int / nullable
         """
 
         position = request.data.get("position", 0)
@@ -100,13 +100,12 @@ class Shuffle(APIView):
 
 
 class Decrypt(APIView):
-
     def post(self, request, voting_id):
         """
-         * voting_id: id
-         * msgs: [ [int, int] ]
-         * pk: { "p": int, "g": int, "y": int } / nullable
-         * position: int / nullable
+        * voting_id: id
+        * msgs: [ [int, int] ]
+        * pk: { "p": int, "g": int, "y": int } / nullable
+        * position: int / nullable
         """
 
         position = request.data.get("position", 0)

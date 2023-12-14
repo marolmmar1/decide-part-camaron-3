@@ -84,7 +84,8 @@ def update_SiNo_Option(sender, instance, created, **kwargs):
 
 class QuestionOption(models.Model):
     question = models.ForeignKey(
-        Question, related_name='options', on_delete=models.CASCADE)
+        Question, related_name="options", on_delete=models.CASCADE
+    )
     number = models.PositiveIntegerField(blank=True, null=True)
     option = models.TextField()
 
@@ -117,7 +118,7 @@ class QuestionOption(models.Model):
         super().delete(*args, **kwargs)
 
     def __str__(self):
-        return '{} ({})'.format(self.option, self.number)
+        return "{} ({})".format(self.option, self.number)
 
 
 VOTING_TYPES = [
@@ -137,11 +138,13 @@ class Voting(models.Model):
         Question, related_name='voting', on_delete=models.CASCADE)
     postproc_type = models.CharField(
         max_length=3, choices=Type.choices, default=Type.NONE)
+
     start_date = models.DateTimeField(blank=True, null=True)
     end_date = models.DateTimeField(blank=True, null=True)
     pub_key = models.OneToOneField(
         Key, related_name='voting', blank=True, null=True, on_delete=models.SET_NULL)
     auths = models.ManyToManyField(Auth, related_name='votings')
+
     tally = JSONField(blank=True, null=True)
     postproc = JSONField(blank=True, null=True)
     seats = models.PositiveIntegerField(blank=True, null=True, default=10)
@@ -155,33 +158,34 @@ class Voting(models.Model):
             "voting": self.id,
             "auths": [{"name": a.name, "url": a.url} for a in self.auths.all()],
         }
-        key = mods.post('mixnet', baseurl=auth.url, json=data)
+        key = mods.post("mixnet", baseurl=auth.url, json=data)
         pk = Key(p=key["p"], g=key["g"], y=key["y"])
         pk.save()
         self.pub_key = pk
         self.save()
 
-    def get_votes(self, token=''):
+    def get_votes(self, token=""):
         # gettings votes from store
-        votes = mods.get('store', params={
-                         'voting_id': self.id}, HTTP_AUTHORIZATION='Token ' + token)
+        votes = mods.get(
+            "store", params={"voting_id": self.id}, HTTP_AUTHORIZATION="Token " + token
+        )
         # anon votes
         votes_format = []
         vote_list = []
         for vote in votes:
             for info in vote:
-                if info == 'a':
+                if info == "a":
                     votes_format.append(vote[info])
-                if info == 'b':
+                if info == "b":
                     votes_format.append(vote[info])
             vote_list.append(votes_format)
             votes_format = []
         return vote_list
 
-    def tally_votes(self, token=''):
-        '''
+    def tally_votes(self, token=""):
+        """
         The tally is a shuffle and then a decrypt
-        '''
+        """
 
         votes = self.get_votes(token)
 
@@ -192,16 +196,26 @@ class Voting(models.Model):
 
         # first, we do the shuffle
         data = {"msgs": votes}
-        response = mods.post('mixnet', entry_point=shuffle_url, baseurl=auth.url, json=data,
-                             response=True)
+        response = mods.post(
+            "mixnet",
+            entry_point=shuffle_url,
+            baseurl=auth.url,
+            json=data,
+            response=True,
+        )
         if response.status_code != 200:
             # TODO: manage error
             pass
 
         # then, we can decrypt that
         data = {"msgs": response.json()}
-        response = mods.post('mixnet', entry_point=decrypt_url, baseurl=auth.url, json=data,
-                             response=True)
+        response = mods.post(
+            "mixnet",
+            entry_point=decrypt_url,
+            baseurl=auth.url,
+            json=data,
+            response=True,
+        )
 
         if response.status_code != 200:
             # TODO: manage error
@@ -222,11 +236,7 @@ class Voting(models.Model):
                 votes = tally.count(opt.number)
             else:
                 votes = 0
-            opts.append({
-                'option': opt.option,
-                'number': opt.number,
-                'votes': votes
-            })
+            opts.append({"option": opt.option, "number": opt.number, "votes": votes})
 
         total_seats = self.seats
 
@@ -237,6 +247,7 @@ class Voting(models.Model):
 
         self.postproc = response
         self.save()
+
 
     def __str__(self):
         return self.name

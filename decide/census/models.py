@@ -15,4 +15,4 @@ class Census(models.Model):
     role = models.CharField(max_length=1, choices=ROLES, default='0')
 
     class Meta:
-        unique_together = (('voting_id', 'voter_id'),)
+        unique_together = (("voting_id", "voter_id"),)
