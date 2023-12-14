@@ -113,19 +113,21 @@ class VotingTestCase(BaseTestCase):
         v.save()
 
         clear = self.store_votes(v)
-
         self.login()  # set token
         v.tally_votes(self.token)
-
         tally = v.tally
         tally.sort()
         tally = {k: len(list(x)) for k, x in itertools.groupby(tally)}
+        
 
         for q in v.questions.all()[0].options.all():
+            print(clear)
+            print((tally))
             self.assertEqual(tally.get(q.number, 0), clear.get(q.number, 0))
 
         for q in v.postproc:
             self.assertEqual(tally.get(q["number"], 0), q["votes"])
+    
 
     def test_create_voting_from_api(self):
         data = {'name': 'Example'}

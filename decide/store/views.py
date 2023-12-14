@@ -28,7 +28,6 @@ class StoreView(generics.ListAPIView):
          * voter: id
          * vote: { "a": int, "b": int }
         """
-        print("POSTING")
         vid = request.data.get('voting')
         voting = mods.get('voting', params={'id': vid})
         if not voting or not isinstance(voting, list):
@@ -46,7 +45,6 @@ class StoreView(generics.ListAPIView):
 
         uid = request.data.get('voter')
         votes = request.data.get('votes')  # Expect 'votes' to be an array
-        print("VOTES VOTES VOTES ", votes)
 
         if not vid or not uid or not votes:
             return Response({}, status=status.HTTP_400_BAD_REQUEST)

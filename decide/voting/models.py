@@ -155,7 +155,6 @@ class Voting(models.Model):
         '''
 
         votes = self.get_votes(token)
-
         auth = self.auths.first()
         shuffle_url = "/shuffle/{}/".format(self.id)
         decrypt_url = "/decrypt/{}/".format(self.id)
@@ -203,7 +202,6 @@ class Voting(models.Model):
         postp = mods.post('postproc', json=data)
 
         self.postproc = postp
-        print(postp)
         self.save()
 
     def __str__(self):
