@@ -65,6 +65,7 @@
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 10px;
+            margin-top: auto;
         }
         .bar-container {
             width: 50%;
@@ -76,6 +77,42 @@
         .bar {
             height: 3px;  
             background-color: #4CAF50;
+        }
+        .dashboard-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .dashboard-buttons {
+            display: flex;
+            gap: 10px;
+            margin-left: 100%;
+            margin-right: 10px;
+        }
+
+        .dashboard-buttons a {
+            text-decoration: none;
+            padding: 8px 12px;
+            background-color: grey;
+            color: #ffffff;
+            border-radius: 5px;
+        }
+
+        .dashboard-container {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px; /* Ajusta según sea necesario */
+        }
+
+        .content-wrapper {
+            display: flex;
+            width: 100%;
+            flex-direction: column;
+            align-items: flex-start;
         }
     </style>
 {% endblock %}
@@ -91,19 +128,37 @@
 {% endblock %}
 
 {% block content %}
-    {{ block.super }}
-    <h1>Dashboard</h1>
-    <div class="grid-container">
-        {% for vote in votes %}
-            <div id="voting-{{ vote.voting_id }}">
-                <h2>Voting ID: {{ vote.voting_id }}</h2>
-                <p id="vote-count-{{ vote.voting_id }}">Number of votes: {{ vote.total_votes }}</p>
-                <p id="vote-percentage-{{ vote.voting_id }}">Percentage: {{ vote.percentage|floatformat:2 }}%</p>
-        
-                <div class="bar-container">
-                    <div class="bar" data-width="{{ vote.percentage }}"></div>
+    <div class="content-wrapper">
+        {{ block.super }}
+    
+        <div class="dashboard-container">
+            <div class="dashboard-header">
+                <h1>Dashboard</h1>
+                <div class="dashboard-buttons">
+                    <a href="{% url 'store:vote_create_backup' %}" class="button">Create Backup</a>
+                    <a href="{% url 'store:vote_restore_backup_list' %}" class="button">Restore Database</a>
+                    <a href="{% url 'store:delete_backups' %}" class="button">Delete Backups</a>
                 </div>
             </div>
-        {% endfor %}
+        </div>
+
+        <div class="grid-container">
+            {% for vote in votes %}
+                <div id="voting-{{ vote.voting_id }}">
+                    <h2>Voting ID: {{ vote.voting_id }}</h2>
+                    <p id="vote-count-{{ vote.voting_id }}">Number of votes: {{ vote.total_votes }}</p>
+                    <p id="vote-percentage-{{ vote.voting_id }}">Percentage: {{ vote.percentage|floatformat:2 }}%</p>
+            
+                    <div class="bar-container">
+                        <div class="bar" data-width="{{ vote.percentage }}"></div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
     </div>
 {% endblock %}
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> 564b128 (feat: Added backup buttons to dashboard panel)
