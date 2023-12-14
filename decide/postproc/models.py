@@ -10,7 +10,7 @@ from django.utils import timezone
 class PostProcessing(models.Model):
     class Type(models.TextChoices):
         NONE = "NON", _("NONE")
-        BORDA = "BOR", _("BORDA")
+        #BORDA = "BOR", _("BORDA")
         DHONDT = "DHO", _("DHONDT")
         SAINT = "PAR", _("SAINT")
         DROOP = "DRO", _("DROOP")

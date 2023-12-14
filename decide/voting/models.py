@@ -16,7 +16,7 @@ from base.models import Auth, Key
 
 class Type(models.TextChoices):
     NONE = "NON", _("NONE")
-    BORDA = "BOR", _("BORDA")
+    #BORDA = "BOR", _("BORDA")
     DHONDT = "DHO", _("DHONDT")
     SAINT = "PAR", _("SAINT")
     DROOP = "DRO", _("DROOP")
