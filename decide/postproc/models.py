@@ -103,9 +103,7 @@ class PostProcessing(models.Model):
 
     def do(self, opts, total_seats):
         self.start_date = timezone.now()
-        if self.type == self.Type.BORDA:
-            self.borda(opts)
-        elif self.type == self.Type.DHONDT:
+        if self.type == self.Type.DHONDT:
             self.dhondt(opts, total_seats)
         elif self.type == self.Type.SAINT:
             self.saint(opts, total_seats)
