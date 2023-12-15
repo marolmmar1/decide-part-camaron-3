@@ -1,7 +1,5 @@
 from django.db import models
 from django.db.models import JSONField
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 import copy
 
 from base import mods
@@ -17,7 +15,8 @@ class Question(models.Model):
 
 class QuestionOption(models.Model):
     question = models.ForeignKey(
-        Question, related_name='options', on_delete=models.CASCADE)
+        Question, related_name="options", on_delete=models.CASCADE
+    )
     number = models.PositiveIntegerField(blank=True, null=True)
     option = models.TextField()
 
@@ -27,21 +26,23 @@ class QuestionOption(models.Model):
         return super().save()
 
     def __str__(self):
-        return '{} ({})'.format(self.option, self.number)
+        return "{} ({})".format(self.option, self.number)
 
 
 class Voting(models.Model):
     name = models.CharField(max_length=200)
     desc = models.TextField(blank=True, null=True)
     question = models.ForeignKey(
-        Question, related_name='voting', on_delete=models.CASCADE)
+        Question, related_name="voting", on_delete=models.CASCADE
+    )
 
     start_date = models.DateTimeField(blank=True, null=True)
     end_date = models.DateTimeField(blank=True, null=True)
 
     pub_key = models.OneToOneField(
-        Key, related_name='voting', blank=True, null=True, on_delete=models.SET_NULL)
-    auths = models.ManyToManyField(Auth, related_name='votings')
+        Key, related_name="voting", blank=True, null=True, on_delete=models.SET_NULL
+    )
+    auths = models.ManyToManyField(Auth, related_name="votings")
 
     tally = JSONField(blank=True, null=True)
     postproc = JSONField(blank=True, null=True)
@@ -57,33 +58,34 @@ class Voting(models.Model):
             "voting": self.id,
             "auths": [{"name": a.name, "url": a.url} for a in self.auths.all()],
         }
-        key = mods.post('mixnet', baseurl=auth.url, json=data)
+        key = mods.post("mixnet", baseurl=auth.url, json=data)
         pk = Key(p=key["p"], g=key["g"], y=key["y"])
         pk.save()
         self.pub_key = pk
         self.save()
 
-    def get_votes(self, token=''):
+    def get_votes(self, token=""):
         # gettings votes from store
-        votes = mods.get('store', params={
-                         'voting_id': self.id}, HTTP_AUTHORIZATION='Token ' + token)
+        votes = mods.get(
+            "store", params={"voting_id": self.id}, HTTP_AUTHORIZATION="Token " + token
+        )
         # anon votes
         votes_format = []
         vote_list = []
         for vote in votes:
             for info in vote:
-                if info == 'a':
+                if info == "a":
                     votes_format.append(vote[info])
-                if info == 'b':
+                if info == "b":
                     votes_format.append(vote[info])
             vote_list.append(votes_format)
             votes_format = []
         return vote_list
 
-    def tally_votes(self, token=''):
-        '''
+    def tally_votes(self, token=""):
+        """
         The tally is a shuffle and then a decrypt
-        '''
+        """
 
         votes = self.get_votes(token)
 
@@ -94,16 +96,26 @@ class Voting(models.Model):
 
         # first, we do the shuffle
         data = {"msgs": votes}
-        response = mods.post('mixnet', entry_point=shuffle_url, baseurl=auth.url, json=data,
-                             response=True)
+        response = mods.post(
+            "mixnet",
+            entry_point=shuffle_url,
+            baseurl=auth.url,
+            json=data,
+            response=True,
+        )
         if response.status_code != 200:
             # TODO: manage error
             pass
 
         # then, we can decrypt that
         data = {"msgs": response.json()}
-        response = mods.post('mixnet', entry_point=decrypt_url, baseurl=auth.url, json=data,
-                             response=True)
+        response = mods.post(
+            "mixnet",
+            entry_point=decrypt_url,
+            baseurl=auth.url,
+            json=data,
+            response=True,
+        )
 
         if response.status_code != 200:
             # TODO: manage error
@@ -124,18 +136,14 @@ class Voting(models.Model):
                 votes = tally.count(opt.number)
             else:
                 votes = 0
-            opts.append({
-                'option': opt.option,
-                'number': opt.number,
-                'votes': votes
-            })
+            opts.append({"option": opt.option, "number": opt.number, "votes": votes})
 
         total_seats = self.seats
 
         self.do_dhont(opts, total_seats)
         self.do_saintLague(opts, total_seats)
-        data = {'type': 'IDENTITY', 'options': opts}
-        postp = mods.post('postproc', json=data)
+        data = {"type": "IDENTITY", "options": opts}
+        postp = mods.post("postproc", json=data)
 
         self.postproc = postp
         self.save()
@@ -146,29 +154,28 @@ class Voting(models.Model):
             dhont_values = []
             for seat in range(1, total_seats + 1):
                 dhont = round(votes / seat, 4)
-                dhont_values.append({
-                    "seat": seat,
-                    "percentaje": dhont
-                })
+                dhont_values.append({"seat": seat, "percentaje": dhont})
 
             option["dhont"] = dhont_values
-            
+
     def do_saintLague(self, opts, total_seats):
         opts_aux = copy.deepcopy(opts)
-        
+
         for option in opts:
             option["saintLague"] = 0
-        
-        for i in range (1, total_seats + 1):
-            quotients = {option["option"]: option["votes"] / (2 * i - 1) for option in opts_aux}
+
+        for i in range(1, total_seats + 1):
+            quotients = {
+                option["option"]: option["votes"] / (2 * i - 1) for option in opts_aux
+            }
             best_option = max(quotients, key=quotients.get)
             for option in opts_aux:
-                if option['option'] == best_option:
-                    option['votes'] /= (2 * i + 1)
+                if option["option"] == best_option:
+                    option["votes"] /= 2 * i + 1
                     break
             for option in opts:
-                if option['option'] == best_option:
-                    option['saintLague'] += 1
+                if option["option"] == best_option:
+                    option["saintLague"] += 1
                     break
 
     def do_borda(self, opts):
@@ -179,7 +186,6 @@ class Voting(models.Model):
             for i in range(n):
                 borda += (n - i) * votes[i]
             option["borda"] = borda
-
 
     def __str__(self):
         return self.name
