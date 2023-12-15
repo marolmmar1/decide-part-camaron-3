@@ -121,8 +121,6 @@ class VotingTestCase(BaseTestCase):
         
 
         for q in v.questions.all()[0].options.all():
-            print(clear)
-            print((tally))
             self.assertEqual(tally.get(q.number, 0), clear.get(q.number, 0))
 
         for q in v.postproc:

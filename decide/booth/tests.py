@@ -31,6 +31,10 @@ class BoothTestCase(TestCase):
     def setUp(self):
         self.driver = webdriver.Chrome()
         self.vars = {}
+
+        options = webdriver.ChromeOptions()
+        options.headless = True
+        self.driver = webdriver.Chrome(options=options)
         
     def tearDown(self):
         self.driver.quit()
@@ -52,39 +56,7 @@ class BoothTestCase(TestCase):
         if len(wh_now) > len(wh_then):
             return set(wh_now).difference(set(wh_then)).pop()
     
-    def create_voting(self):
-        q1 = Question(desc='test question 1')
-        q1.save()
-        for i in range(5):
-            opt = QuestionOption(question=q1, option='option {}'.format(i+1), number=i+2)
-            opt.save()
-
-        # Create the second question
-        q2 = Question(desc='test question 2')
-        q2.save()
-        for i in range(3):
-            opt = QuestionOption(question=q2, option='option {}'.format(i+1), number=i+1)
-            opt.save()
-            print(opt)
-        v = Voting(name='test voting')
-        v.save()
-        v.questions.set([q1, q2])
-        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
-                                          defaults={'me': True, 'name': 'test auth'})
-        a.save()
-        v.auths.add(a)
-        print(v.auths.all().first().url)
-
-        return v
-
-    def create_voters(self, v):
-        for i in range(100):
-            u, _ = User.objects.get_or_create(username='testvoter{}'.format(i))
-            u.is_active = True
-            u.save()
-            c = Census(voter_id=u.id, voting_id=v.id)
-            c.save()
-
+   
     def test_testselenium(self):
         self.driver.get("http://localhost:8000/admin/")
         self.driver.set_window_size(910, 880)
