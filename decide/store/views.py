@@ -22,6 +22,7 @@ from rest_framework.permissions import IsAuthenticated
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
+
 class StoreView(generics.ListAPIView):
     queryset = Vote.objects.all()
     serializer_class = VoteSerializer
@@ -42,7 +43,7 @@ class StoreView(generics.ListAPIView):
 
         vid = request.data.get("voting")
         voting = mods.get("voting", params={"id": vid})
-        
+
         if not voting or not isinstance(voting, list):
             # print("por aqui 35")
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
@@ -88,9 +89,9 @@ class StoreView(generics.ListAPIView):
         b = vote.get("b")
 
         defs = {"a": a, "b": b}
-        
+
         v, _ = Vote.objects.get_or_create(voting_id=vid, voter_id=uid, defaults=defs)
-        
+
         v.a = a
         v.b = b
         v.save()
@@ -98,11 +99,11 @@ class StoreView(generics.ListAPIView):
         # Send a message through Django Channels
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
-            'votes', 
+            "votes",
             {
-                'type': 'vote.added',
-                'vote_id': vid,
-            }
+                "type": "vote.added",
+                "vote_id": vid,
+            },
         )
 
         return Response({})
@@ -136,7 +137,6 @@ def list_backups(request):
     backup_files = list(os.listdir(backup_dir))
 
     return render(request, "list_backups.html", {"backup_files": backup_files})
-
 
 
 def restore_backup(request):
@@ -204,7 +204,6 @@ def delete_selected_backup(request, selected_backup):
         return render(
             request, "confirm_delete.html", {"selected_backup": selected_backup}
         )
-
 
 
 class VoteHistoryView(generics.ListAPIView):

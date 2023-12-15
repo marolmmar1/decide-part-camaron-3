@@ -198,12 +198,11 @@ class StoreTextCase(BaseTestCase):
 
 
 class DjangoChannelsTest(TestCase):
-
     def setUp(self):
         super().setUp()
         # Crea una pregunta y una votación
-        question = Question.objects.create(desc='Test Question')
-        self.voting = Voting.objects.create(name='Test Voting', question=question)
+        question = Question.objects.create(desc="Test Question")
+        self.voting = Voting.objects.create(name="Test Voting", question=question)
         self.voting.save()
 
     def tearDown(self):
@@ -211,19 +210,21 @@ class DjangoChannelsTest(TestCase):
 
     def get_or_create_user(self, pk):
         user, _ = User.objects.get_or_create(pk=pk)
-        user.username = 'user{}'.format(pk)
-        user.set_password('qwerty')
+        user.username = "user{}".format(pk)
+        user.set_password("qwerty")
         user.save()
         return user
-    
+
     async def test_vote_consumer_connection(self):
         # Define la ruta del WebSocket para el consumidor de votos
-        application = URLRouter([
-            re_path(r'ws/votes/$', VoteConsumer.as_asgi()),
-        ])
+        application = URLRouter(
+            [
+                re_path(r"ws/votes/$", VoteConsumer.as_asgi()),
+            ]
+        )
 
         # Crea un comunicador WebSocket para la ruta del consumidor de votos
-        communicator = WebsocketCommunicator(application, 'ws/votes/')
+        communicator = WebsocketCommunicator(application, "ws/votes/")
 
         # Intenta conectar al WebSocket
         connected, _ = await communicator.connect()
@@ -233,14 +234,15 @@ class DjangoChannelsTest(TestCase):
         await communicator.disconnect()
 
     async def test_vote_consumer_message(self):
-
         # Define la ruta del WebSocket para el consumidor de votos
-        application = URLRouter([
-            re_path(r'ws/votes/$', VoteConsumer.as_asgi()),
-        ])
+        application = URLRouter(
+            [
+                re_path(r"ws/votes/$", VoteConsumer.as_asgi()),
+            ]
+        )
 
         # Crea un comunicador WebSocket para la ruta del consumidor de votos
-        communicator = WebsocketCommunicator(application, 'ws/votes/')
+        communicator = WebsocketCommunicator(application, "ws/votes/")
 
         # Conecta al WebSocket
         connected, _ = await communicator.connect()
@@ -249,23 +251,26 @@ class DjangoChannelsTest(TestCase):
         # Manda mensaje por Django Channels
         channel_layer = get_channel_layer()
         await channel_layer.group_send(
-            'votes', 
+            "votes",
             {
-                'type': 'vote.added',
-                'vote_id': self.voting.id,
-            }
+                "type": "vote.added",
+                "vote_id": self.voting.id,
+            },
         )
 
         # Recibe el mensaje del WebSocket
         response = await communicator.receive_json_from()
-        
+
         # Verifica que el mensaje sea correcto
-        self.assertEqual(response, {
-            'message': 'Vote received',
-            'vote_id': self.voting.id,
-            'vote_count': 0,
-            'vote_percentage': 0.0,
-        })
+        self.assertEqual(
+            response,
+            {
+                "message": "Vote received",
+                "vote_id": self.voting.id,
+                "vote_count": 0,
+                "vote_percentage": 0.0,
+            },
+        )
 
         # Desconecta
         await communicator.disconnect()
@@ -421,7 +426,7 @@ class BackupTestCase(TestCase):
     @transaction.atomic
     def test_backup_file_not_found_in_delete(self):
         inexistent_backup_name = "non_existing_backup"
-        
+
         delete_url = reverse(
             "store:delete_backup",
             kwargs={"selected_backup": f"{inexistent_backup_name}.psql.bin"},
@@ -430,4 +435,3 @@ class BackupTestCase(TestCase):
             delete_url, {"selected_backup": f"{inexistent_backup_name}.psql.bin"}
         )
         self.assertEqual(response.status_code, 400)  # bad request
-        
