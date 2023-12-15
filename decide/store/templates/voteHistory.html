@@ -1,0 +1,38 @@
+{% block content %}
+{% load custom_filters %}
+<h1 style="padding-top: 2%;">
+    <center>Your vote history</center>
+</h1>
+{%if not votesEmpty%}
+{% for vote in votes %}
+    {%with voting=vote.voting_id|getVoting %}
+        <div style="padding-left: 5%;
+                    display: list-item;
+                    align-content: center;
+                    ">
+            <big>
+                <p>
+                    <strong>Voting: </strong> {{voting}}
+                </p>
+                <p>
+                    <strong> Vote date:</strong> {{vote.voted}}
+                </p>
+                <p>
+                    <strong>Question: </strong> {{voting.question}}
+                </p>
+            </big>
+        </div>
+    {%endwith%}
+{%endfor%}
+{%else%}
+<p style="padding-top: 5%;">
+    <big>
+        <big>
+            <center>
+                <strong>It seems that you dont have any votes yet</strong>
+            </center>
+        </big>
+    </big>
+</p>
+{%endif%}
+{% endblock %}
