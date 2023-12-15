@@ -295,8 +295,8 @@ class dashboardRealTimeDataTest(TestCase):
 
         await communicator.send_json_to(
             {
-                'type': 'voting.open',
-                'voting_id': self.voting.id,
+                "type": "voting.open",
+                "voting_id": self.voting.id,
             },
         )
 
@@ -307,8 +307,8 @@ class dashboardRealTimeDataTest(TestCase):
 
         await communicator.send_json_to(
             {
-                'type': 'voting.closed',
-                'voting_id': self.voting.id,
+                "type": "voting.closed",
+                "voting_id": self.voting.id,
             },
         )
 
@@ -316,7 +316,6 @@ class dashboardRealTimeDataTest(TestCase):
 
         self.assertEqual(response["message"], "Voting closed")
         self.assertEqual(response["voting_id"], self.voting.id)
-
 
         await communicator.disconnect()
 
