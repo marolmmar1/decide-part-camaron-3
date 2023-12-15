@@ -231,7 +231,6 @@ class StoreTextCase(BaseTestCase):
         question2 = Question(desc="Question 2")
         question2.save()
         voting.questions.add(question2)
-
         votes = [{"vote": {"a": CTE_A, "b": CTE_B}}]
         data = {
             "voting": VOTING_PK,

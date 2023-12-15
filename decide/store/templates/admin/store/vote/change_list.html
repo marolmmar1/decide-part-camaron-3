@@ -205,10 +205,10 @@
                 <div id="voting-{{ vote.voting_id }}">
                     <h2>Voting ID: {{ vote.voting_id }}</h2>
                     <p id="vote-name-{{ vote.voting_id }}">Name: {{ vote.name }}</p>
-                    <p id="vote-count-{{ vote.voting_id }}">Number of votes: {{ vote.total_votes }}</p>
-                    <p id="vote-percentage-{{ vote.voting_id }}">Percentage: {{ vote.percentage|floatformat:2 }}%</p>
                     <p id="start-date-{{ vote.voting_id }}">Started: {{ vote.start_date }}</p>
                     <p id="end-date-{{ vote.voting_id }}">Finished: {{ vote.end_date }}</p>
+                    <p id="vote-count-{{ vote.voting_id }}">Number of votes: {{ vote.total_votes }}</p>
+                    <p id="vote-percentage-{{ vote.voting_id }}">Percentage: {{ vote.percentage|floatformat:2 }}%</p>
                     <div class="bar-container">
                         <div class="bar" data-width="{{ vote.percentage }}"></div>
                     </div>
