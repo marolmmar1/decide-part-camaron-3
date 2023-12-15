@@ -23,7 +23,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install autoflake
       - name: Remove unused variables
-        run: autoflake --recursive --in-place --remove-all-unused-imports --remove-duplicate-keys --remove-unused-variables .
+        run: autoflake --recursive --in-place --exclude=settings.py  --remove-all-unused-imports --remove-duplicate-keys --remove-unused-variables .
       - name: Git config
         run: |
           git config --local user.email "action@github.com"
