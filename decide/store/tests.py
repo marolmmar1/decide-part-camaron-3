@@ -299,23 +299,20 @@ class DjangoChannelsTest(TestCase):
 
         # Desconecta
         await communicator.disconnect()
+        self.assertTrue(connected)
 
-    async def test_vote_consumer_message(self):
-        # Define la ruta del WebSocket para el consumidor de votos
+    async def test_vote_consumer_message_djangoChannels(self):
         application = URLRouter(
             [
                 re_path(r"ws/votes/$", VoteConsumer.as_asgi()),
             ]
         )
 
-        # Crea un comunicador WebSocket para la ruta del consumidor de votos
         communicator = WebsocketCommunicator(application, "ws/votes/")
 
-        # Conecta al WebSocket
         connected, _ = await communicator.connect()
         self.assertTrue(connected)
 
-        # Manda mensaje por Django Channels
         channel_layer = get_channel_layer()
         await channel_layer.group_send(
             "votes",
@@ -325,10 +322,8 @@ class DjangoChannelsTest(TestCase):
             },
         )
 
-        # Recibe el mensaje del WebSocket
         response = await communicator.receive_json_from()
 
-        # Verifica que el mensaje sea correcto
         self.assertEqual(
             response,
             {
@@ -339,7 +334,57 @@ class DjangoChannelsTest(TestCase):
             },
         )
 
-        # Desconecta
+        await communicator.disconnect()
+
+    async def test_vote_consumer_message_websocket(self):
+        application = URLRouter(
+            [
+                re_path(r"ws/votes/$", VoteConsumer.as_asgi()),
+            ]
+        )
+
+        communicator = WebsocketCommunicator(application, "ws/votes/")
+
+        connected, _ = await communicator.connect()
+        self.assertTrue(connected)
+
+        await communicator.send_json_to(
+            {
+                "type": "vote.added",
+                "vote_id": self.voting.id,
+            },
+        )
+
+        response = await communicator.receive_json_from()
+
+        self.assertEqual(response["message"], "Vote received")
+        self.assertEqual(response["vote_id"], self.voting.id)
+
+        await communicator.send_json_to(
+            {
+                'type': 'voting.open',
+                'voting_id': self.voting.id,
+            },
+        )
+
+        response = await communicator.receive_json_from()
+
+        self.assertEqual(response["message"], "Voting open")
+        self.assertEqual(response["voting_id"], self.voting.id)
+
+        await communicator.send_json_to(
+            {
+                'type': 'voting.closed',
+                'voting_id': self.voting.id,
+            },
+        )
+
+        response = await communicator.receive_json_from()
+
+        self.assertEqual(response["message"], "Voting closed")
+        self.assertEqual(response["voting_id"], self.voting.id)
+
+
         await communicator.disconnect()
 
 

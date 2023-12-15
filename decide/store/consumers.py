@@ -19,7 +19,7 @@ class VoteConsumer(AsyncWebsocketConsumer):
             await self.vote_added(content)
 
     async def connect(self):
-        # Cuando el WebSocket se conecta, añádelo al grupo 'votes'.
+        # Cuando el WebSocket se conecta, lo añade al grupo 'votes'.
         await self.channel_layer.group_add("votes", self.channel_name)
         await self.accept()
 
