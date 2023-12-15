@@ -203,8 +203,7 @@ class PostProcTestCase(BaseTestCase):
                 "Las técnicas de postprocesado no se pueden aplicar a votaciones no Simples",
             )
         else:
-            self.fail(
-                "Se esperaba una excepción ValidationError, pero no se lanzó")
+            self.fail("Se esperaba una excepción ValidationError, pero no se lanzó")
 
     def test_droop_wikipedia_example(self):
         # validating the functionality of the function using the wikipedia example
@@ -267,8 +266,7 @@ class PostProcTestCase(BaseTestCase):
                     "Las técnicas de postprocesado no se pueden aplicar a votaciones no Simples",
                 )
             else:
-                self.fail(
-                    "Se esperaba una excepción ValidationError, pero no se lanzó")
+                self.fail("Se esperaba una excepción ValidationError, pero no se lanzó")
 
 
 class PostProcTestsSaintLague(BaseTestCase):
@@ -357,8 +355,7 @@ class PostProcTestsSaintLague(BaseTestCase):
 
         self.assertEqual(len(opts), len(instance.results))
 
-        total_seats_assigned = sum(option["saintLague"]
-                                   for option in instance.results)
+        total_seats_assigned = sum(option["saintLague"] for option in instance.results)
         self.assertEqual(total_seats, total_seats_assigned)
 
         for option in instance.results:
@@ -402,8 +399,7 @@ class PostProcTestsSaintLague(BaseTestCase):
                 "Las técnicas de postprocesado no se pueden aplicar a votaciones no Simples",
             )
         else:
-            self.fail(
-                "Se esperaba una excepción ValidationError, pero no se lanzó")
+            self.fail("Se esperaba una excepción ValidationError, pero no se lanzó")
 
 
 class TestSimulaciondhontFallido(StaticLiveServerTestCase):
@@ -455,8 +451,7 @@ class TestSimulaciondhontFallido(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "id_username").click()
         self.driver.find_element(By.ID, "id_username").send_keys("adminB")
         self.driver.find_element(By.ID, "id_password").send_keys("qwertyA")
-        self.driver.find_element(
-            By.CSS_SELECTOR, ".submit-row > input").click()
+        self.driver.find_element(By.CSS_SELECTOR, ".submit-row > input").click()
         self.driver.find_element(By.CSS_SELECTOR, ".content").click()
         self.driver.find_element(By.CSS_SELECTOR, ".model-voting > th").click()
         self.driver.find_element(By.LINK_TEXT, "Votings").click()
@@ -492,15 +487,13 @@ class TestSimulaciondhontFallido(StaticLiveServerTestCase):
             By.CSS_SELECTOR, "#id_postproc_type > option:nth-child(3)"
         ).click()
         self.vars["window_handles"] = self.driver.window_handles
-        self.driver.find_element(
-            By.CSS_SELECTOR, "#add_id_auths > img").click()
+        self.driver.find_element(By.CSS_SELECTOR, "#add_id_auths > img").click()
         self.vars["win6358"] = self.wait_for_window(2000)
         self.driver.switch_to.window(self.vars["win6358"])
         self.driver.find_element(By.ID, "id_name").click()
         self.driver.find_element(By.ID, "id_name").send_keys("perico")
         self.driver.find_element(By.ID, "id_url").send_keys(Keys.DOWN)
-        self.driver.find_element(By.ID, "id_url").send_keys(
-            "http://localhost:8000")
+        self.driver.find_element(By.ID, "id_url").send_keys("http://localhost:8000")
         self.driver.find_element(By.ID, "id_me").click()
         self.driver.find_element(By.NAME, "_save").click()
         self.driver.switch_to.window(self.vars["root"])
@@ -509,16 +502,14 @@ class TestSimulaciondhontFallido(StaticLiveServerTestCase):
         self.driver.find_element(By.NAME, "_save").click()
         self.driver.get(f"{self.live_server_url}/admin/census/census/")
         self.driver.find_element(By.CSS_SELECTOR, "li > .addlink").click()
-        self.driver.find_element(
-            By.ID, "id_voting_id").send_keys(self.id_votacion)
+        self.driver.find_element(By.ID, "id_voting_id").send_keys(self.id_votacion)
         self.driver.find_element(By.ID, "id_voter_id").send_keys(self.id)
         self.driver.find_element(By.NAME, "_save").click()
         self.driver.get(f"{self.live_server_url}/admin/voting/voting/")
         self.driver.find_element(By.NAME, "_selected_action").click()
         dropdown = self.driver.find_element(By.NAME, "action")
         dropdown.find_element(By.XPATH, "//option[. = 'Start']").click()
-        self.driver.find_element(
-            By.CSS_SELECTOR, "option:nth-child(3)").click()
+        self.driver.find_element(By.CSS_SELECTOR, "option:nth-child(3)").click()
         self.driver.find_element(By.NAME, "index").click()
 
         # Obtener el id de la votación justamente creada
@@ -527,8 +518,7 @@ class TestSimulaciondhontFallido(StaticLiveServerTestCase):
         sleep(8)
         self.driver.get(f"{self.live_server_url}/booth/{prueba_votacion}")
         sleep(5)
-        self.driver.find_element(
-            By.CSS_SELECTOR, ".navbar-toggler-icon").click()
+        self.driver.find_element(By.CSS_SELECTOR, ".navbar-toggler-icon").click()
         sleep(3)
         self.driver.find_element(By.CSS_SELECTOR, ".btn-secondary").click()
         sleep(3)
@@ -552,14 +542,11 @@ class TestSimulaciondhontFallido(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "id_username").click()
         self.driver.find_element(By.ID, "id_username").send_keys("adminB")
         self.driver.find_element(By.ID, "id_password").send_keys("qwertyA")
-        self.driver.find_element(
-            By.CSS_SELECTOR, ".submit-row > input").click()
-        self.driver.find_element(
-            By.CSS_SELECTOR, ".model-voting .addlink").click()
+        self.driver.find_element(By.CSS_SELECTOR, ".submit-row > input").click()
+        self.driver.find_element(By.CSS_SELECTOR, ".model-voting .addlink").click()
         self.driver.find_element(By.ID, "id_name").click()
         self.driver.find_element(By.ID, "id_name").send_keys("error")
-        self.driver.find_element(By.ID, "id_desc").send_keys(
-            "combinacion invalida")
+        self.driver.find_element(By.ID, "id_desc").send_keys("combinacion invalida")
         self.driver.find_element(By.ID, "id_postproc_type").click()
         dropdown = self.driver.find_element(By.ID, "id_postproc_type")
         dropdown.find_element(By.XPATH, "//option[. = 'DHONDT']").click()
@@ -567,32 +554,27 @@ class TestSimulaciondhontFallido(StaticLiveServerTestCase):
         self.driver.find_element(
             By.CSS_SELECTOR, "#id_postproc_type > option:nth-child(2)"
         ).click()
-        self.driver.find_element(
-            By.CSS_SELECTOR, ".field-voting_type > div").click()
+        self.driver.find_element(By.CSS_SELECTOR, ".field-voting_type > div").click()
         self.driver.find_element(By.ID, "id_voting_type").click()
         dropdown = self.driver.find_element(By.ID, "id_voting_type")
-        dropdown.find_element(
-            By.XPATH, "//option[. = 'Multiple Choice']").click()
+        dropdown.find_element(By.XPATH, "//option[. = 'Multiple Choice']").click()
         self.driver.find_element(
             By.CSS_SELECTOR, "#id_voting_type > option:nth-child(2)"
         ).click()
         self.vars["window_handles"] = self.driver.window_handles
-        self.driver.find_element(
-            By.CSS_SELECTOR, "#add_id_auths > img").click()
+        self.driver.find_element(By.CSS_SELECTOR, "#add_id_auths > img").click()
         self.vars["win9368"] = self.wait_for_window(2000)
         self.vars["root"] = self.driver.current_window_handle
         self.driver.switch_to.window(self.vars["win9368"])
         self.driver.find_element(By.ID, "id_name").click()
         self.driver.find_element(By.ID, "id_name").send_keys("garrafon")
-        self.driver.find_element(By.ID, "id_url").send_keys(
-            "http://localhost:8000")
+        self.driver.find_element(By.ID, "id_url").send_keys("http://localhost:8000")
         self.driver.find_element(By.ID, "id_me").click()
         self.driver.find_element(By.NAME, "_save").click()
         self.driver.switch_to.window(self.vars["root"])
         self.driver.find_element(By.ID, "id_question").click()
         self.vars["window_handles"] = self.driver.window_handles
-        self.driver.find_element(
-            By.CSS_SELECTOR, "#add_id_question > img").click()
+        self.driver.find_element(By.CSS_SELECTOR, "#add_id_question > img").click()
         self.vars["win6844"] = self.wait_for_window(2000)
         self.driver.switch_to.window(self.vars["win6844"])
         self.driver.find_element(By.ID, "id_desc").click()
@@ -619,16 +601,13 @@ class TestSimulaciondhontFallido(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "id_username").click()
         self.driver.find_element(By.ID, "id_username").send_keys("adminB")
         self.driver.find_element(By.ID, "id_password").send_keys("qwertyA")
-        self.driver.find_element(
-            By.CSS_SELECTOR, ".submit-row > input").click()
+        self.driver.find_element(By.CSS_SELECTOR, ".submit-row > input").click()
         sleep(5)
         self.driver.find_element(By.LINK_TEXT, "Users").click()
         self.driver.find_element(By.LINK_TEXT, "adminB").click()
         self.driver.find_element(By.NAME, "_save").click()
         sleep(10)
-        assert (
-            "was changed" in self.driver.page_source
-        )
+        assert "was changed" in self.driver.page_source
 
     def test_04_simulaciondhont_tally(self):
         self.driver.get(f"{self.live_server_url}/admin/")
@@ -636,8 +615,7 @@ class TestSimulaciondhontFallido(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "id_username").click()
         self.driver.find_element(By.ID, "id_username").send_keys("adminB")
         self.driver.find_element(By.ID, "id_password").send_keys("qwertyA")
-        self.driver.find_element(
-            By.CSS_SELECTOR, ".submit-row > input").click()
+        self.driver.find_element(By.CSS_SELECTOR, ".submit-row > input").click()
         self.driver.find_element(By.CSS_SELECTOR, ".content").click()
         self.driver.find_element(By.CSS_SELECTOR, ".model-voting > th").click()
         self.driver.find_element(By.LINK_TEXT, "Votings").click()
@@ -673,15 +651,13 @@ class TestSimulaciondhontFallido(StaticLiveServerTestCase):
             By.CSS_SELECTOR, "#id_postproc_type > option:nth-child(3)"
         ).click()
         self.vars["window_handles"] = self.driver.window_handles
-        self.driver.find_element(
-            By.CSS_SELECTOR, "#add_id_auths > img").click()
+        self.driver.find_element(By.CSS_SELECTOR, "#add_id_auths > img").click()
         self.vars["win6358"] = self.wait_for_window(2000)
         self.driver.switch_to.window(self.vars["win6358"])
         self.driver.find_element(By.ID, "id_name").click()
         self.driver.find_element(By.ID, "id_name").send_keys("perico")
         self.driver.find_element(By.ID, "id_url").send_keys(Keys.DOWN)
-        self.driver.find_element(By.ID, "id_url").send_keys(
-            "http://localhost:8000")
+        self.driver.find_element(By.ID, "id_url").send_keys("http://localhost:8000")
         self.driver.find_element(By.ID, "id_me").click()
         self.driver.find_element(By.NAME, "_save").click()
         self.driver.switch_to.window(self.vars["root"])
@@ -690,30 +666,26 @@ class TestSimulaciondhontFallido(StaticLiveServerTestCase):
         self.driver.find_element(By.NAME, "_save").click()
         self.driver.get(f"{self.live_server_url}/admin/census/census/")
         self.driver.find_element(By.CSS_SELECTOR, "li > .addlink").click()
-        self.driver.find_element(
-            By.ID, "id_voting_id").send_keys(self.id_votacion)
+        self.driver.find_element(By.ID, "id_voting_id").send_keys(self.id_votacion)
         self.driver.find_element(By.ID, "id_voter_id").send_keys(self.id)
         self.driver.find_element(By.NAME, "_save").click()
         self.driver.get(f"{self.live_server_url}/admin/voting/voting/")
         self.driver.find_element(By.NAME, "_selected_action").click()
         dropdown = self.driver.find_element(By.NAME, "action")
         dropdown.find_element(By.XPATH, "//option[. = 'Start']").click()
-        self.driver.find_element(
-            By.CSS_SELECTOR, "option:nth-child(3)").click()
+        self.driver.find_element(By.CSS_SELECTOR, "option:nth-child(3)").click()
         self.driver.find_element(By.NAME, "index").click()
         sleep(8)
         self.driver.find_element(By.NAME, "_selected_action").click()
         dropdown = self.driver.find_element(By.NAME, "action")
         dropdown.find_element(By.XPATH, "//option[. = 'Stop']").click()
-        self.driver.find_element(
-            By.CSS_SELECTOR, "option:nth-child(4)").click()
+        self.driver.find_element(By.CSS_SELECTOR, "option:nth-child(4)").click()
         self.driver.find_element(By.NAME, "index").click()
         sleep(5)
         self.driver.find_element(By.NAME, "_selected_action").click()
         dropdown = self.driver.find_element(By.NAME, "action")
         dropdown.find_element(By.XPATH, "//option[. = 'Tally']").click()
-        self.driver.find_element(
-            By.CSS_SELECTOR, "option:nth-child(5)").click()
+        self.driver.find_element(By.CSS_SELECTOR, "option:nth-child(5)").click()
         self.driver.find_element(By.NAME, "index").click()
         sleep(3)
         assert "500" in self.driver.page_source
