@@ -18,7 +18,7 @@ from .models import Census
 
 class CensusCreate(generics.ListCreateAPIView):
     permission_classes = [IsReadOnly | UserIsStaff]
-    #permission_classes = (UserIsStaff,)
+    # permission_classes = (UserIsStaff,)
 
     def create(self, request, *args, **kwargs):
         voting_id = request.data.get("voting_id")
