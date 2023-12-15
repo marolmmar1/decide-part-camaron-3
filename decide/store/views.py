@@ -1,3 +1,4 @@
+from django.shortcuts import render
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 import django_filters.rest_framework
@@ -12,6 +13,7 @@ import subprocess
 from django.contrib import messages
 from django.http import HttpResponseBadRequest, HttpResponseRedirect
 from django.urls import reverse
+
 
 from .models import Vote
 from .serializers import VoteSerializer
@@ -125,7 +127,8 @@ def create_backup(request, backup_name=None):
         if not os.path.exists(settings.DATABASE_BACKUP_DIR):
             os.makedirs(settings.DATABASE_BACKUP_DIR)
         if backup_name:
-            backup_path = os.path.join(settings.DATABASE_BACKUP_DIR, backup_name)
+            backup_path = os.path.join(
+                settings.DATABASE_BACKUP_DIR, backup_name)
             command = f"python manage.py dbbackup -O={backup_path}.psql.bin"
         else:
             command = "python manage.py dbbackup"
@@ -193,7 +196,8 @@ def delete_selected_backup(request, selected_backup):
     if request.method == "POST":
         selected_backup = request.POST.get("selected_backup", None)
         if selected_backup:
-            backup_path = os.path.join(settings.DATABASE_BACKUP_DIR, selected_backup)
+            backup_path = os.path.join(
+                settings.DATABASE_BACKUP_DIR, selected_backup)
             if (
                 os.path.exists(backup_path)
                 and backup_path.endswith(".psql.bin")
@@ -204,7 +208,8 @@ def delete_selected_backup(request, selected_backup):
                     request, f'Backup "{selected_backup}" deleted successfully.'
                 )
             else:
-                messages.error(request, "Error deleting backup: Backup file not found")
+                messages.error(
+                    request, "Error deleting backup: Backup file not found")
                 return HttpResponseBadRequest(
                     f"Error deleting backup: Backup file not found: {selected_backup}"
                 )
@@ -213,7 +218,8 @@ def delete_selected_backup(request, selected_backup):
         return HttpResponseRedirect(reverse("store:delete_backups"))
     else:
         return render(
-            request, "confirm_delete.html", {"selected_backup": selected_backup}
+            request, "confirm_delete.html", {
+                "selected_backup": selected_backup}
         )
 
 
@@ -244,9 +250,13 @@ def delete_selected_backup(request, selected_backup):
 
 class VoteHistoryView(generics.ListAPIView):
     serializer_class = VoteSerializer
-    permission_classes = [IsAuthenticated]
+    template_name = "voteHistory.html"
 
-    def get_queryset(self):
+    def get(self, request):
         # Filtra los votos del usuario actual
+        self.permission_classes = (IsAuthenticated,)
+        self.check_permissions(request)
         user = self.request.user
-        return Vote.objects.filter(voter_id=user.id).order_by("-voted")
+        votes = Vote.objects.filter(voter_id=user.id).order_by("-voted")
+        votesEmpty = len(votes) == 0
+        return render(request, self.template_name, {"votes": votes, "votesEmpty": votesEmpty})
