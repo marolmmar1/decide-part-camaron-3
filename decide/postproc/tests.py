@@ -445,7 +445,7 @@ class TestSimulacionDroop(StaticLiveServerTestCase):
         if len(wh_now) > len(wh_then):
             return set(wh_now).difference(set(wh_then)).pop()
 
-    def test_01_simulaciondhont(self):
+    def test_01_simulaciondroop(self):
         self.driver.get(f"{self.live_server_url}/admin/")
         self.driver.set_window_size(1348, 696)
         self.driver.find_element(By.ID, "id_username").click()
