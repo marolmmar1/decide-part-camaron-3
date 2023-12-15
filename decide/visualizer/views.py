@@ -1,25 +1,24 @@
 import json
-from django.views.generic import View
-from django.shortcuts import render
+from django.views.generic import TemplateView
+from django.conf import settings
 from django.http import Http404
 
 from base import mods
 
 
-class VisualizerView(View):
-    template_name = "visualizer/visualizer.html"
+class VisualizerView(TemplateView):
+    template_name = 'visualizer/visualizer.html'
 
-    def get(self, request, *args, **kwargs):
-        vid = self.kwargs.get("voting_id", 0)
-        context = {}
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        vid = kwargs.get('voting_id', 0)
 
         try:
-            r = mods.get("voting", params={"id": vid})
-            c = mods.get("census", params={"voting_id": vid})
-            context = {"voting": r}
-            context["voting"] = json.dumps(r[0])
-            context["census"] = json.dumps(c)
-        except Exception as e:
-            print(f"Error: {e}")
-            raise Http404("Voting not found")
-        return render(request, self.template_name, context)
+            r = mods.get('voting', params={'id': vid})
+            c = mods.get('census', params={'voting_id': vid})
+            context['voting'] = json.dumps(r[0])
+            context['census'] = json.dumps(c)
+        except:
+            raise Http404
+
+        return context

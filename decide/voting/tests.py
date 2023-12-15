@@ -144,6 +144,7 @@ class VotingTestCase(BaseTestCase):
             "question": "I want a ",
             "seats": 8,
             "question_opt": ["cat", "dog", "horse"],
+            "postproc_type": "DHONT"
         }
 
         response = self.client.post("/voting/", data, format="json")
