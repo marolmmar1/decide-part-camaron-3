@@ -176,7 +176,7 @@ ALLOWED_VERSIONS = ["v1", "v2"]
 DEFAULT_VERSION = "v1"
 
 try:
-    pass
+    from local_settings import *
 except ImportError:
     print("local_settings.py not found")
 
