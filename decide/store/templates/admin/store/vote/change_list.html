@@ -168,37 +168,37 @@
 {% endblock %}
 
 {% block content %}
-<div class="content-wrapper">
-    {{ block.super }}
-    <div class="dashboard-header">
-        <h1>Dashboard</h1>
-        <div class="dashboard-buttons">
-            <a href="{% url 'store:vote_create_backup' %}" class="button">Create Backup</a>
-            <a href="{% url 'store:vote_restore_backup_list' %}" class="button">Restore Database</a>
-            <a href="{% url 'store:delete_backups' %}" class="button">Delete Backups</a>
+    <div class="content-wrapper">
+        {{ block.super }}
+        <div class="dashboard-header">
+            <h1>Dashboard</h1>
+            <div class="dashboard-buttons">
+                <a href="{% url 'store:vote_create_backup' %}" class="button">Create Backup</a>
+                <a href="{% url 'store:vote_restore_backup_list' %}" class="button">Restore Database</a>
+                <a href="{% url 'store:delete_backups' %}" class="button">Delete Backups</a>
+            </div>
+        </div>
+        <div class="grid-container">
+            {% for vote in votes %}
+                <div id="voting-{{ vote.voting_id }}">
+                    <h2>Voting ID: {{ vote.voting_id }}</h2>
+                    <p id="vote-name-{{ vote.voting_id }}">Name: {{ vote.name }}</p>
+                    <p id="vote-count-{{ vote.voting_id }}">Number of votes: {{ vote.total_votes }}</p>
+                    <p id="vote-percentage-{{ vote.voting_id }}">Percentage: {{ vote.percentage|floatformat:2 }}%</p>
+                    <p id="start-date-{{ vote.voting_id }}">Started: {{ vote.start_date }}</p>
+                    <p id="end-date-{{ vote.voting_id }}">Finished: {{ vote.end_date }}</p>
+                    <div class="bar-container">
+                        <div class="bar" data-width="{{ vote.percentage }}"></div>
+                    </div>
+                    {% if vote.start_date < vote.end_date %}
+                        <button class="start-voting button" data-id="{{ vote.voting_id }}">Start Voting {{ vote.voting_id }}</button>
+                        <button class="close-voting button" data-id="{{ vote.voting_id }}" disabled>Voting {{ vote.voting_id }} Closed</button>
+                    {% else %}
+                        <button class="start-voting button" data-id="{{ vote.voting_id }}" disabled>Voting {{ vote.voting_id }} Started</button>
+                        <button class="close-voting button" data-id="{{ vote.voting_id }}">Close Voting {{ vote.voting_id }}</button>
+                    {% endif %}
+                </div>
+            {% endfor %}
         </div>
     </div>
-    <div class="grid-container">
-        {% for vote in votes %}
-            <div id="voting-{{ vote.voting_id }}">
-                <h2>Voting ID: {{ vote.voting_id }}</h2>
-                <p id="vote-name-{{ vote.voting_id }}">Name: {{ vote.name }}</p>
-                <p id="vote-count-{{ vote.voting_id }}">Number of votes: {{ vote.total_votes }}</p>
-                <p id="vote-percentage-{{ vote.voting_id }}">Percentage: {{ vote.percentage|floatformat:2 }}%</p>
-                <p id="start-date-{{ vote.voting_id }}">Started: {{ vote.start_date }}</p>
-                <p id="end-date-{{ vote.voting_id }}">Finished: {{ vote.end_date }}</p>
-                <div class="bar-container">
-                    <div class="bar" data-width="{{ vote.percentage }}"></div>
-                </div>
-                {% if vote.start_date < vote.end_date %}
-                    <button class="start-voting button" data-id="{{ vote.voting_id }}">Start Voting {{ vote.voting_id }}</button>
-                    <button class="close-voting button" data-id="{{ vote.voting_id }}" disabled>Voting {{ vote.voting_id }} Closed</button>
-                {% else %}
-                    <button class="start-voting button" data-id="{{ vote.voting_id }}" disabled>Voting {{ vote.voting_id }} Started</button>
-                    <button class="close-voting button" data-id="{{ vote.voting_id }}">Close Voting {{ vote.voting_id }}</button>
-                {% endif %}
-            </div>
-        {% endfor %}
-    </div>
-</div>
 {% endblock %}
