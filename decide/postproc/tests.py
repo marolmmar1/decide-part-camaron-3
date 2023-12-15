@@ -10,7 +10,6 @@ from time import sleep
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.action_chains import ActionChains
 
 from base import mods
 from django.contrib.auth.models import User, Permission
@@ -402,6 +401,7 @@ class PostProcTestsSaintLague(BaseTestCase):
         else:
             self.fail("Se esperaba una excepción ValidationError, pero no se lanzó")
 
+
 class TestSimulacionDroop(StaticLiveServerTestCase):
     def setUp(self):
         self.base = BaseTestCase()
@@ -594,6 +594,7 @@ class TestSimulacionDroop(StaticLiveServerTestCase):
             "validationerror" in self.driver.page_source
             or "500" in self.driver.page_source
         )
+
 
 class TestSimulacionDhont(StaticLiveServerTestCase):
     def setUp(self):
