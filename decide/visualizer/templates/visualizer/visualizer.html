@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% load i18n static %}
 {% block extrahead %}
-    <link type="text/css" rel="stylesheet"
-         href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
     <link type="text/css" rel="stylesheet" href="{% static "booth/style.css" %}" />
 {% endblock %}
 {% block content %}
@@ -13,6 +13,61 @@
                 <h1 class="navbar-brand">Decide</h1>
             </div>
         </nav>
+        <div class="voting container">
+            <h1>[[ voting.id ]] - [[ voting.name ]]</h1>
+
+            <h2 v-if="!voting.start_date">Votación no comenzada</h2>
+            <div v-else>
+              <h2 v-if="!voting.end_date">Votación en curso</h2>
+
+              <h2>Estadísticas de la votación:</h2>
+                  <table v-if="voting.tally" class="table table-bordered table-striped">
+                    <tr>
+                      <th>Número de inscritos en censo</th>
+                      <td>[[census.voters.length]]</td>
+                    <tr>
+                    <tr>
+                      <th>Número de votos</th>
+                      <td>[[voting.tally.length]]</td>
+                    <tr>
+                    <tr>
+                      <th>Porcentaje del censo que ha votado</th>
+                      <td>[[voting.tally.length/census.voters.length * 100]] %</td>
+                    <tr>
+                  </table>
+                  <table v-else class="table table-bordered table-striped">
+                    <tr>
+                      <th>Número de inscritos en censo</th>
+                      <td>[[census.voters.length]]</td>
+                    <tr>
+                  </table>
+
+              <div v-if="voting.end_date">
+                  <h2 class="heading">Resultados:</h2>
+
+                  <table class="table table-bordered table-striped">
+                      <thead>
+                          <tr>
+                              <th>Opción</th>
+                              <th>Puntuación</th>
+                              <th>Votos</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          <tr v-for="opt in voting.postproc" :key="opt.number">
+                              <th>[[opt.option]]</th>
+                              <td>[[opt.postproc]]</td>
+                              <td class="text-muted">[[opt.votes]]</td>
+                          </tr>
+                      </tbody>
+                  </table>
+                  <div class="d-flex flex-row justify-content-around p-4">
+                    <div><canvas id="stats-bar"></canvas></div>
+                    <div><canvas id="stats-pie"></canvas></div>
+                  </div>
+              </div>
+            </div>
+
         <div class="voting container">
             <h1>[[ voting.id ]] - [[ voting.name ]]</h1>
             <h2 v-if="!voting.start_date">Votación no comenzada</h2>
@@ -59,22 +114,70 @@
 
 {% block extrabody %}
     <!-- Vuejs -->
-    <script src="https://unpkg.com/vue"></script>
+    <script src="https://unpkg.com/chart.js"></script>
     <script src="https://unpkg.com/babel-polyfill@latest/dist/polyfill.min.js"></script>
     <script src="https://unpkg.com/bootstrap@5.2.2/dist/js/bootstrap.js"></script>
-
+    <script src="https://unpkg.com/vue@2.6.14/dist/vue.min.js"></script>    
+    <script src="https://unpkg.com/vue-router@3.5.3/dist/vue-router.min.js"></script>
+    <script src="https://unpkg.com/bootstrap-vue@2.21.2/dist/bootstrap-vue.min.js"></script>
     <script>
         var voting = {{voting|safe}};
+        var census = {{census|safe}};
+
         const { createApp } = Vue
         createApp({
             delimiters: ['[[', ']]'],
             data() {
                 return {
                     voting: voting,
+                    census: census,
 		    seats: voting.postproc[0].dhont
                 }
             }
         }).mount('#app-visualizer')
     </script>
+<script>
+  var xValues = voting.postproc.map((t)=>t.option) 
+  var yValues = voting.postproc.map((t)=>t.votes) 
+  var barColors = ["red", "orange","yellow","lime","turquoise","blue","purple"];
+
+  new Chart("stats-bar", {
+    type: "bar",
+    data: {
+      labels: xValues,
+      datasets: [{
+        backgroundColor: barColors,
+        data: yValues
+      }]
+    },
+    options: {
+      maintainAspectRatio:false,
+      plugins: {
+        legend: {
+          display: false
+        }
+      }
+    }
+  });
+
+  new Chart("stats-pie", {
+    type: "pie",
+    data: {
+      labels: xValues,
+      datasets: [{
+        backgroundColor: barColors,
+        data: yValues
+      }]
+    },
+    options: {
+      plugins: {
+        legend: {
+          display: false
+        }
+      }
+    }
+  });
+
+</script>
 </body>
 {% endblock %}

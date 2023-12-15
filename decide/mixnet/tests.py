@@ -139,14 +139,15 @@ class MixnetCase(APITestCase):
         self.assertNotEqual(shuffled, encrypt)
         data = {"msgs": shuffled, "pk": key}
         response = self.client.post("/mixnet/shuffle/2/", data, format="json")
+
         self.assertNotEqual(shuffled, encrypt)
         shuffled = response.json()
 
         data = {"msgs": shuffled, "pk": key, "force-last": False}
-        response = self.client.post("/mixnet/decrypt/1/", data, format="json")
         clear1 = response.json()
         data = {"msgs": clear1, "pk": key}
         response = self.client.post("/mixnet/decrypt/2/", data, format="json")
+
         clear2 = response.json()
 
         self.assertNotEqual(clear, clear2)
@@ -178,6 +179,7 @@ class MixnetCase(APITestCase):
 
         data = {"msgs": shuffled, "pk": key}
         response = self.client.post("/mixnet/decrypt/1/", data, format="json")
+
         clear1 = response.json()
 
         self.assertNotEqual(clear, clear1)

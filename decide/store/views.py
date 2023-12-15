@@ -88,7 +88,6 @@ class StoreView(generics.ListAPIView):
         v, _ = Vote.objects.get_or_create(voting_id=vid, voter_id=uid, defaults=defs)
         v.a = a
         v.b = b
-
         v.save()
 
         return Response({})

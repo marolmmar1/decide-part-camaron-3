@@ -27,12 +27,48 @@ def tally(ModelAdmin, request, queryset):
         v.tally_votes(token)
 
 
+def single_choice(modeladmin, request, queryset):
+    queryset.update(voting_type="S")
+
+
+def multiple_choice(modeladmin, request, queryset):
+    queryset.update(voting_type="M")
+
+
+def hierarchy(modeladmin, request, queryset):
+    queryset.update(voting_type="H")
+
+
+def many_questions(modeladmin, request, queryset):
+    queryset.update(voting_type="Q")
+
+
 class QuestionOptionInline(admin.TabularInline):
     model = QuestionOption
 
 
 class QuestionAdmin(admin.ModelAdmin):
     inlines = [QuestionOptionInline]
+
+
+admin.site.register(Question, QuestionAdmin)
+
+
+class VotingTypeFilter(admin.SimpleListFilter):
+    title = "voting type"
+    parameter_name = "voting_type"
+
+    def lookups(self, request, model_admin):
+        return [
+            ("S", "Single Choice"),
+            ("M", "Multiple Choice"),
+            ("H", "Hierarchy"),
+            ("Q", "Many Questions"),
+        ]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(voting_type=self.value())
 
 
 class VotingAdmin(admin.ModelAdmin):
@@ -46,4 +82,3 @@ class VotingAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Voting, VotingAdmin)
-admin.site.register(Question, QuestionAdmin)

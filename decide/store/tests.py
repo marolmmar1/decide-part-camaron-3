@@ -138,7 +138,7 @@ class StoreTextCase(BaseTestCase):
         self.assertEqual(len(votes), Vote.objects.filter(voter_id=v).count())
 
     def test_hasvote(self):
-        votings, voters = self.gen_votes()
+        self.gen_votes()
         vo = Vote.objects.first()
         v = vo.voting_id
         u = vo.voter_id
