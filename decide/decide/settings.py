@@ -48,8 +48,8 @@ INSTALLED_APPS = [
 ]
 
 CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
     },
 }
 
@@ -107,8 +107,8 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'decide.wsgi.application'
-ASGI_APPLICATION = 'decide.asgi.application'
+WSGI_APPLICATION = "decide.wsgi.application"
+ASGI_APPLICATION = "decide.asgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases

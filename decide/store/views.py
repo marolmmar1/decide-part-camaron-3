@@ -22,6 +22,7 @@ from rest_framework.permissions import IsAuthenticated
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
+
 class StoreView(generics.ListAPIView):
     queryset = Vote.objects.all()
     serializer_class = VoteSerializer
@@ -109,11 +110,11 @@ class StoreView(generics.ListAPIView):
         # Send a message through Django Channels
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
-            'votes', 
+            "votes",
             {
-                'type': 'vote.added',
-                'vote_id': vid,
-            }
+                "type": "vote.added",
+                "vote_id": vid,
+            },
         )
 
         return Response({})
@@ -147,7 +148,6 @@ def list_backups(request):
     backup_files = list(os.listdir(backup_dir))
 
     return render(request, "list_backups.html", {"backup_files": backup_files})
-
 
 
 def restore_backup(request):
@@ -200,7 +200,6 @@ def delete_selected_backup(request, selected_backup):
                 and not ".." in backup_path
             ):
                 os.remove(backup_path)
-<<<<<<< HEAD
                 messages.success(
                     request, f'Backup "{selected_backup}" deleted successfully.'
                 )
@@ -231,8 +230,6 @@ def delete_selected_backup(request, selected_backup):
                 settings.DATABASE_BACKUP_DIR, selected_backup)
             if os.path.exists(backup_path) and backup_path.endswith(".psql.bin") and not ".." in backup_path:
                 os.remove(backup_path)
-=======
->>>>>>> 85e6285 (fix(controlPanel): solved codacy errors)
                 messages.success(
                     request, f'Backup "{selected_backup}" deleted successfully.')
             else:
@@ -244,7 +241,6 @@ def delete_selected_backup(request, selected_backup):
         return HttpResponseRedirect(reverse('store:delete_backups'))
     else:
         return render(request, 'confirm_delete.html', {'selected_backup': selected_backup})
-
 
 class VoteHistoryView(generics.ListAPIView):
     serializer_class = VoteSerializer

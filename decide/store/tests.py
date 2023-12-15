@@ -244,6 +244,13 @@ class StoreTextCase(BaseTestCase):
         self.login(user=user.username)
         response = self.client.post("/store/", data, format="json")
         self.assertEqual(response.status_code, 200)
+class DjangoChannelsTest(TestCase):
+    def setUp(self):
+        super().setUp()
+        # Crea una pregunta y una votación
+        question = Question.objects.create(desc="Test Question")
+        self.voting = Voting.objects.create(name="Test Voting", question=question)
+        self.voting.save()
 
         self.assertEqual(Vote.objects.count(), 1)
         self.assertEqual(Vote.objects.first().voting_id, VOTING_PK)
@@ -268,6 +275,72 @@ class StoreTextCase(BaseTestCase):
         data = {"voting": 1, "voter": 1, "votes": [{"vote": {"a": 1, "b": 1}}]}
         response = self.client.post("/store/", data, format="json")
         self.assertEqual(response.status_code, 401)
+    def get_or_create_user(self, pk):
+        user, _ = User.objects.get_or_create(pk=pk)
+        user.username = "user{}".format(pk)
+        user.set_password("qwerty")
+        user.save()
+        return user
+
+    async def test_vote_consumer_connection(self):
+        # Define la ruta del WebSocket para el consumidor de votos
+        application = URLRouter(
+            [
+                re_path(r"ws/votes/$", VoteConsumer.as_asgi()),
+            ]
+        )
+
+        # Crea un comunicador WebSocket para la ruta del consumidor de votos
+        communicator = WebsocketCommunicator(application, "ws/votes/")
+
+        # Intenta conectar al WebSocket
+        connected, _ = await communicator.connect()
+        self.assertTrue(connected)
+
+        # Desconecta
+        await communicator.disconnect()
+
+    async def test_vote_consumer_message(self):
+        # Define la ruta del WebSocket para el consumidor de votos
+        application = URLRouter(
+            [
+                re_path(r"ws/votes/$", VoteConsumer.as_asgi()),
+            ]
+        )
+
+        # Crea un comunicador WebSocket para la ruta del consumidor de votos
+        communicator = WebsocketCommunicator(application, "ws/votes/")
+
+        # Conecta al WebSocket
+        connected, _ = await communicator.connect()
+        self.assertTrue(connected)
+
+        # Manda mensaje por Django Channels
+        channel_layer = get_channel_layer()
+        await channel_layer.group_send(
+            "votes",
+            {
+                "type": "vote.added",
+                "vote_id": self.voting.id,
+            },
+        )
+
+        # Recibe el mensaje del WebSocket
+        response = await communicator.receive_json_from()
+
+        # Verifica que el mensaje sea correcto
+        self.assertEqual(
+            response,
+            {
+                "message": "Vote received",
+                "vote_id": self.voting.id,
+                "vote_count": 0,
+                "vote_percentage": 0.0,
+            },
+        )
+
+        # Desconecta
+        await communicator.disconnect()
 
 
 class BackupTestCase(TestCase):
