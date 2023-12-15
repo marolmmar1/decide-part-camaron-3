@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.db.models import Count
 from .models import Vote
 from census.models import Census   
+from voting.models import Voting   
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
@@ -16,6 +17,9 @@ class VoteAdmin(admin.ModelAdmin):
         for vote in votes:
             census = Census.objects.filter(voting_id=vote['voting_id']).values('voter_id').distinct().count()
             vote['percentage'] = (vote['total_votes'] / census) * 100 if census else 0
+            vote['start_date'] = Voting.objects.filter(id=vote['voting_id']).values('start_date').first()['start_date']
+            vote['end_date'] = Voting.objects.filter(id=vote['voting_id']).values('end_date').first()['end_date']
+            vote['name'] = Voting.objects.filter(id=vote['voting_id']).values('name').first()['name']
         extra_context['votes'] = votes
         return super().changelist_view(request, extra_context=extra_context)
 

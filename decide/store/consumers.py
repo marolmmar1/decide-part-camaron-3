@@ -3,22 +3,20 @@ from asgiref.sync import sync_to_async
 import json
 from census.models import Census
 from store.models import Vote
+from voting.models import Voting
+from voting.admin import stop
+from voting.admin import start
 
 class VoteConsumer(AsyncWebsocketConsumer):
-    events = {
-        'vote.added': 'vote_added',
-    }
 
-    async def receive_json(self, content):
-        # Este método se llama cuando se recibe un mensaje del WebSocket.
-
-        # Obtiene el tipo de evento del mensaje.
-        event_type = content.get('type')
-
-        # Si el evento está en el diccionario de eventos, llama a la función correspondiente.
-        if event_type in self.events:
-            event_handler = getattr(self, self.events[event_type])
-            await event_handler(content)
+    async def receive(self, text_data):
+        content = json.loads(text_data)
+        if content['type'] == 'voting.closed':
+            await self.voting_closed(content)
+        elif content['type'] == 'voting.open':
+            await self.voting_open(content)
+        else:
+            await self.vote_added(content)
 
     async def connect(self):
         # Cuando el WebSocket se conecta, añádelo al grupo 'votes'.
@@ -45,4 +43,36 @@ class VoteConsumer(AsyncWebsocketConsumer):
             'vote_id': vote_id,  # Envía el ID de la votación al cliente
             'vote_count': vote_count,  # Envía el recuento de votos al cliente
             'vote_percentage': vote_percentage,  # Envía el porcentaje de votos al cliente
+        }))
+
+    async def voting_closed(self, event):
+        voting_id = event['voting_id']
+
+        # Cierra la votación obteniendo un queryset en vez de una votacion
+        voting = await sync_to_async(Voting.objects.filter)(id=voting_id)
+        await sync_to_async(stop)(None, None, voting)
+        first_voting = await sync_to_async(voting.first)()
+        start = (first_voting.start_date)
+        end = (first_voting.end_date)
+
+        await self.send(text_data=json.dumps({
+            'message': 'Voting closed',
+            'voting_id': voting_id,  # Envía el ID de la votación al cliente
+            'end_date': end.strftime("%b. %d, %Y, %I:%M %p.").lower().capitalize(),  # Envía la fecha de finalización al cliente
+        }))
+
+    async def voting_open(self, event):
+        voting_id = event['voting_id']
+
+        # Cierra la votación obteniendo un queryset en vez de una votacion
+        voting = await sync_to_async(Voting.objects.filter)(id=voting_id)
+        await sync_to_async(start)(None, None, voting)
+        first_voting = await sync_to_async(voting.first)()
+        start2 = (first_voting.start_date)
+        end = (first_voting.end_date)
+
+        await self.send(text_data=json.dumps({
+            'message': 'Voting open',
+            'voting_id': voting_id,  # Envía el ID de la votación al cliente
+            'start_date': start2.strftime("%b. %d, %Y, %I:%M %p.").lower().capitalize(),  # Envía la fecha de cpmienzo al cliente
         }))
