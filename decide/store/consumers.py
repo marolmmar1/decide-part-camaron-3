@@ -52,7 +52,6 @@ class VoteConsumer(AsyncWebsocketConsumer):
         voting = await sync_to_async(Voting.objects.filter)(id=voting_id)
         await sync_to_async(stop)(None, None, voting)
         first_voting = await sync_to_async(voting.first)()
-        start = (first_voting.start_date)
         end = (first_voting.end_date)
 
         await self.send(text_data=json.dumps({
@@ -69,7 +68,6 @@ class VoteConsumer(AsyncWebsocketConsumer):
         await sync_to_async(start)(None, None, voting)
         first_voting = await sync_to_async(voting.first)()
         start2 = (first_voting.start_date)
-        end = (first_voting.end_date)
 
         await self.send(text_data=json.dumps({
             'message': 'Voting open',

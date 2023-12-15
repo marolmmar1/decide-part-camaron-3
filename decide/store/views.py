@@ -10,7 +10,7 @@ from django.conf import settings
 
 import subprocess
 from django.contrib import messages
-from django.http import HttpResponseBadRequest, HttpResponseBadRequest, HttpResponseRedirect
+from django.http import HttpResponseBadRequest, HttpResponseRedirect
 from django.urls import reverse
 
 from .models import Vote
@@ -91,7 +91,6 @@ class StoreView(generics.ListAPIView):
                 v.save()
 
         defs = {"a": a, "b": b}
-<<<<<<< HEAD
         if voting[0].get("voting_type", None) == "H":
             census = mods.get(
                 "census/role/{}".format(vid), params={"voter_id": uid}, response=True
@@ -106,14 +105,6 @@ class StoreView(generics.ListAPIView):
                 v.a = a
                 v.b = b
                 v.save()
-=======
-
-        v, _ = Vote.objects.get_or_create(voting_id=vid, voter_id=uid,
-                                          defaults=defs)
-        v.a = a
-        v.b = b
-        v.save()
->>>>>>> 818b0c6 (fix(controlPanel): fixed real-time data messaging for store dashboard)
 
         # Send a message through Django Channels
         channel_layer = get_channel_layer()
@@ -157,12 +148,6 @@ def list_backups(request):
 
     return render(request, "list_backups.html", {"backup_files": backup_files})
 
-
-def list_backups(request):
-    backup_dir = settings.DATABASE_BACKUP_DIR
-    backup_files = list(os.listdir(backup_dir))
-
-    return render(request, 'list_backups.html', {'backup_files': backup_files})
 
 
 def restore_backup(request):
@@ -215,6 +200,7 @@ def delete_selected_backup(request, selected_backup):
                 and not ".." in backup_path
             ):
                 os.remove(backup_path)
+<<<<<<< HEAD
                 messages.success(
                     request, f'Backup "{selected_backup}" deleted successfully.'
                 )
@@ -245,6 +231,8 @@ def delete_selected_backup(request, selected_backup):
                 settings.DATABASE_BACKUP_DIR, selected_backup)
             if os.path.exists(backup_path) and backup_path.endswith(".psql.bin") and not ".." in backup_path:
                 os.remove(backup_path)
+=======
+>>>>>>> 85e6285 (fix(controlPanel): solved codacy errors)
                 messages.success(
                     request, f'Backup "{selected_backup}" deleted successfully.')
             else:
