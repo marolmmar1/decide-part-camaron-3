@@ -208,13 +208,6 @@ class dashboardRealTimeDataTest(TestCase):
     def tearDown(self):
         super().tearDown()
 
-    def get_or_create_user(self, pk):
-        user, _ = User.objects.get_or_create(pk=pk)
-        user.username = "user{}".format(pk)
-        user.set_password("qwerty")
-        user.save()
-        return user
-
     async def test_vote_consumer_connection(self):
         # Define la ruta del WebSocket para el consumidor de votos
         application = URLRouter(
