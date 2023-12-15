@@ -23,20 +23,26 @@ class StoreTextCase(BaseTestCase):
         super().setUp()
         self.question = Question(desc='qwerty')
         self.question.save()
+        self.question2 = Question(desc='qwerty2')
+        self.question2.save()
         self.voting = Voting(pk=5001,
                              name='voting example',
-                             question=self.question,
                              start_date=timezone.now(),
         )
         self.voting.save()
+        self.voting.questions.add(self.question, self.question2)
 
     def tearDown(self):
         super().tearDown()
 
+   
     def gen_voting(self, pk):
-        voting = Voting(pk=pk, name='v1', question=self.question, start_date=timezone.now(),
+        voting = Voting(pk=pk, name='v1', start_date=timezone.now(),
                 end_date=timezone.now() + datetime.timedelta(days=1))
         voting.save()
+        voting.questions.add(self.question)
+
+    
 
     def get_or_create_user(self, pk):
         user, _ = User.objects.get_or_create(pk=pk)
@@ -60,7 +66,8 @@ class StoreTextCase(BaseTestCase):
             data = {
                 "voting": v,
                 "voter": random_user,
-                "vote": { "a": a, "b": b }
+                "vote": { "a": a, "b": b },
+                "voting_type": 'classic'
             }
             response = self.client.post('/store/', data, format='json')
             self.assertEqual(response.status_code, 200)

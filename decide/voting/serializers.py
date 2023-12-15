@@ -18,13 +18,13 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class VotingSerializer(serializers.HyperlinkedModelSerializer):
-    question = QuestionSerializer(many=False)
+    questions = QuestionSerializer(many=True)
     pub_key = KeySerializer()
     auths = AuthSerializer(many=True)
 
     class Meta:
         model = Voting
-        fields = ('id', 'name', 'desc', 'voting_type', 'question', 'start_date',
+        fields = ('id', 'name', 'desc', 'voting_type', 'questions', 'start_date',
                   'end_date', 'pub_key', 'auths', 'tally', 'postproc')
 
 
