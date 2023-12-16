@@ -4,22 +4,28 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Census',
+            name="Census",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('voting_id', models.PositiveIntegerField()),
-                ('voter_id', models.PositiveIntegerField()),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("voting_id", models.PositiveIntegerField()),
+                ("voter_id", models.PositiveIntegerField()),
             ],
             options={
-                'unique_together': {('voting_id', 'voter_id')},
+                "unique_together": {("voting_id", "voter_id")},
             },
         ),
     ]
