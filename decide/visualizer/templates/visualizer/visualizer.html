@@ -72,7 +72,7 @@
 
 {% block extrabody %}
     <!-- Vuejs -->
-    <!-- <script src="https://unpkg.com/chart.js"></script> -->
+    <script src="https://unpkg.com/chart.js"></script>
     <script src="https://unpkg.com/browse/vue-chartjs"></script>
     <script src="https://unpkg.com/babel-polyfill@latest/dist/polyfill.min.js"></script>
     <script src="https://unpkg.com/bootstrap@5.2.2/dist/js/bootstrap.js"></script>
@@ -83,7 +83,6 @@
       function calcDhontSeats(voting) {
         var results = voting.postproc.results
         var results = results.map((x)=>x.dhont)
-        console.log(results)
         var n = results[0].length
         var acc = Array(results.length).fill(0)
 
@@ -98,46 +97,27 @@
     <script>
         var voting = {{voting|safe}};
         var census = {{census|safe}};
-        console.log(voting)
 
         var tally = voting.tally.reduce((acc,value) => {
           acc[value] = (acc[value] || 0) + 1
           return acc
         }, {})
+        voting.questions[0].options.forEach((o)=>{
+          if(!tally[o.number]) {
+            tally[o.number] = 0
+          }
+        })
 
-        console.log(tally)
 
         var seats = null
         switch(voting.postproc.type_postproc) {
           case "DHO":
-            console.log("Calculating")
             seats = calcDhontSeats(voting)
             break
           case "PAR":
             seats = voting.postproc.results.map((res)=>res.saintLague)
             break
         }
-
-//        import { Bar } from 'vue-chartjs'
-//        import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js'
-//
-//        ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
-//
-//        export default {
-//          components: { Bar },
-//          data() {
-//            return {
-//              chartData: {
-//                labels: voting.questions[0].options.map((o)=>o.option),
-//                datasets: [ { data: Object.keys(tally).sort((a,b)=>a-b).map((key)=>tally[key]) } ]
-//              },
-//              chartOptions: {
-//                responsive: true
-//              }
-//            }
-//          }
-//        }
-
 
         const { createApp } = Vue
         createApp({
@@ -149,53 +129,52 @@
                     tally: tally,
                     seats: seats
                 }
+            },
+            mounted() {
+              var xValues = voting.questions[0].options.map((o)=>o.option)
+              var yValues = Object.keys(tally).sort((a,b)=>a-b).map(i=>tally[i])
+              var barColors = ["red", "orange","yellow","lime","turquoise","blue","purple"];
+
+              new Chart("stats-bar", {
+                type: "bar",
+                data: {
+                  labels: xValues,
+                  datasets: [{
+                    backgroundColor: barColors,
+                    data: yValues
+                  }]
+                },
+                options: {
+                  maintainAspectRatio:false,
+                  plugins: {
+                    legend: {
+                      display: false
+                    }
+                  }
+                }
+              });
+
+              new Chart("stats-pie", {
+                type: "pie",
+                data: {
+                  labels: xValues,
+                  datasets: [{
+                    backgroundColor: barColors,
+                    data: yValues
+                  }]
+                },
+                options: {
+                  plugins: {
+                    legend: {
+                      display: false
+                    }
+                  }
+                }
+              });
+
             }
         }).mount('#app-visualizer')
+
+
     </script>
-<script>
-  var xValues = voting.postproc.map((t)=>t.option) 
-  console.log("XVALUES")
-  console.log(xValues)
-  var yValues = voting.postproc.map((t)=>t.votes) 
-  var barColors = ["red", "orange","yellow","lime","turquoise","blue","purple"];
-
-  new Chart("stats-bar", {
-    type: "bar",
-    data: {
-      labels: xValues,
-      datasets: [{
-        backgroundColor: barColors,
-        data: yValues
-      }]
-    },
-    options: {
-      maintainAspectRatio:false,
-      plugins: {
-        legend: {
-          display: false
-        }
-      }
-    }
-  });
-
-  new Chart("stats-pie", {
-    type: "pie",
-    data: {
-      labels: xValues,
-      datasets: [{
-        backgroundColor: barColors,
-        data: yValues
-      }]
-    },
-    options: {
-      plugins: {
-        legend: {
-          display: false
-        }
-      }
-    }
-  });
-
-</script>
-</body>
 {% endblock %}
