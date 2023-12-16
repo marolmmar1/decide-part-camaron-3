@@ -1,4 +1,3 @@
-from django.test import TestCase
 from base.tests import BaseTestCase
 from selenium import webdriver
 from voting.models import Voting, Question, QuestionOption
@@ -27,6 +26,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 
 # Create your tests here.
 
+
 class BoothTestCase(TestCase):
     def setUp(self):
         self.driver = webdriver.Chrome()
@@ -43,9 +43,8 @@ class BoothTestCase(TestCase):
     
         response = self.client.get('/booth/10000/')
         self.assertEqual(response.status_code, 404)
-    
-    def testBoothRedirection(self):
-        
+
+    def testBoothRedirection(self):        
         response = self.client.get('/booth/10000')
         self.assertEqual(response.status_code, 301)
 
@@ -146,10 +145,8 @@ class BoothTestCase(TestCase):
         self.driver.find_element(By.ID, "opt1_index0").click()
         self.driver.find_element(By.ID, "opt3_index1").click()
         self.driver.find_element(By.CSS_SELECTOR, ".btn-primary").click()
-
     
 
     
 
-    
 
