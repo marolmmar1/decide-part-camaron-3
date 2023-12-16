@@ -37,28 +37,43 @@ class VotingView(generics.ListCreateAPIView):
         self.permission_classes = (UserIsStaff,)
         self.check_permissions(request)
 
-        for data in ['voting_type', 'desc', 'name','questions', 'questions_opt',"seats","postproc_type",]:
-            if request.data.get('voting_type') not in ['S', 'H', 'M']:
+        for data in [
+            "voting_type",
+            "desc",
+            "name",
+            "questions",
+            "questions_opt",
+            "seats",
+            "postproc_type",
+        ]:
+            if request.data.get("voting_type") not in ["S", "H", "M"]:
                 return Response({}, status=status.HTTP_400_BAD_REQUEST)
             if not data in request.data:
                 return Response({}, status=status.HTTP_400_BAD_REQUEST)
 
-        questions = [Question(desc=d) for d in request.data.get('questions')]
+        questions = [Question(desc=d) for d in request.data.get("questions")]
         for q in questions:
             q.save()
 
-        for q_idx, q_opts in enumerate(request.data.get('questions_opt')):
+        for q_idx, q_opts in enumerate(request.data.get("questions_opt")):
             for o_idx, q_opt in enumerate(q_opts):
-                opt = QuestionOption(question=questions[q_idx], option=q_opt, number=o_idx)
+                opt = QuestionOption(
+                    question=questions[q_idx], option=q_opt, number=o_idx
+                )
                 opt.save()
 
-        voting = Voting(name=request.data.get('name'), desc=request.data.get('desc'), voting_type=request.data.get('voting_type'))
+        voting = Voting(
+            name=request.data.get("name"),
+            desc=request.data.get("desc"),
+            voting_type=request.data.get("voting_type"),
+        )
         voting.save()
         for q in questions:
             voting.questions.add(q)
-        
-        auth, _ = Auth.objects.get_or_create(url=settings.BASEURL,
-                                          defaults={'me': True, 'name': 'test auth'})
+
+        auth, _ = Auth.objects.get_or_create(
+            url=settings.BASEURL, defaults={"me": True, "name": "test auth"}
+        )
 
         auth.save()
         voting.auths.add(auth)

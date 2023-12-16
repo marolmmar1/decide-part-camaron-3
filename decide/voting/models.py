@@ -126,16 +126,16 @@ class QuestionOption(models.Model):
 
 
 VOTING_TYPES = [
-    ('S', 'Single Choice'),
-    ('M', 'Multiple Choice'),
-    ('H', 'Hierarchy'),
+    ("S", "Single Choice"),
+    ("M", "Multiple Choice"),
+    ("H", "Hierarchy"),
 ]
 
 
 class Voting(models.Model):
     name = models.CharField(max_length=200)
     desc = models.TextField(blank=True, null=True)
-    questions = models.ManyToManyField(Question,related_name='votings')
+    questions = models.ManyToManyField(Question, related_name="votings")
     voting_type = models.CharField(max_length=1, choices=VOTING_TYPES, default="S")
     postproc_type = models.CharField(
         max_length=3, choices=Type.choices, default=Type.NONE

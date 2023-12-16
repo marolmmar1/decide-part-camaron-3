@@ -4,11 +4,9 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('voting', '0010_merge_20231126_1309'),
-        ('voting', '0010_merge_20231127_0901'),
+        ("voting", "0010_merge_20231126_1309"),
+        ("voting", "0010_merge_20231127_0901"),
     ]
 
-    operations = [
-    ]
+    operations = []

@@ -10,9 +10,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 
 import time
-import json
 from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 from base import mods
 from base.tests import BaseTestCase
@@ -24,178 +22,199 @@ from voting.models import Voting, Question, QuestionOption
 from django.core.exceptions import ValidationError
 
 
-class TestTestselenium1():
-  def setUp(self):
-    self.driver = webdriver.Chrome()
-    self.vars = {}
-    options = webdriver.ChromeOptions()
-    options.headless = True
-    self.driver = webdriver.Chrome(options=options)
+class TestTestselenium1:
+    def setUp(self):
+        self.driver = webdriver.Chrome()
+        self.vars = {}
+        options = webdriver.ChromeOptions()
+        options.headless = True
+        self.driver = webdriver.Chrome(options=options)
 
-  def tearDown(self):
-    self.driver.quit()
-  
-  def wait_for_window(self, timeout = 2):
-    time.sleep(round(timeout / 1000))
-    wh_now = self.driver.window_handles
-    wh_then = self.vars["window_handles"]
-    if len(wh_now) > len(wh_then):
-      return set(wh_now).difference(set(wh_then)).pop()
-  
-  def test_testselenium1(self):
-    self.driver.get("http://127.0.0.1:8000/admin/login/?next=/admin/")
-    self.driver.set_window_size(1311, 606)
-    self.driver.find_element(By.ID, "id_username").click()
-    self.driver.find_element(By.ID, "id_username").send_keys("admin")
-    self.driver.find_element(By.ID, "id_password").click()
-    self.driver.find_element(By.ID, "id_password").send_keys("admin")
-    self.driver.find_element(By.CSS_SELECTOR, ".submit-row > input").click()
-    self.driver.find_element(By.LINK_TEXT, "Votings").click()
-    self.driver.find_element(By.CSS_SELECTOR, "li > .addlink").click()
-    dropdown = self.driver.find_element(By.ID, "id_voting_type")
-    dropdown.find_element(By.XPATH, "//option[. = 'Single Choice']").click()
-    element = self.driver.find_element(By.ID, "id_voting_type")
-    actions = ActionChains(self.driver)
-    actions.move_to_element(element).click_and_hold().perform()
-    element = self.driver.find_element(By.ID, "id_voting_type")
-    actions = ActionChains(self.driver)
-    actions.move_to_element(element).perform()
-    element = self.driver.find_element(By.ID, "id_voting_type")
-    actions = ActionChains(self.driver)
-    actions.move_to_element(element).release().perform()
-    self.driver.find_element(By.ID, "id_name").click()
-    self.driver.find_element(By.CSS_SELECTOR, ".field-name > div").click()
-    self.driver.find_element(By.ID, "id_name").send_keys("Champions")
-    self.driver.find_element(By.ID, "id_desc").click()
-    self.driver.find_element(By.ID, "id_desc").send_keys("Ganar la champions")
-    self.vars["window_handles"] = self.driver.window_handles
-    self.driver.find_element(By.CSS_SELECTOR, "#add_id_question > img").click()
-    self.vars["win504"] = self.wait_for_window(2000)
-    self.vars["root"] = self.driver.current_window_handle
-    self.driver.switch_to.window(self.vars["win504"])
-    self.driver.find_element(By.ID, "id_desc").click()
-    self.driver.find_element(By.ID, "id_desc").send_keys("¿Ganará el Atletico de Madrid la Champions?")
-    self.driver.find_element(By.CSS_SELECTOR, ".field-optionSiNo .vCheckboxLabel").click()
-    self.driver.find_element(By.CSS_SELECTOR, ".field-third_option .vCheckboxLabel").click()
-    self.driver.find_element(By.NAME, "_save").click()
-    self.driver.switch_to.window(self.vars["root"])
-    self.vars["window_handles"] = self.driver.window_handles
-    self.driver.find_element(By.CSS_SELECTOR, "#add_id_auths > img").click()
-    self.vars["win5929"] = self.wait_for_window(2000)
-    if self.vars["win5929"] in self.driver.window_handles:
+    def tearDown(self):
+        self.driver.quit()
+
+    def wait_for_window(self, timeout=2):
+        time.sleep(round(timeout / 1000))
+        wh_now = self.driver.window_handles
+        wh_then = self.vars["window_handles"]
+        if len(wh_now) > len(wh_then):
+            return set(wh_now).difference(set(wh_then)).pop()
+
+    def test_testselenium1(self):
+        self.driver.get("http://127.0.0.1:8000/admin/login/?next=/admin/")
+        self.driver.set_window_size(1311, 606)
+        self.driver.find_element(By.ID, "id_username").click()
+        self.driver.find_element(By.ID, "id_username").send_keys("admin")
+        self.driver.find_element(By.ID, "id_password").click()
+        self.driver.find_element(By.ID, "id_password").send_keys("admin")
+        self.driver.find_element(By.CSS_SELECTOR, ".submit-row > input").click()
+        self.driver.find_element(By.LINK_TEXT, "Votings").click()
+        self.driver.find_element(By.CSS_SELECTOR, "li > .addlink").click()
+        dropdown = self.driver.find_element(By.ID, "id_voting_type")
+        dropdown.find_element(By.XPATH, "//option[. = 'Single Choice']").click()
+        element = self.driver.find_element(By.ID, "id_voting_type")
+        actions = ActionChains(self.driver)
+        actions.move_to_element(element).click_and_hold().perform()
+        element = self.driver.find_element(By.ID, "id_voting_type")
+        actions = ActionChains(self.driver)
+        actions.move_to_element(element).perform()
+        element = self.driver.find_element(By.ID, "id_voting_type")
+        actions = ActionChains(self.driver)
+        actions.move_to_element(element).release().perform()
+        self.driver.find_element(By.ID, "id_name").click()
+        self.driver.find_element(By.CSS_SELECTOR, ".field-name > div").click()
+        self.driver.find_element(By.ID, "id_name").send_keys("Champions")
+        self.driver.find_element(By.ID, "id_desc").click()
+        self.driver.find_element(By.ID, "id_desc").send_keys("Ganar la champions")
+        self.vars["window_handles"] = self.driver.window_handles
+        self.driver.find_element(By.CSS_SELECTOR, "#add_id_question > img").click()
+        self.vars["win504"] = self.wait_for_window(2000)
+        self.vars["root"] = self.driver.current_window_handle
+        self.driver.switch_to.window(self.vars["win504"])
+        self.driver.find_element(By.ID, "id_desc").click()
+        self.driver.find_element(By.ID, "id_desc").send_keys(
+            "¿Ganará el Atletico de Madrid la Champions?"
+        )
+        self.driver.find_element(
+            By.CSS_SELECTOR, ".field-optionSiNo .vCheckboxLabel"
+        ).click()
+        self.driver.find_element(
+            By.CSS_SELECTOR, ".field-third_option .vCheckboxLabel"
+        ).click()
+        self.driver.find_element(By.NAME, "_save").click()
+        self.driver.switch_to.window(self.vars["root"])
+        self.vars["window_handles"] = self.driver.window_handles
+        self.driver.find_element(By.CSS_SELECTOR, "#add_id_auths > img").click()
+        self.vars["win5929"] = self.wait_for_window(2000)
+        if self.vars["win5929"] in self.driver.window_handles:
+            self.driver.switch_to.window(self.vars["win5929"])
+        else:
+            print("La ventana no existe o ya ha sido cerrada.")
         self.driver.switch_to.window(self.vars["win5929"])
-    else:
-        print("La ventana no existe o ya ha sido cerrada.")
-    self.driver.switch_to.window(self.vars["win5929"])
-    self.driver.find_element(By.ID, "id_url").click()
-    self.driver.find_element(By.ID, "id_url").send_keys("http://127.0.0.1:8000")
-    self.driver.find_element(By.ID, "id_name").click()
-    self.driver.find_element(By.ID, "id_name").click()
-    element = self.driver.find_element(By.ID, "id_name")
-    actions = ActionChains(self.driver)
-    actions.double_click(element).perform()
-    self.driver.find_element(By.ID, "id_name").send_keys("url")
-    self.driver.find_element(By.NAME, "_save").click()
-    self.driver.switch_to.window(self.vars["root"])
-    self.driver.find_element(By.NAME, "_save").click()
-    self.driver.find_element(By.LINK_TEXT, "Questions").click()
-    self.driver.find_element(By.LINK_TEXT, "¿Ganará el Atletico de Madrid la Champions?").click()
-    self.driver.find_element(By.NAME, "_save").click()
-  
+        self.driver.find_element(By.ID, "id_url").click()
+        self.driver.find_element(By.ID, "id_url").send_keys("http://127.0.0.1:8000")
+        self.driver.find_element(By.ID, "id_name").click()
+        self.driver.find_element(By.ID, "id_name").click()
+        element = self.driver.find_element(By.ID, "id_name")
+        actions = ActionChains(self.driver)
+        actions.double_click(element).perform()
+        self.driver.find_element(By.ID, "id_name").send_keys("url")
+        self.driver.find_element(By.NAME, "_save").click()
+        self.driver.switch_to.window(self.vars["root"])
+        self.driver.find_element(By.NAME, "_save").click()
+        self.driver.find_element(By.LINK_TEXT, "Questions").click()
+        self.driver.find_element(
+            By.LINK_TEXT, "¿Ganará el Atletico de Madrid la Champions?"
+        ).click()
+        self.driver.find_element(By.NAME, "_save").click()
 
-class TestTestselenium2():
-  def setUp(self):
-    self.driver = webdriver.Chrome()
-    self.vars = {}
-    options = webdriver.ChromeOptions()
-    options.headless = True
-    self.driver = webdriver.Chrome(options=options)
-  
-  def tearDown(self):
-    self.driver.quit()
-  
-  def wait_for_window(self, timeout = 2):
-    time.sleep(round(timeout / 1000))
-    wh_now = self.driver.window_handles
-    wh_then = self.vars["window_handles"]
-    if len(wh_now) > len(wh_then):
-      return set(wh_now).difference(set(wh_then)).pop()
-  
-  def test_testselenium2(self):
-    self.driver.get("http://127.0.0.1:8000/admin/login/?next=/admin/")
-    self.driver.set_window_size(1050, 708)
-    self.driver.find_element(By.ID, "id_username").click()
-    self.driver.find_element(By.ID, "id_username").send_keys("admin")
-    self.driver.find_element(By.CSS_SELECTOR, ".login").click()
-    self.driver.find_element(By.ID, "id_password").click()
-    self.driver.find_element(By.ID, "id_password").send_keys("admin")
-    self.driver.find_element(By.CSS_SELECTOR, ".submit-row > input").click()
-    self.driver.find_element(By.LINK_TEXT, "Votings").click()
-    self.driver.find_element(By.CSS_SELECTOR, "li > .addlink").click()
-    dropdown = self.driver.find_element(By.ID, "id_voting_type")
-    dropdown.find_element(By.XPATH, "//option[. = 'Single Choice']").click()
-    element = self.driver.find_element(By.ID, "id_voting_type")
-    actions = ActionChains(self.driver)
-    actions.move_to_element(element).click_and_hold().perform()
-    element = self.driver.find_element(By.ID, "id_voting_type")
-    actions = ActionChains(self.driver)
-    actions.move_to_element(element).perform()
-    element = self.driver.find_element(By.ID, "id_voting_type")
-    actions = ActionChains(self.driver)
-    actions.move_to_element(element).release().perform()
-    self.driver.find_element(By.ID, "id_name").click()
-    self.driver.find_element(By.ID, "id_name").send_keys("Votacion Atleti")
-    self.vars["window_handles"] = self.driver.window_handles
-    self.driver.find_element(By.CSS_SELECTOR, "#add_id_question > img").click()
-    self.vars["win6767"] = self.wait_for_window(2000)
-    self.vars["root"] = self.driver.current_window_handle
-    self.driver.switch_to.window(self.vars["win6767"])
-    self.driver.find_element(By.ID, "id_desc").click()
-    self.driver.find_element(By.ID, "id_desc").click()
-    element = self.driver.find_element(By.ID, "id_desc")
-    actions = ActionChains(self.driver)
-    actions.double_click(element).perform()
-    self.driver.find_element(By.ID, "id_desc").send_keys("¿Ganará algo el Atleti este año?")
-    self.driver.find_element(By.NAME, "_save").click()
-    self.driver.switch_to.window(self.vars["root"])
-    self.driver.find_element(By.ID, "id_desc").click()
-    self.driver.find_element(By.ID, "id_name").click()
-    self.driver.find_element(By.ID, "id_desc").click()
-    self.driver.find_element(By.ID, "id_desc").send_keys("Votacion Atleti")
-    self.vars["window_handles"] = self.driver.window_handles
-    self.driver.find_element(By.CSS_SELECTOR, "#add_id_auths > img").click()
-    self.vars["win2405"] = self.wait_for_window(2000)
-    self.driver.switch_to.window(self.vars["win2405"])
-    self.driver.find_element(By.ID, "id_name").click()
-    self.driver.find_element(By.ID, "id_name").send_keys("url")
-    self.driver.find_element(By.ID, "id_url").click()
-    self.driver.find_element(By.ID, "id_url").click()
-    element = self.driver.find_element(By.ID, "id_url")
-    actions = ActionChains(self.driver)
-    actions.double_click(element).perform()
-    self.driver.find_element(By.ID, "id_url").send_keys("http://127.0.0.1:8000")
-    self.driver.find_element(By.NAME, "_save").click()
-    self.driver.switch_to.window(self.vars["root"])
-    self.driver.find_element(By.NAME, "_save").click()
-    self.driver.find_element(By.LINK_TEXT, "Questions").click()
-    self.driver.find_element(By.LINK_TEXT, "¿Ganará algo el Atleti este año?").click()
-    self.driver.find_element(By.CSS_SELECTOR, ".field-third_option .vCheckboxLabel").click()
-    self.driver.find_element(By.ID, "id_options-0-number").click()
-    self.driver.find_element(By.ID, "id_options-0-number").send_keys("1")
-    self.driver.find_element(By.ID, "id_options-1-number").click()
-    self.driver.find_element(By.ID, "id_options-1-number").send_keys("2")
-    self.driver.find_element(By.ID, "id_options-0-option").click()
-    self.driver.find_element(By.CSS_SELECTOR, "#options-0 > .field-option").click()
-    self.driver.find_element(By.ID, "id_options-0-option").send_keys("Ganará la Champions")
-    self.driver.find_element(By.ID, "id_options-1-option").click()
-    self.driver.find_element(By.ID, "id_options-1-option").click()
-    self.driver.find_element(By.ID, "id_options-1-option").send_keys("No ganará nada")
-    self.driver.find_element(By.ID, "id_options-0-option").click()
-    self.driver.find_element(By.ID, "id_options-0-option").send_keys("Ganará un título")
-    self.driver.find_element(By.NAME, "_save").click()
-    self.driver.find_element(By.CSS_SELECTOR, ".field-__str__ > a").click()
-    self.driver.find_element(By.NAME, "_save").click()
-  
+
+class TestTestselenium2:
+    def setUp(self):
+        self.driver = webdriver.Chrome()
+        self.vars = {}
+        options = webdriver.ChromeOptions()
+        options.headless = True
+        self.driver = webdriver.Chrome(options=options)
+
+    def tearDown(self):
+        self.driver.quit()
+
+    def wait_for_window(self, timeout=2):
+        time.sleep(round(timeout / 1000))
+        wh_now = self.driver.window_handles
+        wh_then = self.vars["window_handles"]
+        if len(wh_now) > len(wh_then):
+            return set(wh_now).difference(set(wh_then)).pop()
+
+    def test_testselenium2(self):
+        self.driver.get("http://127.0.0.1:8000/admin/login/?next=/admin/")
+        self.driver.set_window_size(1050, 708)
+        self.driver.find_element(By.ID, "id_username").click()
+        self.driver.find_element(By.ID, "id_username").send_keys("admin")
+        self.driver.find_element(By.CSS_SELECTOR, ".login").click()
+        self.driver.find_element(By.ID, "id_password").click()
+        self.driver.find_element(By.ID, "id_password").send_keys("admin")
+        self.driver.find_element(By.CSS_SELECTOR, ".submit-row > input").click()
+        self.driver.find_element(By.LINK_TEXT, "Votings").click()
+        self.driver.find_element(By.CSS_SELECTOR, "li > .addlink").click()
+        dropdown = self.driver.find_element(By.ID, "id_voting_type")
+        dropdown.find_element(By.XPATH, "//option[. = 'Single Choice']").click()
+        element = self.driver.find_element(By.ID, "id_voting_type")
+        actions = ActionChains(self.driver)
+        actions.move_to_element(element).click_and_hold().perform()
+        element = self.driver.find_element(By.ID, "id_voting_type")
+        actions = ActionChains(self.driver)
+        actions.move_to_element(element).perform()
+        element = self.driver.find_element(By.ID, "id_voting_type")
+        actions = ActionChains(self.driver)
+        actions.move_to_element(element).release().perform()
+        self.driver.find_element(By.ID, "id_name").click()
+        self.driver.find_element(By.ID, "id_name").send_keys("Votacion Atleti")
+        self.vars["window_handles"] = self.driver.window_handles
+        self.driver.find_element(By.CSS_SELECTOR, "#add_id_question > img").click()
+        self.vars["win6767"] = self.wait_for_window(2000)
+        self.vars["root"] = self.driver.current_window_handle
+        self.driver.switch_to.window(self.vars["win6767"])
+        self.driver.find_element(By.ID, "id_desc").click()
+        self.driver.find_element(By.ID, "id_desc").click()
+        element = self.driver.find_element(By.ID, "id_desc")
+        actions = ActionChains(self.driver)
+        actions.double_click(element).perform()
+        self.driver.find_element(By.ID, "id_desc").send_keys(
+            "¿Ganará algo el Atleti este año?"
+        )
+        self.driver.find_element(By.NAME, "_save").click()
+        self.driver.switch_to.window(self.vars["root"])
+        self.driver.find_element(By.ID, "id_desc").click()
+        self.driver.find_element(By.ID, "id_name").click()
+        self.driver.find_element(By.ID, "id_desc").click()
+        self.driver.find_element(By.ID, "id_desc").send_keys("Votacion Atleti")
+        self.vars["window_handles"] = self.driver.window_handles
+        self.driver.find_element(By.CSS_SELECTOR, "#add_id_auths > img").click()
+        self.vars["win2405"] = self.wait_for_window(2000)
+        self.driver.switch_to.window(self.vars["win2405"])
+        self.driver.find_element(By.ID, "id_name").click()
+        self.driver.find_element(By.ID, "id_name").send_keys("url")
+        self.driver.find_element(By.ID, "id_url").click()
+        self.driver.find_element(By.ID, "id_url").click()
+        element = self.driver.find_element(By.ID, "id_url")
+        actions = ActionChains(self.driver)
+        actions.double_click(element).perform()
+        self.driver.find_element(By.ID, "id_url").send_keys("http://127.0.0.1:8000")
+        self.driver.find_element(By.NAME, "_save").click()
+        self.driver.switch_to.window(self.vars["root"])
+        self.driver.find_element(By.NAME, "_save").click()
+        self.driver.find_element(By.LINK_TEXT, "Questions").click()
+        self.driver.find_element(
+            By.LINK_TEXT, "¿Ganará algo el Atleti este año?"
+        ).click()
+        self.driver.find_element(
+            By.CSS_SELECTOR, ".field-third_option .vCheckboxLabel"
+        ).click()
+        self.driver.find_element(By.ID, "id_options-0-number").click()
+        self.driver.find_element(By.ID, "id_options-0-number").send_keys("1")
+        self.driver.find_element(By.ID, "id_options-1-number").click()
+        self.driver.find_element(By.ID, "id_options-1-number").send_keys("2")
+        self.driver.find_element(By.ID, "id_options-0-option").click()
+        self.driver.find_element(By.CSS_SELECTOR, "#options-0 > .field-option").click()
+        self.driver.find_element(By.ID, "id_options-0-option").send_keys(
+            "Ganará la Champions"
+        )
+        self.driver.find_element(By.ID, "id_options-1-option").click()
+        self.driver.find_element(By.ID, "id_options-1-option").click()
+        self.driver.find_element(By.ID, "id_options-1-option").send_keys(
+            "No ganará nada"
+        )
+        self.driver.find_element(By.ID, "id_options-0-option").click()
+        self.driver.find_element(By.ID, "id_options-0-option").send_keys(
+            "Ganará un título"
+        )
+        self.driver.find_element(By.NAME, "_save").click()
+        self.driver.find_element(By.CSS_SELECTOR, ".field-__str__ > a").click()
+        self.driver.find_element(By.NAME, "_save").click()
+
+
 class VotingTestCase(BaseTestCase):
     def setUp(self):
         super().setUp()
@@ -219,11 +238,12 @@ class VotingTestCase(BaseTestCase):
             )
 
             opt.save()
-        v = Voting(name='test voting')
+        v = Voting(name="test voting")
         v.save()
         v.questions.set([q])
-        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
-                                          defaults={'me': True, 'name': 'test auth'})
+        a, _ = Auth.objects.get_or_create(
+            url=settings.BASEURL, defaults={"me": True, "name": "test auth"}
+        )
 
         a.save()
         v.auths.add(a)
@@ -248,13 +268,12 @@ class VotingTestCase(BaseTestCase):
     def test_to_string(self):
         # Crea un objeto votacion
         v = self.create_voting()
-        #Verifica que el nombre de la votacion es test voting
-        self.assertEquals(str(v),"test voting")
-        #Verifica que la descripcion de la pregunta sea test question
-        #self.assertEquals(str(v.questions.),"test question")
-        #Verifica que la primera opcion es option1 (2)
-        #self.assertEquals(str(v.question.options.all()[0]),"option 1 (2)")
-
+        # Verifica que el nombre de la votacion es test voting
+        self.assertEquals(str(v), "test voting")
+        # Verifica que la descripcion de la pregunta sea test question
+        # self.assertEquals(str(v.questions.),"test question")
+        # Verifica que la primera opcion es option1 (2)
+        # self.assertEquals(str(v.question.options.all()[0]),"option 1 (2)")
 
     def store_votes(self, v):
         voters = list(Census.objects.filter(voting_id=v.id))
@@ -267,15 +286,15 @@ class VotingTestCase(BaseTestCase):
                 for i in range(random.randint(0, 5)):
                     a, b = self.encrypt_msg(opt.number, v)
                     data = {
-                        'voting': v.id,
-                        'voter': voter.voter_id,
-                        'vote': { 'a': a, 'b': b },
+                        "voting": v.id,
+                        "voter": voter.voter_id,
+                        "vote": {"a": a, "b": b},
                     }
                     clear[opt.number] += 1
                     user = self.get_or_create_user(voter.voter_id)
                     self.login(user=user.username)
                     voter = voters.pop()
-                    mods.post('store', json=data)
+                    mods.post("store", json=data)
 
         return clear
 
@@ -293,14 +312,12 @@ class VotingTestCase(BaseTestCase):
         tally = v.tally
         tally.sort()
         tally = {k: len(list(x)) for k, x in itertools.groupby(tally)}
-        
 
         for q in v.questions.all()[0].options.all():
             self.assertEqual(tally.get(q.number, 0), clear.get(q.number, 0))
 
         for q in v.postproc:
             self.assertEqual(tally.get(q["number"], 0), q["votes"])
-    
 
     def test_create_voting_from_api(self):
         data = {"name": "Example"}
@@ -321,11 +338,10 @@ class VotingTestCase(BaseTestCase):
             "voting_type": "S",
             "name": "Example",
             "desc": "Description example",
-            'questions': ['I want a '],
+            "questions": ["I want a "],
             "seats": 8,
-            'questions_opt': [['cat', 'dog', 'horse']],
+            "questions_opt": [["cat", "dog", "horse"]],
             "postproc_type": "DHONT",
-
         }
 
         response = self.client.post("/voting/", data, format="json")
@@ -431,19 +447,18 @@ class VotingTestCase(BaseTestCase):
         response = self.client.post("/voting/{}/".format(v.pk), data, format="json")
         self.assertEquals(response.status_code, 405)
 
-
     def test_create_voting_multiple_questions_from_api(self):
         # login with user admin
         self.login()
         data = {
-            'voting_type': 'S',
-            'name': 'Example',
-            'desc': 'Description example',
-            'questions': ['I want a ', 'I prefer a'],
-            'questions_opt': [['cat', 'dog', 'horse'],['red','blue','green']]
+            "voting_type": "S",
+            "name": "Example",
+            "desc": "Description example",
+            "questions": ["I want a ", "I prefer a"],
+            "questions_opt": [["cat", "dog", "horse"], ["red", "blue", "green"]],
         }
 
-        response = self.client.post('/voting/', data, format='json')
+        response = self.client.post("/voting/", data, format="json")
         self.assertEqual(response.status_code, 201)
 
 
@@ -457,7 +472,7 @@ class VotingModelTestCase(BaseTestCase):
         opt1 = QuestionOption(question=q, option="opcion 2")
         opt1.save()
 
-        self.v = Voting(name='Votacion')
+        self.v = Voting(name="Votacion")
 
         self.v.save()
         self.v.questions.set([q])
@@ -468,7 +483,7 @@ class VotingModelTestCase(BaseTestCase):
         self.v = None
 
     def testExist(self):
-        v=Voting.objects.get(name='Votacion')
+        v = Voting.objects.get(name="Votacion")
         for question in v.questions.all():
             self.assertEquals(question.options.all()[0].option, "opcion 1")
 
@@ -484,10 +499,9 @@ class VotingTypeTestCase(BaseTestCase):
         opt2.save()
 
         with self.assertRaises(ValidationError):
-            self.v = Voting(name='Votacion_Type', voting_type='INVALID')
-            self.v.full_clean() 
-            self.v.save()  
-
+            self.v = Voting(name="Votacion_Type", voting_type="INVALID")
+            self.v.full_clean()
+            self.v.save()
 
         votings_with_invalid_type = Voting.objects.filter(name="Votacion_Type")
         self.assertEqual(votings_with_invalid_type.count(), 0)
@@ -503,7 +517,7 @@ class VotingHierarchyModelTestCase(BaseTestCase):
         opt1 = QuestionOption(question=q, option="opcion hierarchy 2")
         opt1.save()
 
-        self.v = Voting(name='Votacion_Hierarchy', voting_type='H')
+        self.v = Voting(name="Votacion_Hierarchy", voting_type="H")
 
         self.v.save()
         self.v.questions.set([q])
@@ -514,11 +528,10 @@ class VotingHierarchyModelTestCase(BaseTestCase):
         self.v = None
 
     def testExist(self):
-        v=Voting.objects.get(name='Votacion_Hierarchy')
+        v = Voting.objects.get(name="Votacion_Hierarchy")
         for question in v.questions.all():
             self.assertEquals(question.options.all()[0].option, "opcion hierarchy 1")
             self.assertEquals(v.voting_type, "H")
-
 
 
 class LogInSuccessTests(StaticLiveServerTestCase):
@@ -691,7 +704,7 @@ class VotingModelTestCaseOptionSiNo(BaseTestCase):
     def setUp(self):
         q = Question(desc="Test question", optionSiNo=True)
         q.save()
-        self.v = Voting(name='Votacion')
+        self.v = Voting(name="Votacion")
 
         self.v.save()
         self.v.questions.set([q])
@@ -703,18 +716,17 @@ class VotingModelTestCaseOptionSiNo(BaseTestCase):
         self.v = None
 
     def testExist(self):
-        v = Voting.objects.get(name='Votacion')
+        v = Voting.objects.get(name="Votacion")
         for question in v.questions.all():
             self.assertTrue(question.options.count() == 2)
             self.assertEquals(question.options.all()[0].option, "Sí")
             self.assertEquals(question.options.all()[1].option, "No")
-    
+
     def test_cannot_add_more_options(self):
         with self.assertRaises(ValidationError):
             for question in self.v.questions.all():
                 new_option = QuestionOption(question=question, number=3, option="Maybe")
                 new_option.save()
-
 
     def test_cannot_delete_predefined_options(self):
         for question in self.v.questions.all():
@@ -746,7 +758,7 @@ class VotingModelTestCaseOptionSiNo(BaseTestCase):
             question.save()
 
             # Verificar que las opciones se han actualizado correctamente
-            options = question.options.values_list('option', flat=True)
+            options = question.options.values_list("option", flat=True)
             self.assertIn("Depende", options)
 
     def test_cannot_add_more_than_three_options(self):
@@ -768,9 +780,8 @@ class VotingModelTestCaseOptionSiNo(BaseTestCase):
             new_option.save()
 
             # Verificar que la tercera opción se ha añadido correctamente
-            options = question.options.values_list('option', flat=True)
+            options = question.options.values_list("option", flat=True)
             self.assertIn("Depende", options)
-
 
 
 class VotingModelTestCaseThirdOption(TestCase):

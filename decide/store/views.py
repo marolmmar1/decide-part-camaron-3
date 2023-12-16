@@ -37,8 +37,8 @@ class StoreView(generics.ListAPIView):
         * voter: id
         * vote: { "a": int, "b": int }
         """
-        vid = request.data.get('voting')
-        voting = mods.get('voting', params={'id': vid})
+        vid = request.data.get("voting")
+        voting = mods.get("voting", params={"id": vid})
 
         if not voting or not isinstance(voting, list):
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
@@ -50,12 +50,10 @@ class StoreView(generics.ListAPIView):
         # print (not_started)
         is_closed = end_date and parse_datetime(end_date) < timezone.now()
         if not_started or is_closed:
-
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
 
-        uid = request.data.get('voter')
-        votes = request.data.get('votes')  # Expect 'votes' to be an array
-
+        uid = request.data.get("voter")
+        votes = request.data.get("votes")  # Expect 'votes' to be an array
 
         if not vid or not uid or not votes:
             return Response({}, status=status.HTTP_400_BAD_REQUEST)
@@ -70,7 +68,6 @@ class StoreView(generics.ListAPIView):
         )
         voter_id = voter.get("id", None)
         if not voter_id or voter_id != uid:
-
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
 
         # the user is in the census
@@ -86,12 +83,12 @@ class StoreView(generics.ListAPIView):
                 a = nested_vote.get("a")
                 b = nested_vote.get("b")
                 defs = {"a": a, "b": b}
-                v, _ = Vote.objects.get_or_create(voting_id=vid, voter_id=uid, defaults=defs)
+                v, _ = Vote.objects.get_or_create(
+                    voting_id=vid, voter_id=uid, defaults=defs
+                )
                 v.a = a
                 v.b = b
                 v.save()
-
-
 
         return Response({})
 

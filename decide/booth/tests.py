@@ -1,27 +1,13 @@
-from base.tests import BaseTestCase
 from selenium import webdriver
-from voting.models import Voting, Question, QuestionOption
-from django.conf import settings
-from mixnet.models import Auth
-from django.utils import timezone
-from census.models import Census
-from django.contrib.auth.models import User
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.support import expected_conditions
-from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 
 import time
-import json
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
-
-
-
 
 
 # Create your tests here.
@@ -35,27 +21,25 @@ class BoothTestCase(TestCase):
         options = webdriver.ChromeOptions()
         options.headless = True
         self.driver = webdriver.Chrome(options=options)
-        
+
     def tearDown(self):
         self.driver.quit()
-        
+
     def testBoothNotFound(self):
-    
-        response = self.client.get('/booth/10000/')
+        response = self.client.get("/booth/10000/")
         self.assertEqual(response.status_code, 404)
 
-    def testBoothRedirection(self):        
-        response = self.client.get('/booth/10000')
+    def testBoothRedirection(self):
+        response = self.client.get("/booth/10000")
         self.assertEqual(response.status_code, 301)
 
-    def wait_for_window(self, timeout = 2):
+    def wait_for_window(self, timeout=2):
         time.sleep(round(timeout / 1000))
         wh_now = self.driver.window_handles
         wh_then = self.vars["window_handles"]
         if len(wh_now) > len(wh_then):
             return set(wh_now).difference(set(wh_then)).pop()
-    
-   
+
     def test_testselenium(self):
         self.driver.get("http://localhost:8000/admin/")
         self.driver.set_window_size(910, 880)
@@ -103,7 +87,9 @@ class BoothTestCase(TestCase):
         actions = ActionChains(self.driver)
         actions.move_to_element(element).release().perform()
         self.driver.switch_to.window(self.vars["root"])
-        self.driver.find_element(By.CSS_SELECTOR, ".field-auths .related-widget-wrapper").click()
+        self.driver.find_element(
+            By.CSS_SELECTOR, ".field-auths .related-widget-wrapper"
+        ).click()
         self.vars["window_handles"] = self.driver.window_handles
         self.driver.find_element(By.CSS_SELECTOR, "#add_id_auths > img").click()
         self.vars["win451"] = self.wait_for_window(2000)
@@ -145,8 +131,3 @@ class BoothTestCase(TestCase):
         self.driver.find_element(By.ID, "opt1_index0").click()
         self.driver.find_element(By.ID, "opt3_index1").click()
         self.driver.find_element(By.CSS_SELECTOR, ".btn-primary").click()
-    
-
-    
-
-
