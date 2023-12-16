@@ -91,7 +91,6 @@ class TestSelenium(StaticLiveServerTestCase):
         self.driver.switch_to.window(self.vars["win5929"])
     else:
         print("La ventana no existe o ya ha sido cerrada.")
-    #self.driver.find_element(By.ID, "id_url").click()
     element = WebDriverWait(self.driver, 10).until(
         EC.presence_of_element_located((By.ID, "id_url"))
     )
@@ -205,16 +204,12 @@ class TestSelenium1(StaticLiveServerTestCase):
     self.driver.find_element(By.CSS_SELECTOR, "tr:nth-child(1) > .field-__str__ > a").click()
     self.driver.find_element(By.NAME, "_save").click()
     self.driver.find_element(By.LINK_TEXT, "¿Ganará algo?").click()
-    
     elementSi = self.driver.find_element(By.ID, "id_options-0-option")
     self.assertTrue(elementSi.text == "Depende")
-
     elementNo = self.driver.find_element(By.ID, "id_options-1-option")
     self.assertTrue(elementNo.text == "Si ganara algo")
-
     elementDepende = self.driver.find_element(By.ID, "id_options-2-option")
     self.assertTrue(elementDepende.text == "Ganara una liga")
-
     self.driver.find_element(By.NAME, "_save").click()
 
  
@@ -316,18 +311,14 @@ class TestSelenium2(StaticLiveServerTestCase):
     self.driver.find_element(By.CSS_SELECTOR, ".field-third_option .vCheckboxLabel").click()
     self.driver.find_element(By.NAME, "_save").click()
     self.driver.find_element(By.CSS_SELECTOR, "tr:nth-child(1) > .field-__str__ > a").click()
-    
     elementSegunda = self.driver.find_element(By.ID, "id_options-0-option")
     self.assertTrue(elementSegunda.text == "Si, se irá el cholo")
-
     elementTercera = self.driver.find_element(By.ID, "id_options-1-option")
     self.assertTrue(elementTercera.text == "No, se quedará el cholo")
-
     elementDepende = self.driver.find_element(By.ID, "id_options-2-option")
     self.assertTrue(elementDepende.text == "Depende")
-
-
     self.driver.find_element(By.NAME, "_save").click()
+
 
 class VotingTestCase(BaseTestCase):
 
@@ -376,13 +367,9 @@ class VotingTestCase(BaseTestCase):
         return user
 
     def test_to_string(self):
-        #Crea un objeto votacion
         v = self.create_voting()
-        #Verifica que el nombre de la votacion es test voting
         self.assertEquals(str(v),"test voting")
-        #Verifica que la descripcion de la pregunta sea test question
         self.assertEquals(str(v.question),"test question")
-        #Verifica que la primera opcion es option1 (2)
         self.assertEquals(str(v.question.options.all()[0]),"option 1 (2)")
 
     def store_votes(self, v):
@@ -459,8 +446,6 @@ class VotingTestCase(BaseTestCase):
         voting = self.create_voting()
 
         data = {'action': 'start'}
-        #response = self.client.post('/voting/{}/'.format(voting.pk), data, format='json')
-        #self.assertEqual(response.status_code, 401)
 
         # login with user no admin
         self.login(user='noadmin')
@@ -535,7 +520,7 @@ class VotingTestCase(BaseTestCase):
 
     def test_update_voting_405(self):
         v = self.create_voting()
-        data = {} #El campo action es requerido en la request
+        data = {}
         self.login()
         response = self.client.post('/voting/{}/'.format(v.pk), data, format= 'json')
         self.assertEquals(response.status_code, 405)

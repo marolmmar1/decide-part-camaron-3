@@ -50,7 +50,7 @@ def post_question(sender, instance, created, **kwargs):
                 op2 = QuestionOption(question=instance, number=option_number, option="No")
                 op2.save()
                 option_number += 1
-            if instance.third_option: # si se ha marcado la tercera opción, se añade la opción por defecto "Depende" 
+            if instance.third_option:
                 op3 = QuestionOption(question=instance, number=option_number, option="Depende")
                 op3.save()
 
