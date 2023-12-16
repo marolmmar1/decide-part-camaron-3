@@ -1,0 +1,11 @@
+<h2>Backups</h2>
+<ul>
+  {% for backup in backups %}
+    <li>
+      {{ backup }}
+      <a href="{% url 'store:delete_backup' selected_backup=backup %}">Eliminar</a>
+    </li>
+  {% endfor %}
+</ul>
+</br>
+<a href="{% url 'admin:store_vote_changelist' %}">Volver</a>

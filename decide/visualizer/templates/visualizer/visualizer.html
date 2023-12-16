@@ -1,12 +1,10 @@
 {% extends "base.html" %}
 {% load i18n static %}
-
 {% block extrahead %}
-    <link type="text/css" rel="stylesheet"
-         href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
     <link type="text/css" rel="stylesheet" href="{% static "booth/style.css" %}" />
 {% endblock %}
-
 {% block content %}
     <div id="app-visualizer">
         <!-- Navbar -->
@@ -15,8 +13,6 @@
                 <h1 class="navbar-brand">Decide</h1>
             </div>
         </nav>
-          
-
         <div class="voting container">
             <h1>[[ voting.id ]] - [[ voting.name ]]</h1>
 
@@ -99,6 +95,39 @@
                 </div>
               </div>
 
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Opción</th>
+                            <th>Puntuación</th>
+                            <th>Votos</th>
+                            <th>Escaños Sistema Saint Lague<th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="opt in voting.postproc" :key="opt.number">
+                            <th>[[opt.option]]</th>
+                            <td>[[opt.postproc]]</td>
+                            <td class="text-muted">[[opt.votes]]</td>
+                            <td>[[opt.saintLague]]</td>
+                        </tr>
+                    </tbody>
+                </table>
+		<table class="table table-bordered table-striped">
+		<thead>
+			<th>-/-</th>
+                        <th v-for="opt in seats" :key="opt.seat">Escaño [[opt.seat]]</th>
+                    </thead>
+		    <tbody>
+			    <tr v-for="opt in voting.postproc">
+				    <th>[[opt.option]]</th>
+				    <td v-for="d_hont in opt.dhont" :key="opt.number">
+					    [[d_hont.percentaje]]
+				    </td>
+			    </tr>
+		    </tbody>
+		</table>
+            </div>
         </div>
     </div>
 {% endblock %}
@@ -106,16 +135,14 @@
 {% block extrabody %}
     <!-- Vuejs -->
     <script src="https://unpkg.com/chart.js"></script>
-    <script src="https://unpkg.com/vue"></script>
     <script src="https://unpkg.com/babel-polyfill@latest/dist/polyfill.min.js"></script>
     <script src="https://unpkg.com/bootstrap@5.2.2/dist/js/bootstrap.js"></script>
-
+    <script src="https://unpkg.com/vue@2.6.14/dist/vue.min.js"></script>    
+    <script src="https://unpkg.com/vue-router@3.5.3/dist/vue-router.min.js"></script>
+    <script src="https://unpkg.com/bootstrap-vue@2.21.2/dist/bootstrap-vue.min.js"></script>
     <script>
         var voting = {{voting|safe}};
         var census = {{census|safe}};
-        
-        console.log(voting)
-        console.log(census.voters)
 
         const { createApp } = Vue
         createApp({
@@ -123,12 +150,12 @@
             data() {
                 return {
                     voting: voting,
-                    census: census
+                    census: census,
+		    seats: voting.postproc[0].dhont
                 }
             }
         }).mount('#app-visualizer')
     </script>
-
 <script>
   if (voting.postproc.constructor == Object) {
     for (const [key, value] of Object.entries(voting.postproc)) {
@@ -219,6 +246,5 @@
   }
 
 </script>
-
 </body>
 {% endblock %}
