@@ -4,15 +4,22 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('voting', '0012_merge_20231215_1925'),
+        ("voting", "0012_merge_20231215_1925"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='voting',
-            name='voting_type',
-            field=models.CharField(choices=[('S', 'Single Choice'), ('M', 'Multiple Choice'), ('H', 'Hierarchy')], default='S', max_length=1),
+            model_name="voting",
+            name="voting_type",
+            field=models.CharField(
+                choices=[
+                    ("S", "Single Choice"),
+                    ("M", "Multiple Choice"),
+                    ("H", "Hierarchy"),
+                ],
+                default="S",
+                max_length=1,
+            ),
         ),
     ]

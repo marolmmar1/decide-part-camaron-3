@@ -2,31 +2,28 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from rest_framework.test import APIClient
 from base import mods
 import time
-import json
-
 
 
 # Create your tests here.
 
-class BoothTestCase(StaticLiveServerTestCase):
 
+class BoothTestCase(StaticLiveServerTestCase):
     def setUp(self):
         self.client = APIClient()
-        self.base = BaseTestCase()  
+        self.base = BaseTestCase()
         self.base.setUp()
-        self.vars={}
+        self.vars = {}
         mods.mock_query(self.client)
 
         options = webdriver.ChromeOptions()
         options.headless = False
         self.driver = webdriver.Chrome(options=options)
-        u = User(username='admin1')
-        u.set_password('admin1')
+        u = User(username="admin1")
+        u.set_password("admin1")
         u.is_staff = True
         u.is_superuser = True
         u.save()
@@ -111,7 +108,7 @@ class BoothTestCase(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "id_name").click()
         self.driver.find_element(By.ID, "id_name").send_keys("test auth")
         self.driver.find_element(By.ID, "id_url").click()
-        self.driver.find_element(By.ID, "id_url").send_keys(self.live_server_url+"/")
+        self.driver.find_element(By.ID, "id_url").send_keys(self.live_server_url + "/")
         self.driver.find_element(By.NAME, "_save").click()
         self.driver.switch_to.window(self.vars["root"])
         self.driver.find_element(By.NAME, "_save").click()
@@ -133,7 +130,7 @@ class BoothTestCase(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "id_voter_id").click()
         self.driver.find_element(By.ID, "id_voter_id").send_keys("1")
         self.driver.find_element(By.NAME, "_save").click()
-        self.driver.get(self.live_server_url+"/booth/1")
+        self.driver.get(self.live_server_url + "/booth/1")
         self.driver.find_element(By.CSS_SELECTOR, ".navbar-toggler-icon").click()
         self.driver.find_element(By.CSS_SELECTOR, ".btn-secondary").click()
         self.vars["win5024"] = self.wait_for_window(2000)
@@ -144,8 +141,8 @@ class BoothTestCase(StaticLiveServerTestCase):
         self.vars["win5024"] = self.wait_for_window(2000)
         self.driver.find_element(By.ID, "opt1_index0").click()
         self.driver.find_element(By.ID, "opt3_index1").click()
-        self.assertTrue(self.driver.find_element(By.CSS_SELECTOR, ".h2").text == "test question 1")
+        self.assertTrue(
+            self.driver.find_element(By.CSS_SELECTOR, ".h2").text == "test question 1"
+        )
         elements = self.driver.find_elements(By.CSS_SELECTOR, ".h2")
         assert any(element.text == "test question 2" for element in elements)
-        
-
