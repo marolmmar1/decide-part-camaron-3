@@ -45,45 +45,20 @@
               <div v-if="voting.end_date">
                   <h2 class="heading">Resultados:</h2>
 
-                  {% if voting.postproc.items %}
-                    {% for key in voting.postproc.keys %}
-                      <table class="table table-bordered table-striped">
-                          <thead>
-                              <tr>
-                                  <th>Opción</th>
-                                  <th>Puntuación</th>
-                                  <th>Votos</th>
-                              </tr>
-                          </thead>
-                          <tbody>
-                            <tr v-for="opt in voting.postproc.{{key}}" :key="opt.number">
-                                  <th>[[opt.option]]</th>
-                                  <td>[[opt.saintLague]]</td>
-                                  <td class="text-muted">[[opt.votes]]</td>
-                              </tr>
-                          </tbody>
-                      </table>
-                      <div class="d-flex flex-row justify-content-around p-4">
-                        <div><canvas id="stats-bar{{key}}"></canvas></div>
-                        <div><canvas id="stats-pie{{key}}"></canvas></div>
-                      </div>
-
-                    {% endfor %}
-                  {% else %}
 
                     <table class="table table-bordered table-striped">
                         <thead>
                             <tr>
                                 <th>Opción</th>
-                                <th>Puntuación</th>
+                                <th v-if="seats">Escaños</th>
                                 <th>Votos</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="opt in voting.postproc" :key="opt.number">
-                                <th>[[opt.option]]</th>
-                                <td>[[opt.postproc]]</td>
-                                <td class="text-muted">[[opt.votes]]</td>
+                            <tr v-for="(option, n) in voting.questions[0].options">
+                                <th>[[ option.option ]]</th>
+                                <td v-if="seats">[[ seats[n] ]]</td>
+                                <td class="text-muted">[[ tally[n+1] | 0 ]]</td>
                             </tr>
                         </tbody>
                     </table>
@@ -91,58 +66,78 @@
                       <div><canvas id="stats-bar"></canvas></div>
                       <div><canvas id="stats-pie"></canvas></div>
                     </div>
-                  {% endif %}
                 </div>
               </div>
-
-                <table class="table table-bordered table-striped">
-                    <thead>
-                        <tr>
-                            <th>Opción</th>
-                            <th>Puntuación</th>
-                            <th>Votos</th>
-                            <th>Escaños Sistema Saint Lague<th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="opt in voting.postproc" :key="opt.number">
-                            <th>[[opt.option]]</th>
-                            <td>[[opt.postproc]]</td>
-                            <td class="text-muted">[[opt.votes]]</td>
-                            <td>[[opt.saintLague]]</td>
-                        </tr>
-                    </tbody>
-                </table>
-		<table class="table table-bordered table-striped">
-		<thead>
-			<th>-/-</th>
-                        <th v-for="opt in seats" :key="opt.seat">Escaño [[opt.seat]]</th>
-                    </thead>
-		    <tbody>
-			    <tr v-for="opt in voting.postproc">
-				    <th>[[opt.option]]</th>
-				    <td v-for="d_hont in opt.dhont" :key="opt.number">
-					    [[d_hont.percentaje]]
-				    </td>
-			    </tr>
-		    </tbody>
-		</table>
-            </div>
-        </div>
-    </div>
 {% endblock %}
 
 {% block extrabody %}
     <!-- Vuejs -->
-    <script src="https://unpkg.com/chart.js"></script>
+    <!-- <script src="https://unpkg.com/chart.js"></script> -->
+    <script src="https://unpkg.com/browse/vue-chartjs"></script>
     <script src="https://unpkg.com/babel-polyfill@latest/dist/polyfill.min.js"></script>
     <script src="https://unpkg.com/bootstrap@5.2.2/dist/js/bootstrap.js"></script>
-    <script src="https://unpkg.com/vue@2.6.14/dist/vue.min.js"></script>    
-    <script src="https://unpkg.com/vue-router@3.5.3/dist/vue-router.min.js"></script>
-    <script src="https://unpkg.com/bootstrap-vue@2.21.2/dist/bootstrap-vue.min.js"></script>
+    <script src="https://unpkg.com/vue"></script>    
+    <!-- <script src="https://unpkg.com/vue-router@3.5.3/dist/vue-router.min.js"></script> -->
+    <!-- <script src="https://unpkg.com/bootstrap-vue@2.21.2/dist/bootstrap-vue.min.js"></script> -->
+    <script>
+      function calcDhontSeats(voting) {
+        var results = voting.postproc.results
+        var results = results.map((x)=>x.dhont)
+        console.log(results)
+        var n = results[0].length
+        var acc = Array(results.length).fill(0)
+
+        for(i=0; i<n; i++) {
+          var posNumbers = results.map((l)=>l[i].percentaje)
+          var maxIndex = posNumbers.indexOf(Math.max(...posNumbers))
+          acc[maxIndex]++
+        }
+        return acc
+      }
+    </script>
     <script>
         var voting = {{voting|safe}};
         var census = {{census|safe}};
+        console.log(voting)
+
+        var tally = voting.tally.reduce((acc,value) => {
+          acc[value] = (acc[value] || 0) + 1
+          return acc
+        }, {})
+
+        console.log(tally)
+
+        var seats = null
+        switch(voting.postproc.type_postproc) {
+          case "DHO":
+            console.log("Calculating")
+            seats = calcDhontSeats(voting)
+            break
+          case "PAR":
+            seats = voting.postproc.results.map((res)=>res.saintLague)
+            break
+        }
+
+//        import { Bar } from 'vue-chartjs'
+//        import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js'
+//
+//        ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
+//
+//        export default {
+//          components: { Bar },
+//          data() {
+//            return {
+//              chartData: {
+//                labels: voting.questions[0].options.map((o)=>o.option),
+//                datasets: [ { data: Object.keys(tally).sort((a,b)=>a-b).map((key)=>tally[key]) } ]
+//              },
+//              chartOptions: {
+//                responsive: true
+//              }
+//            }
+//          }
+//        }
+
 
         const { createApp } = Vue
         createApp({
@@ -151,99 +146,55 @@
                 return {
                     voting: voting,
                     census: census,
-		    seats: voting.postproc[0].dhont
+                    tally: tally,
+                    seats: seats
                 }
             }
         }).mount('#app-visualizer')
     </script>
 <script>
-  if (voting.postproc.constructor == Object) {
-    for (const [key, value] of Object.entries(voting.postproc)) {
-      var xValues = value.map((t)=>t.option) 
-      var yValues = value.map((t)=>t.votes) 
-      var barColors = ["red", "orange","yellow","lime","turquoise","blue","purple"];
+  var xValues = voting.postproc.map((t)=>t.option) 
+  console.log("XVALUES")
+  console.log(xValues)
+  var yValues = voting.postproc.map((t)=>t.votes) 
+  var barColors = ["red", "orange","yellow","lime","turquoise","blue","purple"];
 
-      new Chart("stats-bar".concat(key), {
-        type: "bar",
-        data: {
-          labels: xValues,
-          datasets: [{
-            backgroundColor: barColors,
-            data: yValues
-          }]
-        },
-        options: {
-          maintainAspectRatio:false,
-          plugins: {
-            legend: {
-              display: false
-            }
-          }
+  new Chart("stats-bar", {
+    type: "bar",
+    data: {
+      labels: xValues,
+      datasets: [{
+        backgroundColor: barColors,
+        data: yValues
+      }]
+    },
+    options: {
+      maintainAspectRatio:false,
+      plugins: {
+        legend: {
+          display: false
         }
-      });
-
-      new Chart("stats-pie".concat(key), {
-        type: "pie",
-        data: {
-          labels: xValues,
-          datasets: [{
-            backgroundColor: barColors,
-            data: yValues
-          }]
-        },
-        options: {
-          plugins: {
-            legend: {
-              display: false
-            }
-          }
-        }
-      });
-
+      }
     }
-  }
-  else {
-    var xValues = voting.postproc.map((t)=>t.option) 
-    var yValues = voting.postproc.map((t)=>t.votes) 
-    var barColors = ["red", "orange","yellow","lime","turquoise","blue","purple"];
+  });
 
-    new Chart("stats-bar", {
-      type: "bar",
-      data: {
-        labels: xValues,
-        datasets: [{
-          backgroundColor: barColors,
-          data: yValues
-        }]
-      },
-      options: {
-        maintainAspectRatio:false,
-        plugins: {
-          legend: {
-            display: false
-          }
+  new Chart("stats-pie", {
+    type: "pie",
+    data: {
+      labels: xValues,
+      datasets: [{
+        backgroundColor: barColors,
+        data: yValues
+      }]
+    },
+    options: {
+      plugins: {
+        legend: {
+          display: false
         }
       }
-    });
-
-    new Chart("stats-pie", {
-      type: "pie",
-      data: {
-        labels: xValues,
-        datasets: [{
-          backgroundColor: barColors,
-          data: yValues
-        }]
-      },
-      options: {
-        plugins: {
-          legend: {
-            display: false
-          }
-        }
-      }
-    });
-  }
+    }
+  });
 
 </script>
 </body>
