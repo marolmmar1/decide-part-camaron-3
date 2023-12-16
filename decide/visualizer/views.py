@@ -1,9 +1,95 @@
 import json
 from django.views.generic import TemplateView
-from django.http import Http404
-
+from django.conf import settings
+from django.http import Http404, HttpResponse
+from io import StringIO
 from base import mods
+from django.contrib.auth.models import User
+import csv
+import pandas as pd
 
+def dict_to_csv(values, name):
+    csv_buffer = StringIO()
+    writer = csv.writer(csv_buffer)
+    writer.writerow([name])
+    print(values)
+    for value in values.items():
+        writer.writerow(value)
+    return csv_buffer.getvalue()
+    
+def build_vote_map(votes):
+    rows = {"number": [],"option": [],"votes": [], "postproc": []}
+    for vote in votes:
+        rows.get("number").append(vote.get('number'))
+        rows.get("option").append(vote.get('option'))
+        rows.get("votes").append(vote.get('votes'))
+        rows.get("postproc").append(vote.get('postproc'))
+    return rows
+
+def build_census_map(census):
+    rows = {"Name": [],"Id": []}
+    for user in census:
+        rows.get("Name").append(User.objects.get(pk = int(user)).username)
+        rows.get("Id").append(user)
+    return rows
+
+def export_census_xls(request, **kwargs):
+    vid = kwargs.get('voting_id', 0)
+    r = mods.get('voting', params={'voting_id': vid})
+    a = json.loads(json.dumps(r[0])) 
+    c = mods.get('census', params={'voting_id': vid})
+    file_name = "censo-"+a.get('name') + "-"+str(a.get('end_date'))
+    data = build_census_map(c.get("voters"))
+
+    df = pd.DataFrame(data)
+
+    response = HttpResponse(content_type='application/vnd.ms-excel')
+    response['Content-Disposition'] = f'attachment; filename="{file_name}.xls"'
+
+    # Write the DataFrame to the HttpResponse as an Excel file
+    df.to_excel(response, index=False)
+
+    return response
+
+def download_census_csv(request, **kwargs):
+    vid = kwargs.get('voting_id', 0)
+    r = mods.get('voting', params={'voting_id': vid})
+    a = json.loads(json.dumps(r[0])) 
+    c = mods.get('census', params={'voting_id': vid})
+    file_name = "censo-"+a.get('name') + "-"+str(a.get('end_date'))
+    rows = build_census_map(c.get("voters"))
+    csv_data = dict_to_csv(rows, a.get('name'))
+    response = HttpResponse(csv_data, content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{file_name}.csv"'
+    return response
+    
+def export_votes_xls(request, **kwargs):
+    vid = kwargs.get('voting_id', 0)
+    r = mods.get('voting', params={'voting_id': vid})
+    a = json.loads(json.dumps(r[0])) 
+    file_name = "votos-"+a.get('name') + "-"+str(a.get('end_date'))
+    data = build_vote_map(a.get('postproc', []))
+
+    df = pd.DataFrame(data)
+
+    response = HttpResponse(content_type='application/vnd.ms-excel')
+    response['Content-Disposition'] = f'attachment; filename="{file_name}.xls"'
+
+    # Write the DataFrame to the HttpResponse as an Excel file
+    df.to_excel(response, index=False)
+
+    return response
+
+def download_votes_csv(request, **kwargs):
+    vid = kwargs.get('voting_id', 0)
+    r = mods.get('voting', params={'voting_id': vid})
+    a = json.loads(json.dumps(r[0])) 
+    file_name = "votos-"+a.get('name') + "-"+str(a.get('end_date'))
+    votes = a.get('postproc', [])
+    csv_data = dict_to_csv(build_vote_map(votes), a.get('name'))
+    response = HttpResponse(csv_data, content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{file_name}.csv"'
+    return response
 
 class VisualizerView(TemplateView):
     template_name = "visualizer/visualizer.html"
