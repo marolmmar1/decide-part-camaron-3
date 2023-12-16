@@ -129,17 +129,14 @@ VOTING_TYPES = [
     ("S", "Single Choice"),
     ("M", "Multiple Choice"),
     ("H", "Hierarchy"),
-    ("Q", "Many Questions"),
 ]
 
 
 class Voting(models.Model):
     name = models.CharField(max_length=200)
     desc = models.TextField(blank=True, null=True)
+    questions = models.ManyToManyField(Question, related_name="votings")
     voting_type = models.CharField(max_length=1, choices=VOTING_TYPES, default="S")
-    question = models.ForeignKey(
-        Question, related_name="voting", on_delete=models.CASCADE
-    )
     postproc_type = models.CharField(
         max_length=3, choices=Type.choices, default=Type.NONE
     )
@@ -194,7 +191,6 @@ class Voting(models.Model):
         """
 
         votes = self.get_votes(token)
-
         auth = self.auths.first()
         shuffle_url = "/shuffle/{}/".format(self.id)
         decrypt_url = "/decrypt/{}/".format(self.id)
@@ -234,8 +230,6 @@ class Voting(models.Model):
 
     def do_postproc(self):
         tally = self.tally
-        options = self.question.options.all()
-
         opts = []
         for opt in options:
             if isinstance(tally, list):
@@ -243,7 +237,6 @@ class Voting(models.Model):
             else:
                 votes = 0
             opts.append({"option": opt.option, "number": opt.number, "votes": votes})
-
         data = {
             "options": opts,
             "voting_id": self.id,

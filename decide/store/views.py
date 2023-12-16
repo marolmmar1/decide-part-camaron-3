@@ -37,11 +37,10 @@ class StoreView(generics.ListAPIView):
         * voter: id
         * vote: { "a": int, "b": int }
         """
-
         vid = request.data.get("voting")
         voting = mods.get("voting", params={"id": vid})
+
         if not voting or not isinstance(voting, list):
-            # print("por aqui 35")
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
         start_date = voting[0].get("start_date", None)
         # print ("Start date: "+  start_date)
@@ -51,13 +50,12 @@ class StoreView(generics.ListAPIView):
         # print (not_started)
         is_closed = end_date and parse_datetime(end_date) < timezone.now()
         if not_started or is_closed:
-            # print("por aqui 42")
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
 
         uid = request.data.get("voter")
-        vote = request.data.get("vote")
+        votes = request.data.get("votes")  # Expect 'votes' to be an array
 
-        if not vid or not uid or not vote:
+        if not vid or not uid or not votes:
             return Response({}, status=status.HTTP_400_BAD_REQUEST)
 
         # validating voter
@@ -70,7 +68,6 @@ class StoreView(generics.ListAPIView):
         )
         voter_id = voter.get("id", None)
         if not voter_id or voter_id != uid:
-            # print("por aqui 59")
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
 
         # the user is in the census
@@ -78,17 +75,20 @@ class StoreView(generics.ListAPIView):
             "census/{}".format(vid), params={"voter_id": uid}, response=True
         )
         if perms.status_code == 401:
-            # print("por aqui 65")
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
 
-        a = vote.get("a")
-        b = vote.get("b")
-
-        defs = {"a": a, "b": b}
-        v, _ = Vote.objects.get_or_create(voting_id=vid, voter_id=uid, defaults=defs)
-        v.a = a
-        v.b = b
-        v.save()
+        for vote in votes:
+            nested_vote = vote.get("vote")
+            if nested_vote:
+                a = nested_vote.get("a")
+                b = nested_vote.get("b")
+                defs = {"a": a, "b": b}
+                v, _ = Vote.objects.get_or_create(
+                    voting_id=vid, voter_id=uid, defaults=defs
+                )
+                v.a = a
+                v.b = b
+                v.save()
 
         return Response({})
 
