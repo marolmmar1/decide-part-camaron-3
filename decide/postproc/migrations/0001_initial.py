@@ -4,26 +4,44 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='PostProcessing',
+            name="PostProcessing",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('voting_id', models.PositiveIntegerField()),
-                ('question_id', models.PositiveIntegerField()),
-                ('type', models.CharField(choices=[('DEF', 'DEFAULT'), ('BOR', 'BORDA'), ('DHO', 'DHONDT'), ('PAR', 'PARITY')], default='DEF', max_length=3)),
-                ('start_date', models.DateTimeField(blank=True, null=True)),
-                ('end_date', models.DateTimeField(blank=True, null=True)),
-                ('results', models.JSONField(blank=True, null=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("voting_id", models.PositiveIntegerField()),
+                ("question_id", models.PositiveIntegerField()),
+                (
+                    "type",
+                    models.CharField(
+                        choices=[
+                            ("DEF", "DEFAULT"),
+                            ("BOR", "BORDA"),
+                            ("DHO", "DHONDT"),
+                            ("PAR", "PARITY"),
+                        ],
+                        default="DEF",
+                        max_length=3,
+                    ),
+                ),
+                ("start_date", models.DateTimeField(blank=True, null=True)),
+                ("end_date", models.DateTimeField(blank=True, null=True)),
+                ("results", models.JSONField(blank=True, null=True)),
             ],
             options={
-                'unique_together': {('voting_id', 'question_id', 'type')},
+                "unique_together": {("voting_id", "question_id", "type")},
             },
         ),
     ]
