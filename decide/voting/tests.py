@@ -323,7 +323,7 @@ class VotingTestCase(BaseTestCase):
             "desc": "Description example",
             'questions': ['I want a '],
             "seats": 8,
-            'questions_opt': [['cat', 'dog', 'horse']]
+            'questions_opt': [['cat', 'dog', 'horse']],
             "postproc_type": "DHONT",
 
         }
