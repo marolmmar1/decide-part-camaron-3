@@ -5,6 +5,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.test import TestCase
+from django.db import IntegrityError
 from rest_framework.test import APIClient
 from rest_framework.test import APITestCase
 
@@ -28,6 +29,9 @@ from mixnet.models import Auth
 from voting.models import Voting, Question, QuestionOption
 from datetime import datetime
 from django.core.exceptions import ValidationError
+
+
+
 
 class VotingTestCase(BaseTestCase):
 
@@ -256,6 +260,48 @@ class VotingModelTestCase(BaseTestCase):
         v=Voting.objects.get(name='Votacion')
         self.assertEquals(v.question.options.all()[0].option, "opcion 1")
 
+class VotingTypeTestCase(BaseTestCase):
+
+    def test_create_voting_with_invalid_voting_type(self):
+        q = Question(desc='Descripcion')
+        q.save()
+
+        opt1 = QuestionOption(question=q, option='opcion type 1')
+        opt1.save()
+        opt2 = QuestionOption(question=q, option='opcion type 2')
+        opt2.save()
+
+        with self.assertRaises(ValidationError):
+            self.v = Voting(name='Votacion_Type', voting_type='INVALID', question=q)
+            self.v.full_clean() 
+            self.v.save()  
+
+        votings_with_invalid_type = Voting.objects.filter(name='Votacion_Type')
+        self.assertEqual(votings_with_invalid_type.count(), 0)
+
+class VotingHierarchyModelTestCase(BaseTestCase):
+    def setUp(self):
+        q = Question(desc='Descripcion')
+        q.save()
+        
+        opt1 = QuestionOption(question=q, option='opcion hierarchy 1')
+        opt1.save()
+        opt1 = QuestionOption(question=q, option='opcion hierarchy 2')
+        opt1.save()
+
+        self.v = Voting(name='Votacion_Hierarchy', voting_type='H', question=q)
+        self.v.save()
+        super().setUp()
+
+    def tearDown(self):
+        super().tearDown()
+        self.v = None
+
+    def testExist(self):
+        v=Voting.objects.get(name='Votacion_Hierarchy')
+        self.assertEquals(v.question.options.all()[0].option, "opcion hierarchy 1")
+        self.assertEquals(v.voting_type, "H")
+
 class LogInSuccessTests(StaticLiveServerTestCase):
 
     def setUp(self):
@@ -426,7 +472,6 @@ class VotingModelTestCaseOptionSiNo(BaseTestCase):
             new_option.save()
     def test_cannot_delete_predefined_options(self):
         initial_option_count = self.v.question.options.count()
-
         yes_option = self.v.question.options.get(option="Sí")
         with self.assertRaises(ValidationError):
             yes_option.delete()
@@ -444,7 +489,6 @@ class VotingModelTestCaseOptionSiNo(BaseTestCase):
         self.v.question.optionSiNo = False
         self.v.question.third_option = True
         self.v.question.save()
-
         options = self.v.question.options.values_list('option', flat=True)
         self.assertIn("Depende", options)
 
@@ -457,12 +501,12 @@ class VotingModelTestCaseOptionSiNo(BaseTestCase):
             new_option.save()
 
     def test_can_add_third_option(self):
+
         self.v.question.third_option = True
         self.v.question.save()
 
         new_option = QuestionOption(question=self.v.question, number=3, option="Depende")
         new_option.save()
-
         options = self.v.question.options.values_list('option', flat=True)
         self.assertIn("Depende", options)
 
@@ -482,15 +526,12 @@ class VotingModelTestCaseThirdOption(TestCase):
         self.q.third_option = True
         self.q.save()
 
+
         new_option = QuestionOption(question=self.q, number=3, option="Depende")
         new_option.save()
-
         self.q.third_option = False
-
         new_option.delete()
-
         self.q.save()
-
         self.assertFalse(self.q.third_option)
 
     def test_can_set_third_option_true_if_more_than_two_options_defined(self):
@@ -499,7 +540,6 @@ class VotingModelTestCaseThirdOption(TestCase):
 
         self.q.third_option = True
         self.q.save()
-
         self.assertTrue(self.q.third_option)
 
     def test_can_toggle_third_option(self):
@@ -515,5 +555,5 @@ class VotingModelTestCaseThirdOption(TestCase):
 
         self.q.third_option = True
         self.q.save()
-
         self.assertTrue(self.q.third_option)
+

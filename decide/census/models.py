@@ -14,7 +14,7 @@ ROLES = [
 class Census(models.Model):
     voting_id = models.PositiveIntegerField()
     voter_id = models.PositiveIntegerField()
-    role = models.CharField(max_length=1, choices=ROLES, default='0',blank=True)
+    role = models.CharField(max_length=1, choices=ROLES, default='0')
 
     class Meta:
         unique_together = (('voting_id', 'voter_id'),)
