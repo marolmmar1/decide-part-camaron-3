@@ -6,6 +6,7 @@ from django.test import TestCase
 
 import time
 
+
 class BoothTestCase(TestCase):
     def setUp(self):
         self.driver = webdriver.Chrome()
