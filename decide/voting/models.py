@@ -231,19 +231,20 @@ class Voting(models.Model):
     def do_postproc(self):
         tally = self.tally
         opts = []
-        for opt in options:
-            if isinstance(tally, list):
-                votes = tally.count(opt.number)
-            else:
-                votes = 0
-            opts.append({"option": opt.option, "number": opt.number, "votes": votes})
-        data = {
-            "options": opts,
-            "voting_id": self.id,
-            "question_id": self.question.id,
-            "total_seats": self.seats,
-            "type": self.postproc_type,
-        }
+        for question in self.questions.all():
+            options = question.options.all()
+            for opt in options:
+                if isinstance(tally, list):
+                    votes = tally.count(opt.number)
+                else:
+                    votes = 0
+                opts.append({"option": opt.option, "number": opt.number, "votes": votes})
+            data = {
+                "options": opts,
+                "voting_id": self.id,
+                "total_seats": self.seats,
+                "type": self.postproc_type,
+            }
 
         response = mods.post("postproc", json=data)
 
