@@ -54,9 +54,8 @@ class TestSelenium(StaticLiveServerTestCase):
         if len(wh_now) > len(wh_then):
             return set(wh_now).difference(set(wh_then)).pop()
 
-    def test_boothVoting(self):
+    def test_selenium(self):
         user = User.objects.get(username="admin1")
-
         self.driver.get(f'{self.live_server_url+"/admin/login/?next=/admin/"}')
         self.driver.find_element(By.ID, "id_username").send_keys("admin1")
         self.driver.find_element(By.ID, "id_password").send_keys("admin1")
@@ -129,11 +128,9 @@ class TestSelenium1(StaticLiveServerTestCase):
         self.base.setUp()
         self.vars={}
         mods.mock_query(self.client)
-        
         options = webdriver.ChromeOptions()
         options.headless = True
         self.driver = webdriver.Chrome(options=options)
-
         u = User(username='admin1')
         u.set_password('admin1')
         u.is_staff = True
@@ -147,9 +144,8 @@ class TestSelenium1(StaticLiveServerTestCase):
         if len(wh_now) > len(wh_then):
             return set(wh_now).difference(set(wh_then)).pop()
 
-    def test_boothVoting(self):
+    def test_selenium1(self):
         user = User.objects.get(username="admin1")
-
         self.driver.get(f'{self.live_server_url+"/admin/login/?next=/admin/"}')
         self.driver.find_element(By.ID, "id_username").send_keys("admin1")
         self.driver.find_element(By.ID, "id_password").send_keys("admin1")
@@ -219,7 +215,6 @@ class TestSelenium1(StaticLiveServerTestCase):
         self.assertTrue(elementDepende.text == "Ganara una liga")
         self.driver.find_element(By.NAME, "_save").click()
 
-
 class TestSelenium2(StaticLiveServerTestCase):
     def setUp(self):
         self.client = APIClient()
@@ -227,11 +222,9 @@ class TestSelenium2(StaticLiveServerTestCase):
         self.base.setUp()
         self.vars={}
         mods.mock_query(self.client)
-        
         options = webdriver.ChromeOptions()
         options.headless = True
         self.driver = webdriver.Chrome(options=options)
-
         u = User(username='admin1')
         u.set_password('admin1')
         u.is_staff = True
@@ -245,9 +238,8 @@ class TestSelenium2(StaticLiveServerTestCase):
         if len(wh_now) > len(wh_then):
             return set(wh_now).difference(set(wh_then)).pop()
 
-    def test_boothVoting(self):
+    def test_selenium2(self):
         user = User.objects.get(username="admin1")
-
         self.driver.get(f'{self.live_server_url+"/admin/login/?next=/admin/"}')
         self.driver.find_element(By.ID, "id_username").send_keys("admin1")
         self.driver.find_element(By.ID, "id_password").send_keys("admin1")
@@ -331,4 +323,3 @@ class TestSelenium2(StaticLiveServerTestCase):
         elementDepende = self.driver.find_element(By.ID, "id_options-2-option")
         self.assertTrue(elementDepende.text == "Depende")
         self.driver.find_element(By.NAME, "_save").click()
-
