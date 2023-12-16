@@ -1,0 +1,8 @@
+<h2>Eliminar Backup</h2>
+<p>¿Está seguro de que desea eliminar el backup "{{ selected_backup }}"?</p>
+<form method="post" action="">
+  {% csrf_token %}
+  <input type="hidden" name="selected_backup" value="{{ selected_backup }}">
+  <input type="submit" value="Confirmar eliminación">
+</form>
+
