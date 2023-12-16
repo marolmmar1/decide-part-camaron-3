@@ -38,23 +38,6 @@ class StoreTextCase(BaseTestCase):
     def tearDown(self):
         super().tearDown()
 
-    def gen_voting(self, pk):
-        voting = Voting(
-            pk=pk,
-            name="v1",
-            question=self.question,
-            start_date=timezone.now(),
-            end_date=timezone.now() + datetime.timedelta(days=1),
-        )
-        voting.save()
-
-    def get_or_create_user(self, pk):
-        user, _ = User.objects.get_or_create(pk=pk)
-        user.username = "user{}".format(pk)
-        user.set_password("qwerty")
-        user.save()
-        return user
-
     def gen_voting(self, pk, question_desc=None):
         voting = Voting(
             pk=pk,
