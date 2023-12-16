@@ -3,13 +3,8 @@ import requests
 
 
 HOST = "http://localhost:8000"
-<<<<<<< HEAD
 USER = "egc2324"
 PASS = "egc2324egc2324"
-=======
-USER = "admin"
-PASS = "admin"
->>>>>>> central/integracion-votaciones
 VOTING = 1
 
 

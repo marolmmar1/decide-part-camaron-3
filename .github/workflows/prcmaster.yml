@@ -1,0 +1,17 @@
+name: prmaster
+
+on: 
+    push:
+        branches:
+            - develop
+    
+jobs:
+    createPullRequest:
+        runs-on: ubuntu-latest
+        steps:
+            - name: checkout
+              uses: actions/checkout@v3
+            - name: create pull request
+              run: gh pr create -B master -H develop --title "Automatic merge from develop"  --body "Created by GitHub Actions"
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

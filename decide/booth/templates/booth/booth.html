@@ -15,6 +15,7 @@
     <nav class="navbar navbar-dark bg-primary">
         <div class="container-fluid">
             <div class="navbar-brand" >Decide</div>
+            <div v-if="user != null" class="navbar-brand" > Hello, [[ user.username ]]</div>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -116,9 +117,12 @@
 
         <!-- Voting -->
         <div v-if="!signup">
+            <div v-if="voting.voting_type == 'H'">
+                <h1>Hierarchy Voting</h1>
+                <br>
+            </div>
             <h1>[[ voting.id ]] - [[ voting.name ]]</h1>
             <h2>[[ voting.question.desc ]]</h2>
-<<<<<<< HEAD
             {% if voting_obj.voting_type == "M" %}
                 <ul id="M-voting">
                     <li v-for="opt in voting.question.options">
@@ -132,8 +136,6 @@
                     </li>
                 </ul>
             {% else %}
-=======
->>>>>>> central/integracion-votaciones
             <form v-for="opt in voting.question.options" :key="opt.number">
                 <div class="form-group">
                     <input type="radio" v-model="selected"
@@ -143,10 +145,7 @@
                         [[ opt.option ]]
                 </div>
             </form>
-<<<<<<< HEAD
             {% endif %}
-=======
->>>>>>> central/integracion-votaciones
             <button class="btn btn-primary mt-3" v-on:click="decideSend">
                 {% trans "Vote" %}
             </button>
@@ -276,7 +275,6 @@
                     this.signup = true;
                     this.successVote = false;
                 },
-<<<<<<< HEAD
                 decideEncrypt(num) {
                     var bigmsg = BigInt.fromJSONObject(num);
                     var cipher = ElGamal.encrypt(this.bigpk, bigmsg);
@@ -313,26 +311,12 @@
                     } else {
                         var v = this.decideEncrypt(this.selected.toString());
                     }
-=======
-                decideEncrypt() {
-                    var bigmsg = BigInt.fromJSONObject(this.selected.toString());
-                    var cipher = ElGamal.encrypt(this.bigpk, bigmsg);
-                    return cipher;
-                },
-                decideSend(evt) {
-                    evt.preventDefault();
-                    var v = this.decideEncrypt();
->>>>>>> central/integracion-votaciones
                     var data = {
                         vote: {a: v.alpha.toString(), b: v.beta.toString()},
                         voting: this.voting.id,
                         voter: this.user.id,
                         token: this.token
                     }
-<<<<<<< HEAD
-
-=======
->>>>>>> central/integracion-votaciones
                     this.postData("{% url "gateway" "store" "/" %}", data)
                         .then(data => {
                             this.successVote = true;
@@ -343,10 +327,6 @@
                             this.succesVote = false;
                             this.showAlert("danger", '{% trans "Error: " %}' + error);
                         });
-<<<<<<< HEAD
-                    
-=======
->>>>>>> central/integracion-votaciones
                 },
                 showAlert(lvl, msg) {
                     this.alertLvl = lvl;

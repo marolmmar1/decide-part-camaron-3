@@ -4,43 +4,39 @@ from django.conf import settings
 from django.http import Http404
 
 from base import mods
-<<<<<<< HEAD
 from voting.models import QuestionOption, Voting
-=======
->>>>>>> central/integracion-votaciones
 
 
 # TODO: check permissions and census
 class BoothView(TemplateView):
-    template_name = 'booth/booth.html'
+    template_name = "booth/booth.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        vid = kwargs.get('voting_id', 0)
+        vid = kwargs.get("voting_id", 0)
 
         try:
-            r = mods.get('voting', params={'id': vid})
+            r = mods.get("voting", params={"id": vid})
             # Casting numbers to string to manage in javascript with BigInt
             # and avoid problems with js and big number conversion
-            for k, v in r[0]['pub_key'].items():
-                r[0]['pub_key'][k] = str(v)
+            for k, v in r[0]["pub_key"].items():
+                r[0]["pub_key"][k] = str(v)
 
-<<<<<<< HEAD
             voting = Voting.objects.filter(id=vid).get()
-            context['voting_obj'] = voting
-            order_options = [i + 1 for i in range(QuestionOption.objects.filter(question=voting.question).count())]
-            r[0]['order_options'] = order_options
-            
-            context['voting'] = json.dumps(r[0])
+            context["voting_obj"] = voting
+            order_options = [
+                i + 1
+                for i in range(
+                    QuestionOption.objects.filter(question=voting.question).count()
+                )
+            ]
+            r[0]["order_options"] = order_options
+            context["voting"] = json.dumps(r[0])
 
         except Exception as e:
             print(e)
-=======
-            context['voting'] = json.dumps(r[0])
-        except:
->>>>>>> central/integracion-votaciones
             raise Http404
 
-        context['KEYBITS'] = settings.KEYBITS
+        context["KEYBITS"] = settings.KEYBITS
 
         return context
