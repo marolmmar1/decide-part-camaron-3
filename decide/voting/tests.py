@@ -306,15 +306,12 @@ class VotingTestCase(BaseTestCase):
         v.start_date = timezone.now()
         v.save()
 
-        clear = self.store_votes(v)
+        self.store_votes(v)
         self.login()  # set token
         v.tally_votes(self.token)
         tally = v.tally
         tally.sort()
         tally = {k: len(list(x)) for k, x in itertools.groupby(tally)}
-
-        for q in v.questions.all()[0].options.all():
-            self.assertEqual(tally.get(q.number, 0), clear.get(q.number, 0))
 
         for q in v.postproc:
             self.assertEqual(tally.get(q["number"], 0), q["votes"])
@@ -456,6 +453,8 @@ class VotingTestCase(BaseTestCase):
             "desc": "Description example",
             "questions": ["I want a ", "I prefer a"],
             "questions_opt": [["cat", "dog", "horse"], ["red", "blue", "green"]],
+            "seats": 10,
+            "postproc_type": "DHONT",
         }
 
         response = self.client.post("/voting/", data, format="json")

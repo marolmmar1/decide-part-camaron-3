@@ -256,6 +256,8 @@ class Voting(models.Model):
 
     def do_postproc(self):
         tally = self.tally
+        options = self.question.options.all()
+
         opts = []
         for opt in options:
             if isinstance(tally, list):

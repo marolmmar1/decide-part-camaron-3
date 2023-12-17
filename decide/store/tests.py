@@ -208,7 +208,7 @@ class StoreTextCase(BaseTestCase):
         data = {"voting": 5001, "voter": 1, "votes": votes}
         census = Census(voting_id=5001, voter_id=1)
         census.save()
-        # not opened
+
         self.voting.start_date = timezone.now() + datetime.timedelta(days=1)
         self.voting.save()
         user = self.get_or_create_user(1)
@@ -216,7 +216,6 @@ class StoreTextCase(BaseTestCase):
         response = self.client.post("/store/", data, format="json")
         self.assertEqual(response.status_code, 401)
 
-        # not closed
         self.voting.start_date = timezone.now() - datetime.timedelta(days=1)
         self.voting.save()
         self.voting.end_date = timezone.now() + datetime.timedelta(days=1)
@@ -224,9 +223,56 @@ class StoreTextCase(BaseTestCase):
         response = self.client.post("/store/", data, format="json")
         self.assertEqual(response.status_code, 200)
 
-        # closed
         self.voting.end_date = timezone.now() - datetime.timedelta(days=1)
         self.voting.save()
+        response = self.client.post("/store/", data, format="json")
+        self.assertEqual(response.status_code, 401)
+
+    def test_store_vote_two_questions(self):
+        VOTING_PK = 345
+        CTE_A = 96
+        CTE_B = 184
+        census = Census(voting_id=VOTING_PK, voter_id=1)
+        census.save()
+        voting = self.gen_voting(VOTING_PK, question_desc="Question 1")
+        question2 = Question(desc="Question 2")
+        question2.save()
+        voting.questions.add(question2)
+
+        votes = [{"vote": {"a": CTE_A, "b": CTE_B}}]
+        data = {
+            "voting": VOTING_PK,
+            "voter": 1,
+            "votes": votes,
+            "voting_type": "classic",
+        }
+
+        user = self.get_or_create_user(1)
+        self.login(user=user.username)
+        response = self.client.post("/store/", data, format="json")
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(Vote.objects.count(), 1)
+        self.assertEqual(Vote.objects.first().voting_id, VOTING_PK)
+        self.assertEqual(Vote.objects.first().voter_id, 1)
+        self.assertEqual(Vote.objects.first().a, CTE_A)
+        self.assertEqual(Vote.objects.first().b, CTE_B)
+
+        self.assertEqual(voting.questions.count(), 2)
+        self.assertEqual(voting.questions.first().desc, "Question 1")
+        self.assertEqual(voting.questions.last().desc, "Question 2")
+
+    def test_invalid_data(self):
+        data = {"voting": 9999, "voter": 9999, "votes": [{"vote": {"a": 1, "b": 1}}]}
+        response = self.client.post("/store/", data, format="json")
+        self.assertEqual(response.status_code, 401)
+
+    def test_vote_outside_voting_period(self):
+        voting = self.gen_voting(1)
+        voting.start_date = timezone.now() + datetime.timedelta(days=1)
+        voting.end_date = timezone.now() + datetime.timedelta(days=2)
+        voting.save()
+        data = {"voting": 1, "voter": 1, "votes": [{"vote": {"a": 1, "b": 1}}]}
         response = self.client.post("/store/", data, format="json")
         self.assertEqual(response.status_code, 401)
 
