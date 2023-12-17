@@ -1,5 +1,4 @@
 from base.tests import BaseTestCase
-import itertools
 import json
 from base import mods
 from voting.models import Voting, Question, QuestionOption
@@ -12,15 +11,16 @@ from mixnet.mixcrypt import MixCrypt, ElGamal
 from base.tests import BaseTestCase
 
 from voting.models import Voting, Question
-from .views import build_census_map, build_vote_map, process_dho_voting_data, process_post_voting_data
+from .views import (
+    build_census_map,
+    build_vote_map,
+    process_dho_voting_data,
+    process_post_voting_data,
+)
 from rest_framework.test import APIClient
-from postproc.models import PostProcessing
-
 
 
 # Create your tests here.
-
-
 
 
 class visualizerTest(BaseTestCase):
@@ -138,7 +138,8 @@ class visualizerTest(BaseTestCase):
         self.assertEqual(
             len(json.loads(response.context_data["census"])["voters"]), 100
         )
-        #self.assertEqual(len(json.loads(response.context_data["voting"])["tally"]), 9)
+        # self.assertEqual(len(json.loads(response.context_data["voting"])["tally"]), 9)
+
 
 class visualizerExportCensus(BaseTestCase):
     def setUp(self):
@@ -210,8 +211,6 @@ class visualizerExportCensus(BaseTestCase):
                 mods.post("store", json=data)
         return clear
 
-    
-    
     def test_export_census_dict(self):
         v = self.create_voting()
         self.create_voters(v)
@@ -222,16 +221,17 @@ class visualizerExportCensus(BaseTestCase):
 
         _ = self.store_votes(v)
         r = mods.get("voting", params={"id": v.id})
-        a = json.loads(json.dumps(r[0]))
+        json.loads(json.dumps(r[0]))
         c = mods.get("census", params={"voting_id": v.id})
-        i =0
+        i = 0
         res = build_census_map(c.get("voters"))
-        while i<len(res.get('Id')):
-            self.assertEquals(User.objects.get(pk=int(res.get('Id')[i])).username, str(res.get('Name')[i]))
-            i = i+1
-        
-        
-    
+        while i < len(res.get("Id")):
+            self.assertEquals(
+                User.objects.get(pk=int(res.get("Id")[i])).username,
+                str(res.get("Name")[i]),
+            )
+            i = i + 1
+
     def test_export_votes_dict(self):
         v = self.create_voting()
         self.create_voters(v)
@@ -244,13 +244,12 @@ class visualizerExportCensus(BaseTestCase):
 
         r = mods.get("voting", params={"id": v.id})
         a = json.loads(json.dumps(r[0]))
-        res =build_vote_map(a)
-        i=0
-        for option in res.get('question 1').get('option'):
-            opt =a.get('questions')[0].get("options")[i].get('option')
+        res = build_vote_map(a)
+        i = 0
+        for option in res.get("question 1").get("option"):
+            opt = a.get("questions")[0].get("options")[i].get("option")
             self.assertEquals(option, opt)
-            i=i+1
-            
+            i = i + 1
 
 
 class exportPosprocDhont(BaseTestCase):
@@ -278,9 +277,7 @@ class exportPosprocDhont(BaseTestCase):
                 question=q, option="option {}".format(i + 1), number=i + 2
             )
             opt.save()
-        v = Voting(
-            name="test voting", postproc_type=postproc, voting_type=type
-        )
+        v = Voting(name="test voting", postproc_type=postproc, voting_type=type)
         v.save()
         v.questions.set([q])
         v.save()
@@ -329,7 +326,7 @@ class exportPosprocDhont(BaseTestCase):
                     voter = voters.pop()
                     mods.post("store", json=data)
         return clear
-    
+
     def test_correct_postproc1(self):
         v = self.create_voting("DHO", "S")
 
@@ -344,111 +341,110 @@ class exportPosprocDhont(BaseTestCase):
         self.login()  # set token
         v.tally_votes(self.token)
 
-        
         expected = [
             {
-                'dhont': [
-                    {'seat': 1, 'percentaje': 0.0}, 
-                    {'seat': 2, 'percentaje': 0.0}, 
-                    {'seat': 3, 'percentaje': 0.0}, 
-                    {'seat': 4, 'percentaje': 0.0}, 
-                    {'seat': 5, 'percentaje': 0.0}, 
-                    {'seat': 6, 'percentaje': 0.0}, 
-                    {'seat': 7, 'percentaje': 0.0}, 
-                    {'seat': 8, 'percentaje': 0.0}, 
-                    {'seat': 9, 'percentaje': 0.0}, 
-                    {'seat': 10, 'percentaje': 0.0}
-                ], 
-                'votes': 0, 
-                'number': 2, 
-                'option': 'option 1'
-            }, 
-            {
-                'dhont': [
-                    {'seat': 1, 'percentaje': 0.0}, 
-                    {'seat': 2, 'percentaje': 0.0}, 
-                    {'seat': 3, 'percentaje': 0.0}, 
-                    {'seat': 4, 'percentaje': 0.0}, 
-                    {'seat': 5, 'percentaje': 0.0}, 
-                    {'seat': 6, 'percentaje': 0.0}, 
-                    {'seat': 7, 'percentaje': 0.0}, 
-                    {'seat': 8, 'percentaje': 0.0}, 
-                    {'seat': 9, 'percentaje': 0.0}, 
-                    {'seat': 10, 'percentaje': 0.0}
-                ], 
-                'votes': 0, 
-                'number': 3, 
-                'option': 'option 2'
+                "dhont": [
+                    {"seat": 1, "percentaje": 0.0},
+                    {"seat": 2, "percentaje": 0.0},
+                    {"seat": 3, "percentaje": 0.0},
+                    {"seat": 4, "percentaje": 0.0},
+                    {"seat": 5, "percentaje": 0.0},
+                    {"seat": 6, "percentaje": 0.0},
+                    {"seat": 7, "percentaje": 0.0},
+                    {"seat": 8, "percentaje": 0.0},
+                    {"seat": 9, "percentaje": 0.0},
+                    {"seat": 10, "percentaje": 0.0},
+                ],
+                "votes": 0,
+                "number": 2,
+                "option": "option 1",
             },
             {
-                'dhont': [
-                    {'seat': 1, 'percentaje': 0.0}, 
-                    {'seat': 2, 'percentaje': 0.0}, 
-                    {'seat': 3, 'percentaje': 0.0}, 
-                    {'seat': 4, 'percentaje': 0.0}, 
-                    {'seat': 5, 'percentaje': 0.0}, 
-                    {'seat': 6, 'percentaje': 0.0}, 
-                    {'seat': 7, 'percentaje': 0.0}, 
-                    {'seat': 8, 'percentaje': 0.0}, 
-                    {'seat': 9, 'percentaje': 0.0}, 
-                    {'seat': 10, 'percentaje': 0.0}
-                ], 
-                'votes': 0, 
-                'number': 4, 
-                'option': 'option 3'
-            }, 
+                "dhont": [
+                    {"seat": 1, "percentaje": 0.0},
+                    {"seat": 2, "percentaje": 0.0},
+                    {"seat": 3, "percentaje": 0.0},
+                    {"seat": 4, "percentaje": 0.0},
+                    {"seat": 5, "percentaje": 0.0},
+                    {"seat": 6, "percentaje": 0.0},
+                    {"seat": 7, "percentaje": 0.0},
+                    {"seat": 8, "percentaje": 0.0},
+                    {"seat": 9, "percentaje": 0.0},
+                    {"seat": 10, "percentaje": 0.0},
+                ],
+                "votes": 0,
+                "number": 3,
+                "option": "option 2",
+            },
             {
-                'dhont': [
-                    {'seat': 1, 'percentaje': 0.0}, 
-                    {'seat': 2, 'percentaje': 0.0}, 
-                    {'seat': 3, 'percentaje': 0.0}, 
-                    {'seat': 4, 'percentaje': 0.0}, 
-                    {'seat': 5, 'percentaje': 0.0}, 
-                    {'seat': 6, 'percentaje': 0.0}, 
-                    {'seat': 7, 'percentaje': 0.0}, 
-                    {'seat': 8, 'percentaje': 0.0}, 
-                    {'seat': 9, 'percentaje': 0.0}, 
-                    {'seat': 10, 'percentaje': 0.0}
-                    ], 
-                'votes': 0, 
-                'number': 5, 
-                'option': 'option 4'
-            }, 
+                "dhont": [
+                    {"seat": 1, "percentaje": 0.0},
+                    {"seat": 2, "percentaje": 0.0},
+                    {"seat": 3, "percentaje": 0.0},
+                    {"seat": 4, "percentaje": 0.0},
+                    {"seat": 5, "percentaje": 0.0},
+                    {"seat": 6, "percentaje": 0.0},
+                    {"seat": 7, "percentaje": 0.0},
+                    {"seat": 8, "percentaje": 0.0},
+                    {"seat": 9, "percentaje": 0.0},
+                    {"seat": 10, "percentaje": 0.0},
+                ],
+                "votes": 0,
+                "number": 4,
+                "option": "option 3",
+            },
             {
-                'dhont': [
-                    {'seat': 1, 'percentaje': 0.0}, 
-                    {'seat': 2, 'percentaje': 0.0}, 
-                    {'seat': 3, 'percentaje': 0.0}, 
-                    {'seat': 4, 'percentaje': 0.0}, 
-                    {'seat': 5, 'percentaje': 0.0}, 
-                    {'seat': 6, 'percentaje': 0.0}, 
-                    {'seat': 7, 'percentaje': 0.0}, 
-                    {'seat': 8, 'percentaje': 0.0}, 
-                    {'seat': 9, 'percentaje': 0.0}, 
-                    {'seat': 10, 'percentaje': 0.0}
-                ], 
-                'votes': 0, 
-                'number': 6, 
-                'option': 'option 5'
-            }
+                "dhont": [
+                    {"seat": 1, "percentaje": 0.0},
+                    {"seat": 2, "percentaje": 0.0},
+                    {"seat": 3, "percentaje": 0.0},
+                    {"seat": 4, "percentaje": 0.0},
+                    {"seat": 5, "percentaje": 0.0},
+                    {"seat": 6, "percentaje": 0.0},
+                    {"seat": 7, "percentaje": 0.0},
+                    {"seat": 8, "percentaje": 0.0},
+                    {"seat": 9, "percentaje": 0.0},
+                    {"seat": 10, "percentaje": 0.0},
+                ],
+                "votes": 0,
+                "number": 5,
+                "option": "option 4",
+            },
+            {
+                "dhont": [
+                    {"seat": 1, "percentaje": 0.0},
+                    {"seat": 2, "percentaje": 0.0},
+                    {"seat": 3, "percentaje": 0.0},
+                    {"seat": 4, "percentaje": 0.0},
+                    {"seat": 5, "percentaje": 0.0},
+                    {"seat": 6, "percentaje": 0.0},
+                    {"seat": 7, "percentaje": 0.0},
+                    {"seat": 8, "percentaje": 0.0},
+                    {"seat": 9, "percentaje": 0.0},
+                    {"seat": 10, "percentaje": 0.0},
+                ],
+                "votes": 0,
+                "number": 6,
+                "option": "option 5",
+            },
         ]
-    
+
         r = 0
         a = 0
         r = mods.get("voting", params={"id": v.id})
         a = json.loads(json.dumps(r[0]))
-        res= process_dho_voting_data(a)
-        
+        res = process_dho_voting_data(a)
+
         i = 0
-        while i <5:
+        while i < 5:
             compare = res.get("question 1")
-            j=0
+            j = 0
             for seat in expected[i].get("dhont"):
-                key = 'seat '+ str(j+1)
-                self.assertEquals(seat.get('percentaje'), compare.get(key)[i])
-                j=j+1
-            i =i+1 
-        
+                key = "seat " + str(j + 1)
+                self.assertEquals(seat.get("percentaje"), compare.get(key)[i])
+                j = j + 1
+            i = i + 1
+
 
 class exportPosprocPAR(BaseTestCase):
     def setUp(self):
@@ -475,9 +471,7 @@ class exportPosprocPAR(BaseTestCase):
                 question=q, option="option {}".format(i + 1), number=i + 2
             )
             opt.save()
-        v = Voting(
-            name="test voting", postproc_type=postproc, voting_type=type
-        )
+        v = Voting(name="test voting", postproc_type=postproc, voting_type=type)
         v.save()
         v.questions.set([q])
         v.save()
@@ -526,7 +520,7 @@ class exportPosprocPAR(BaseTestCase):
                     voter = voters.pop()
                     mods.post("store", json=data)
         return clear
-    
+
     def test_correct_postproc1(self):
         v = self.create_voting("PAR", "S")
 
@@ -540,23 +534,23 @@ class exportPosprocPAR(BaseTestCase):
 
         self.login()  # set token
         v.tally_votes(self.token)
-    
+
         r = 0
         a = 0
         r = mods.get("voting", params={"id": v.id})
         a = json.loads(json.dumps(r[0]))
-        res= process_post_voting_data(a, "saintLague")
+        res = process_post_voting_data(a, "saintLague")
         i = 1
         j = 0
         for question in a.get("questions"):
             for option in question.get("options"):
                 x = int(a.get("postproc").get("results")[j].get("saintLague"))
                 y = int(res.get("question 1").get("saintLague")[j])
-                self.assertEquals(x,y)
+                self.assertEquals(x, y)
                 j = j + 1
             i = i + 1
-  
-    
+
+
 class exportPosprocPAR(BaseTestCase):
     def setUp(self):
         self.client = APIClient()
@@ -582,9 +576,7 @@ class exportPosprocPAR(BaseTestCase):
                 question=q, option="option {}".format(i + 1), number=i + 2
             )
             opt.save()
-        v = Voting(
-            name="test voting", postproc_type=postproc, voting_type=type
-        )
+        v = Voting(name="test voting", postproc_type=postproc, voting_type=type)
         v.save()
         v.questions.set([q])
         v.save()
@@ -633,7 +625,7 @@ class exportPosprocPAR(BaseTestCase):
                     voter = voters.pop()
                     mods.post("store", json=data)
         return clear
-    
+
     def test_correct_postproc1(self):
         v = self.create_voting("DRO", "S")
 
@@ -647,18 +639,18 @@ class exportPosprocPAR(BaseTestCase):
 
         self.login()  # set token
         v.tally_votes(self.token)
-    
+
         r = 0
         a = 0
         r = mods.get("voting", params={"id": v.id})
         a = json.loads(json.dumps(r[0]))
-        res= process_post_voting_data(a, "droop")
+        res = process_post_voting_data(a, "droop")
         i = 1
         j = 0
         for question in a.get("questions"):
             for option in question.get("options"):
                 x = int(a.get("postproc").get("results")[j].get("droop"))
                 y = int(res.get("question 1").get("droop")[j])
-                self.assertEquals(x,y)
+                self.assertEquals(x, y)
                 j = j + 1
             i = i + 1
