@@ -1,5 +1,4 @@
 from base.tests import BaseTestCase
-import itertools
 import json
 from base import mods
 from voting.models import Voting, Question, QuestionOption
@@ -12,12 +11,11 @@ from mixnet.mixcrypt import MixCrypt, ElGamal
 from base.tests import BaseTestCase
 
 from voting.models import Voting, Question
-from .views import build_census_map
 
 
 # Create your tests here.
 
-'''
+"""
 class visualizerTest(BaseTestCase):
     def setUp(self):
         super().setUp()
@@ -136,7 +134,9 @@ class visualizerTest(BaseTestCase):
         #self.assertEqual(len(json.loads(response.context_data["voting"])["tally"]), 9)
  
  
-'''       
+"""
+
+
 class visualizerExportCensus(BaseTestCase):
     def setUp(self):
         super().setUp()
