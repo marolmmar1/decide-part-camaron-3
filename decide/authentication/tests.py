@@ -59,7 +59,6 @@ class AuthTestCase(APITestCase):
         response = self.client.post("/authentication/login/", data, format="json")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(Token.objects.filter(user__username="voter1").count(), 1)
-
         token = response.json()
         self.assertTrue(token.get("token"))
 
@@ -110,6 +109,7 @@ class AuthTestCase(APITestCase):
         token = response.json()
 
         token.update(data)
+
         response = self.client.post("/authentication/register/", token, format="json")
         self.assertEqual(response.status_code, 400)
 

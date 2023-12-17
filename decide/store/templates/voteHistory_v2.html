@@ -1,0 +1,72 @@
+{% block content %}
+{% load custom_filters %}
+<h1 style="padding-top: 2%;">
+    <center>Your vote history</center>
+</h1>
+{%if not votesEmpty%}
+{% for vote in votes %}
+    {%with voting=vote.voting_id|getVoting %}
+        <center>
+            <a style="text-decoration: none; 
+                    color: #000;" 
+               href="/visualizer/1">
+                <div style="padding-left: 2%;
+                        padding-right: 2%;
+                        margin-bottom: 1%;
+                        align-content: center;
+                        border: 2px solid #000;
+                        width: fit-content;
+                        background-color: lightgray;
+                        ">
+                    <big>
+                        <p>
+                            <strong>Voting name: </strong> {{voting.name}}
+                        </p>
+                        
+                        <p>
+                            <strong>Voting description: </strong> {{voting.description}}
+                        </p>
+                        <p>
+                            <strong>The voting started on: </strong> {{voting.start_date}}
+                        </p>
+                        <p>
+                            <strong> You voted on:</strong> {{vote.voted}}
+                        </p>
+                        {%if voting.end_date %}
+                            <p>
+                                <strong> The voting ended on:</strong> {{voting.end_date}}
+                            </p>
+                        {%else%}
+                            <p>
+                                <strong> The voting has not ended yet</strong>
+                            </p>
+                        {%endif%}
+                        <p><strong>Questions: </strong></p>
+                        {% for question in voting.questions %}
+                            <li>{{question}}</li>
+                        {%endfor%}
+                        </p>
+                    </big>
+                </div>
+            </a>
+        </center>
+    {%endwith%}
+{%endfor%}
+{%else%}
+    <big>
+        <big>
+            <center>
+                <p style="padding-left: 2%;
+                padding-right: 2%;
+                margin-top: 5%;
+                align-content: center;
+                border: 2px solid #000;
+                background-color: lightgray;
+                ">
+                    <strong>It seems that you dont have any votes yet</strong>
+                </p>
+            </center>
+        </big>
+    </big>
+{%endif%}
+{% endblock %}

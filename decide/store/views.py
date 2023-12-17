@@ -1,3 +1,4 @@
+from django.shortcuts import render
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 import django_filters.rest_framework
@@ -12,6 +13,7 @@ import subprocess
 from django.contrib import messages
 from django.http import HttpResponseBadRequest, HttpResponseRedirect
 from django.urls import reverse
+
 
 from .models import Vote
 from .serializers import VoteSerializer
@@ -208,9 +210,15 @@ def delete_selected_backup(request, selected_backup):
 
 class VoteHistoryView(generics.ListAPIView):
     serializer_class = VoteSerializer
-    permission_classes = [IsAuthenticated]
+    template_name = "voteHistory.html"
 
-    def get_queryset(self):
+    def get(self, request):
         # Filtra los votos del usuario actual
+        self.permission_classes = (IsAuthenticated,)
+        self.check_permissions(request)
         user = self.request.user
-        return Vote.objects.filter(voter_id=user.id).order_by("-voted")
+        votes = Vote.objects.filter(voter_id=user.id).order_by("-voted")
+        votesEmpty = len(votes) == 0
+        return render(
+            request, self.template_name, {"votes": votes, "votesEmpty": votesEmpty}
+        )
