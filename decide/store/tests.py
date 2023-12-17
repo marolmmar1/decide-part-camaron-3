@@ -267,7 +267,9 @@ class StoreTextCase(BaseTestCase):
     def test_invalid_data(self):
         data = {"voting": 9999, "voter": 9999, "votes": [{"vote": {"a": 1, "b": 1}}]}
         response = self.client.post("/store/", data, format="json")
-        self.assertEqual(response.status_code, 401)  # or whatever status code you return for invalid data
+        self.assertEqual(
+            response.status_code, 401
+        )  # or whatever status code you return for invalid data
 
     def test_vote_outside_voting_period(self):
         voting = self.gen_voting(1)
@@ -276,7 +278,9 @@ class StoreTextCase(BaseTestCase):
         voting.save()
         data = {"voting": 1, "voter": 1, "votes": [{"vote": {"a": 1, "b": 1}}]}
         response = self.client.post("/store/", data, format="json")
-        self.assertEqual(response.status_code, 401)  # or whatever status code you return for voting outside the voting period
+        self.assertEqual(
+            response.status_code, 401
+        )  # or whatever status code you return for voting outside the voting period
 
 
 class BackupTestCase(TestCase):
