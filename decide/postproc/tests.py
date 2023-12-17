@@ -463,9 +463,9 @@ class TestSimulacionDroop(StaticLiveServerTestCase):
             "Testing con droop 3 opciones Si, No, Depende"
         )
         self.driver.find_element(By.ID, "id_voting_type").click()
-        self.driver.find_element(By.ID, "id_question").click()
+        self.driver.find_element(By.ID, "id_questions").click()
         self.vars["window_handles"] = self.driver.window_handles
-        self.driver.find_element(By.ID, "add_id_question").click()
+        self.driver.find_element(By.ID, "add_id_questions").click()
         self.vars["win8378"] = self.wait_for_window(2000)
         self.vars["root"] = self.driver.current_window_handle
         self.driver.switch_to.window(self.vars["win8378"])
@@ -527,7 +527,7 @@ class TestSimulacionDroop(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "password").send_keys("qwertyA")
         self.driver.find_element(By.ID, "password").send_keys(Keys.ENTER)
         sleep(3)
-        self.driver.find_element(By.ID, "q2").click()
+        self.driver.find_element(By.ID, "opt2_index0").click()
         self.driver.find_element(By.CSS_SELECTOR, ".btn-primary").click()
         sleep(2)
         alert_element = self.driver.find_element(By.CLASS_NAME, "alert-danger")
@@ -572,9 +572,9 @@ class TestSimulacionDroop(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "id_me").click()
         self.driver.find_element(By.NAME, "_save").click()
         self.driver.switch_to.window(self.vars["root"])
-        self.driver.find_element(By.ID, "id_question").click()
+        self.driver.find_element(By.ID, "id_questions").click()
         self.vars["window_handles"] = self.driver.window_handles
-        self.driver.find_element(By.CSS_SELECTOR, "#add_id_question > img").click()
+        self.driver.find_element(By.CSS_SELECTOR, "#add_id_questions > img").click()
         self.vars["win6844"] = self.wait_for_window(2000)
         self.driver.switch_to.window(self.vars["win6844"])
         self.driver.find_element(By.ID, "id_desc").click()
@@ -657,9 +657,9 @@ class TestSimulacionDhont(StaticLiveServerTestCase):
             "Testing con Dhont 3 opciones Si, No, Depende"
         )
         self.driver.find_element(By.ID, "id_voting_type").click()
-        self.driver.find_element(By.ID, "id_question").click()
+        self.driver.find_element(By.ID, "id_questions").click()
         self.vars["window_handles"] = self.driver.window_handles
-        self.driver.find_element(By.ID, "add_id_question").click()
+        self.driver.find_element(By.ID, "add_id_questions").click()
         self.vars["win8378"] = self.wait_for_window(2000)
         self.vars["root"] = self.driver.current_window_handle
         self.driver.switch_to.window(self.vars["win8378"])
@@ -720,8 +720,9 @@ class TestSimulacionDhont(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "username").send_keys("adminB")
         self.driver.find_element(By.ID, "password").send_keys("qwertyA")
         self.driver.find_element(By.ID, "password").send_keys(Keys.ENTER)
-        sleep(3)
-        self.driver.find_element(By.ID, "q2").click()
+        sleep(5)
+        self.driver.find_element(By.ID, "opt2_index0").click()
+        sleep(2)
         self.driver.find_element(By.CSS_SELECTOR, ".btn-primary").click()
         sleep(2)
         alert_element = self.driver.find_element(By.CLASS_NAME, "alert-danger")
@@ -766,9 +767,9 @@ class TestSimulacionDhont(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "id_me").click()
         self.driver.find_element(By.NAME, "_save").click()
         self.driver.switch_to.window(self.vars["root"])
-        self.driver.find_element(By.ID, "id_question").click()
+        self.driver.find_element(By.ID, "id_questions").click()
         self.vars["window_handles"] = self.driver.window_handles
-        self.driver.find_element(By.CSS_SELECTOR, "#add_id_question > img").click()
+        self.driver.find_element(By.CSS_SELECTOR, "#add_id_questions > img").click()
         self.vars["win6844"] = self.wait_for_window(2000)
         self.driver.switch_to.window(self.vars["win6844"])
         self.driver.find_element(By.ID, "id_desc").click()
@@ -821,9 +822,9 @@ class TestSimulacionDhont(StaticLiveServerTestCase):
             "Testing con Dhont 3 opciones Si, No, Depende"
         )
         self.driver.find_element(By.ID, "id_voting_type").click()
-        self.driver.find_element(By.ID, "id_question").click()
+        self.driver.find_element(By.ID, "id_questions").click()
         self.vars["window_handles"] = self.driver.window_handles
-        self.driver.find_element(By.ID, "add_id_question").click()
+        self.driver.find_element(By.ID, "add_id_questions").click()
         self.vars["win8378"] = self.wait_for_window(2000)
         self.vars["root"] = self.driver.current_window_handle
         self.driver.switch_to.window(self.vars["win8378"])
@@ -946,9 +947,9 @@ class TestSimulacionSaintLague(StaticLiveServerTestCase):
             "Testing con Saint Lague 3 opciones Si, No, Depende"
         )
         self.driver.find_element(By.ID, "id_voting_type").click()
-        self.driver.find_element(By.ID, "id_question").click()
+        self.driver.find_element(By.ID, "id_questions").click()
         self.vars["window_handles"] = self.driver.window_handles
-        self.driver.find_element(By.ID, "add_id_question").click()
+        self.driver.find_element(By.ID, "add_id_questions").click()
         self.vars["win8378"] = self.wait_for_window(2000)
         self.vars["root"] = self.driver.current_window_handle
         self.driver.switch_to.window(self.vars["win8378"])
@@ -1010,7 +1011,7 @@ class TestSimulacionSaintLague(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "password").send_keys("qwertyA")
         self.driver.find_element(By.ID, "password").send_keys(Keys.ENTER)
         sleep(3)
-        self.driver.find_element(By.ID, "q2").click()
+        self.driver.find_element(By.ID, "opt2_index0").click()
         self.driver.find_element(By.CSS_SELECTOR, ".btn-primary").click()
         sleep(2)
         alert_element = self.driver.find_element(By.CLASS_NAME, "alert-danger")
@@ -1055,9 +1056,9 @@ class TestSimulacionSaintLague(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "id_me").click()
         self.driver.find_element(By.NAME, "_save").click()
         self.driver.switch_to.window(self.vars["root"])
-        self.driver.find_element(By.ID, "id_question").click()
+        self.driver.find_element(By.ID, "id_questions").click()
         self.vars["window_handles"] = self.driver.window_handles
-        self.driver.find_element(By.CSS_SELECTOR, "#add_id_question > img").click()
+        self.driver.find_element(By.CSS_SELECTOR, "#add_id_questions > img").click()
         self.vars["win6844"] = self.wait_for_window(2000)
         self.driver.switch_to.window(self.vars["win6844"])
         self.driver.find_element(By.ID, "id_desc").click()
@@ -1110,9 +1111,9 @@ class TestSimulacionSaintLague(StaticLiveServerTestCase):
             "Testing con Saint Lague 3 opciones Si, No, Depende"
         )
         self.driver.find_element(By.ID, "id_voting_type").click()
-        self.driver.find_element(By.ID, "id_question").click()
+        self.driver.find_element(By.ID, "id_questions").click()
         self.vars["window_handles"] = self.driver.window_handles
-        self.driver.find_element(By.ID, "add_id_question").click()
+        self.driver.find_element(By.ID, "add_id_questions").click()
         self.vars["win8378"] = self.wait_for_window(2000)
         self.vars["root"] = self.driver.current_window_handle
         self.driver.switch_to.window(self.vars["win8378"])
