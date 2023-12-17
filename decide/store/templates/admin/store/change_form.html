@@ -1,0 +1,29 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls %}
+
+{% block content %}
+    {{ block.super }}
+    <script>
+        // Abre la conexión WebSocket.
+        var socket = new WebSocket("ws://127.0.0.1:8000/ws/votes/");
+
+        socket.onmessage = function(event) {
+          console.log("[message] Data received from server: ", event.data);  
+        };
+
+        // Cuando la conexión se abre, muestra un mensaje en la consola.
+        socket.onopen = function(e) {
+          console.log("[open] Connection established");
+        };
+
+        // Cuando la conexión se cierra, muestra un mensaje en la consola.
+        socket.onclose = function(event) {
+          console.log(`[close] Connection closed`);
+        };
+
+        // Cuando ocurre un error, muestra un mensaje en la consola.
+        socket.onerror = function(error) {
+          console.log(`[error] ${error.message}`);
+        };
+    </script>
+{% endblock %}
