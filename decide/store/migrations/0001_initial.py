@@ -26,8 +26,7 @@ class Migration(migrations.Migration):
                 ("voter_id", models.PositiveIntegerField()),
                 (
                     "value",
-                    models.PositiveIntegerField(
-                        blank=True, default=0, null=True),
+                    models.PositiveIntegerField(blank=True, default=0, null=True),
                 ),
                 ("a", base.models.BigBigField()),
                 ("b", base.models.BigBigField()),
