@@ -33,11 +33,11 @@
                     <tr>
                     <tr>
                       <th>Número de votos</th>
-                      <td>[[voting.tally.length]]</td>
+                      <td>[[voting.tally.length / voting.questions.length]]</td>
                     <tr>
                     <tr>
                       <th>Porcentaje del censo que ha votado</th>
-                      <td>[[voting.tally.length/census.voters.length * 100]] %</td>
+                      <td>[[voting.tally.length/voting.questions.length/census.voters.length * 100]] %</td>
                     <tr>
                   </table>
                   <table v-else class="table table-bordered table-striped">
@@ -50,26 +50,27 @@
               <div v-if="voting.end_date">
                   <h2 class="heading">Resultados:</h2>
 
-
-                    <table class="table table-bordered table-striped">
-                        <thead>
-                            <tr>
-                                <th>Opción</th>
-                                <th v-if="seats">Escaños</th>
-                                <th>Votos</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="(option, n) in voting.questions[0].options">
-                                <th>[[ option.option ]]</th>
-                                <td v-if="seats">[[ seats[n] ]]</td>
-                                <td class="text-muted">[[ tally[n+1] | 0 ]]</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <div class="d-flex flex-row justify-content-around p-4">
-                      <div><canvas id="stats-bar"></canvas></div>
-                      <div><canvas id="stats-pie"></canvas></div>
+                    <div v-for="(question, index) in voting.questions">
+                      <table class="table table-bordered table-striped">
+                          <thead>
+                              <tr>
+                                  <th>Opción</th>
+                                  <th v-if="seats">Escaños</th>
+                                  <th>Votos</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+                              <tr v-for="(option, n) in voting.questions[index].options">
+                                  <th>[[ option.option ]]</th>
+                                  <td v-if="seats">[[ seats[n] ]]</td>
+                                  <td class="text-muted">[[ tally[index][n+1] | 0 ]]</td>
+                              </tr>
+                          </tbody>
+                      </table>
+                      <div class="d-flex flex-row justify-content-around p-4">
+                        <div><canvas :id="'stats-bar'+index"></canvas></div>
+                        <div><canvas :id="'stats-pie'+index"></canvas></div>
+                      </div>
                     </div>
                 </div>
               </div>
@@ -78,7 +79,6 @@
 {% block extrabody %}
     <!-- Vuejs -->
     <script src="https://unpkg.com/chart.js"></script>
-    <script src="https://unpkg.com/browse/vue-chartjs"></script>
     <script src="https://unpkg.com/babel-polyfill@latest/dist/polyfill.min.js"></script>
     <script src="https://unpkg.com/bootstrap@5.2.2/dist/js/bootstrap.js"></script>
     <script src="https://unpkg.com/vue"></script>    
@@ -102,16 +102,24 @@
     <script>
         var voting = {{voting|safe}};
         var census = {{census|safe}};
+        console.log(voting)
 
-        var tally = voting.tally.reduce((acc,value) => {
-          acc[value] = (acc[value] || 0) + 1
-          return acc
-        }, {})
-        voting.questions[0].options.forEach((o)=>{
-          if(!tally[o.number]) {
-            tally[o.number] = 0
-          }
-        })
+        var tally = []
+        for(i=0; i<voting.questions.length; i++) {
+          var questiontally = voting.tally.filter((value,index)=>index%voting.questions.length==i)
+
+          questiontally = questiontally.reduce((acc,value) => {
+            acc[value] = (acc[value] || 0) + 1
+            return acc
+          }, {})
+          voting.questions[i].options.forEach((o)=>{
+            if(!questiontally[o.number]) {
+              questiontally[o.number] = 0
+            }
+          })
+          tally.push(questiontally)
+        }
+
 
 
         var seats = null
@@ -136,48 +144,50 @@
                 }
             },
             mounted() {
-              var xValues = voting.questions[0].options.map((o)=>o.option)
-              var yValues = Object.keys(tally).sort((a,b)=>a-b).map(i=>tally[i])
-              var barColors = ["red", "orange","yellow","lime","turquoise","blue","purple"];
+              for(i=0;i<voting.questions.length;i++){
+                var subtally = tally[i]
+                var xValues = voting.questions[i].options.map((o)=>o.option)
+                var yValues = Object.keys(subtally).sort((a,b)=>a-b).map(i=>subtally[i])
+                var barColors = ["red", "orange","yellow","lime","turquoise","blue","purple"];
 
-              new Chart("stats-bar", {
-                type: "bar",
-                data: {
-                  labels: xValues,
-                  datasets: [{
-                    backgroundColor: barColors,
-                    data: yValues
-                  }]
-                },
-                options: {
-                  maintainAspectRatio:false,
-                  plugins: {
-                    legend: {
-                      display: false
+                new Chart("stats-bar"+i, {
+                  type: "bar",
+                  data: {
+                    labels: xValues,
+                    datasets: [{
+                      backgroundColor: barColors,
+                      data: yValues
+                    }]
+                  },
+                  options: {
+                    maintainAspectRatio:false,
+                    plugins: {
+                      legend: {
+                        display: false
+                      }
                     }
                   }
-                }
-              });
+                });
 
-              new Chart("stats-pie", {
-                type: "pie",
-                data: {
-                  labels: xValues,
-                  datasets: [{
-                    backgroundColor: barColors,
-                    data: yValues
-                  }]
-                },
-                options: {
-                  plugins: {
-                    legend: {
-                      display: false
+                new Chart("stats-pie"+i, {
+                  type: "pie",
+                  data: {
+                    labels: xValues,
+                    datasets: [{
+                      backgroundColor: barColors,
+                      data: yValues
+                    }]
+                  },
+                  options: {
+                    plugins: {
+                      legend: {
+                        display: false
+                      }
                     }
                   }
-                }
-              });
-
-            }
+                });
+              }
+          }
         }).mount('#app-visualizer')
 
 

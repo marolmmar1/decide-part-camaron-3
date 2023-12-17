@@ -9,6 +9,10 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from census.models import Census
 from mixnet.mixcrypt import MixCrypt, ElGamal
+from base.tests import BaseTestCase
+
+from voting.models import Voting, Question
+
 
 # Create your tests here.
 

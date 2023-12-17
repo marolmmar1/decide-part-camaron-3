@@ -118,7 +118,7 @@
         <!-- Voting -->
         <div v-if="!signup">
             <div v-if="voting.voting_type == 'H'">
-                <h1>Hierarchy Voting</h1>
+                <h1 class="h1">Hierarchy Voting</h1>
                 <br>
             </div>
             <h1>[[ voting.id ]] - [[ voting.name ]]</h1>
@@ -299,13 +299,32 @@
                     for (const i of comp) {
                         if (!minflicto.includes(i)) { res = false; }
                     }
+                    
                     return res;
                 },
                 decideSend(evt) {
                     evt.preventDefault();
+                    let votes = [];
 
-                    var votes = []; // Array to hold the votes for each question
+                    if (this.voting.voting_type == "M") {
+                        if (!this.check_order_ok()) { this.showAlert("danger", 'Order of options not valid'); return; }
+                        
+                        var l = document.getElementById("M-voting").getElementsByTagName("select");
 
+                        //For M type votings, we save a toString array with the indexes been the question positions and the values been the preferences
+                        var enc = [...Array(l.length + 1).keys()];
+                        enc.shift();
+
+                        for (const i of l) {
+                            enc[parseInt(i.id.replace('option-', ''))-1] = parseInt(i.value);
+                        }
+
+                        //console.log('[' + enc.toString() + ']')
+                        var v = this.decideEncrypt(enc.toString()
+                            .replace(',', '1010101'));
+                        //Can only encrypt numbers. 1010101 is extremely weird to appear in the votes by itself, so we use it as a coma marker
+                        console.log(v);
+                    }
                     for (let question of this.voting.questions) {
                         if (voting.voting_type == "M") {
                             if (!this.check_order_ok()) { this.showAlert("danger", 'Order of options not valid'); return; }

@@ -3,8 +3,8 @@ import requests
 
 
 HOST = "http://localhost:8000"
-USER = "egc2324"
-PASS = "egc2324egc2324"
+USER = "admin"
+PASS = "admin"
 VOTING = 1
 
 
