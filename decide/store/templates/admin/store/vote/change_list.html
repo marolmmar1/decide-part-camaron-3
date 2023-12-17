@@ -1,14 +1,204 @@
 {% extends "admin/change_list.html" %}
+{% load static %}
 
-{% block object-tools-items %}
+{% block extrahead %}
     {{ block.super }}
-    <li>
-        <a href="{% url 'store:vote_create_backup' %}" class="button">Create a Backup</a>
-    </li>
-    <li>
-        <a href="{% url 'store:vote_restore_backup_list' %}" class="button">Restore Database</a>
-    </li>
-    <li>
-        <a href="{% url 'store:delete_backups' %}" class="historylink">Eliminar Backups</a>
-    </li>
+    {% load static %}
+
+    <script>
+        // Crea una nueva conexión WebSocket.
+        var socket = new WebSocket('ws://localhost:8000/ws/votes/');
+
+        // Cuando la conexión se abre, muestra un mensaje en la consola.
+        socket.onopen = function(e) {
+        
+            console.log("[open] Connection established");
+            document.querySelectorAll('.close-voting').forEach(function(button) {
+                button.addEventListener('click', function() {
+                    var votingId = this.getAttribute('data-id');
+                    var message = {
+                        'type': 'voting.closed',
+                        'voting_id': votingId,
+                    };
+                    socket.send(JSON.stringify(message));
+                    this.disabled = true;
+                    this.textContent = "Voting "+ votingId + " Closed";
+                    var startButton = document.querySelector('.start-voting[data-id="' + votingId + '"]');
+                    startButton.disabled = false; 
+                    startButton.textContent = "Start Voting " + votingId;
+                });
+            });
+
+            document.querySelectorAll('.start-voting').forEach(function(button) {
+                button.addEventListener('click', function() {
+                    var votingId = this.getAttribute('data-id');
+                    var message = {
+                        'type': 'voting.open',
+                        'voting_id': votingId,
+                    };
+                    socket.send(JSON.stringify(message));
+                    this.disabled = true;
+                    this.textContent = "Voting " + votingId + " Started";
+                    var closeButton = document.querySelector('.close-voting[data-id="' + votingId + '"]');
+                    closeButton.disabled = false;
+                    closeButton.textContent = "Close Voting " + votingId;
+                });
+            });
+        };
+
+        // Cuando se recibe un mensaje del servidor, actualiza la interfaz de usuario.
+        socket.onmessage = function(event) {
+            console.log("[message] Data received from server: ", event.data);  
+            var data = JSON.parse(event.data);
+            if (data.message == 'Voting closed') {
+                var voteDateElement = document.getElementById('end-date-' + data.voting_id);
+                voteDateElement.textContent = 'Finished: ' + data.end_date;
+            }else if (data.message == 'Voting open') {
+                var voteDateElement2 = document.getElementById('start-date-' + data.voting_id);
+                voteDateElement2.textContent = 'Started: ' + data.start_date;
+            }else{
+                var voteCountElement = document.getElementById('vote-count-' + data.vote_id);
+                var votePercentageElement = document.getElementById('vote-percentage-' + data.vote_id);
+                voteCountElement.textContent = 'Number of votes: ' + data.vote_count;
+                votePercentageElement.textContent = 'Percentage: ' + data.vote_percentage.toFixed(2) + '%';
+            }
+
+        };
+
+        // Cuando la conexión se cierra, muestra un mensaje en la consola.
+        socket.onclose = function(event) {
+            console.log(`[close] Connection closed`);
+        };
+
+        // Cuando ocurre un error, muestra un mensaje en la consola.
+        socket.onerror = function(error) {
+            console.log(`[error] ${error.message}`);
+        };
+        
+        //SCRIPT PARA QUE EL BAR DE LA BARRA DEPROGRSO NO DE ERROR
+        window.onload = function() {
+            var bars = document.querySelectorAll('.bar');
+            bars.forEach(function(bar) {
+                var width = bar.getAttribute('data-width');
+                bar.style.width = width + '%';
+            });
+        };
+    </script>
+
+    <style>
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: auto;
+        }
+        .bar-container {
+            width: 50%;
+            background-color: #f3f3f3;
+            padding: 4px;
+            border: 1px solid #bbb;
+        }
+    
+        .bar {
+            height: 3px;  
+            background-color: #4CAF50;
+        }
+        .dashboard-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .dashboard-buttons {
+            display: flex;
+            gap: 10px;
+            margin-left: 100%;
+            margin-right: 10px;
+        }
+
+        .dashboard-buttons a {
+            text-decoration: none;
+            padding: 8px 12px;
+            background-color: grey;
+            color: #ffffff;
+            border-radius: 5px;
+        }
+
+        .dashboard-container {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px; /* Ajusta según sea necesario */
+        }
+
+        .content-wrapper {
+            display: flex;
+            width: 100%;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .close-voting {
+            background-color: #d34040;
+            color: white;
+            width: 200px;
+            height: 50px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .start-voting {
+            background-color: #4073d3;
+            color: white;
+            width: 200px;
+            height: 50px;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 12px auto;
+            cursor: pointer;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="content-wrapper">
+        {{ block.super }}
+        <div class="dashboard-header">
+            <h1>Store Dashboard</h1>
+            <div class="dashboard-buttons">
+                <a href="{% url 'store:vote_create_backup' %}" class="button">Create Backup</a>
+                <a href="{% url 'store:vote_restore_backup_list' %}" class="button">Restore Database</a>
+                <a href="{% url 'store:delete_backups' %}" class="button">Delete Backups</a>
+            </div>
+        </div>
+        <div class="grid-container">
+            {% for vote in votes %}
+                <div id="voting-{{ vote.voting_id }}">
+                    <h2>Voting ID: {{ vote.voting_id }}</h2>
+                    <p id="vote-name-{{ vote.voting_id }}">Name: {{ vote.name }}</p>
+                    <p id="start-date-{{ vote.voting_id }}">Started: {{ vote.start_date }}</p>
+                    <p id="end-date-{{ vote.voting_id }}">Finished: {{ vote.end_date }}</p>
+                    <p id="vote-count-{{ vote.voting_id }}">Number of votes: {{ vote.total_votes }}</p>
+                    <p id="vote-percentage-{{ vote.voting_id }}">Percentage: {{ vote.percentage|floatformat:2 }}%</p>
+                    <div class="bar-container">
+                        <div class="bar" data-width="{{ vote.percentage }}"></div>
+                    </div>
+                    {% if vote.start_date < vote.end_date %}
+                        <button class="start-voting button" data-id="{{ vote.voting_id }}">Start Voting {{ vote.voting_id }}</button>
+                        <button class="close-voting button" data-id="{{ vote.voting_id }}" disabled>Voting {{ vote.voting_id }} Closed</button>
+                    {% else %}
+                        <button class="start-voting button" data-id="{{ vote.voting_id }}" disabled>Voting {{ vote.voting_id }} Started</button>
+                        <button class="close-voting button" data-id="{{ vote.voting_id }}">Close Voting {{ vote.voting_id }}</button>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
 {% endblock %}
