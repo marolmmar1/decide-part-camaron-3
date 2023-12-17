@@ -9,16 +9,11 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from census.models import Census
 from mixnet.mixcrypt import MixCrypt, ElGamal
-from django.test import TestCase
 from base.tests import BaseTestCase
-from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 
 from voting.models import Voting, Question
 
-from selenium import webdriver
-from selenium.webdriver.common.by import By
 
-import time
 
 # Create your tests here.
 

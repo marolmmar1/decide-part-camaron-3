@@ -61,15 +61,21 @@ def post_SiNo_Option(sender, instance, created, **kwargs):
         options = instance.options.all()
         if options.count() == 0:
             option_number = 1
-            if instance.optionSiNo: 
-                op1 = QuestionOption(question=instance, number=option_number, option="Sí")
+            if instance.optionSiNo:
+                op1 = QuestionOption(
+                    question=instance, number=option_number, option="Sí"
+                )
                 op1.save()
                 option_number += 1
-                op2 = QuestionOption(question=instance, number=option_number, option="No")
+                op2 = QuestionOption(
+                    question=instance, number=option_number, option="No"
+                )
                 op2.save()
                 option_number += 1
             if instance.third_option:
-                op3 = QuestionOption(question=instance, number=option_number, option="Depende")
+                op3 = QuestionOption(
+                    question=instance, number=option_number, option="Depende"
+                )
                 op3.save()
 
 
@@ -81,8 +87,13 @@ def update_SiNo_Option(sender, instance, created, **kwargs):
             if not any(option.option == "Depende" for option in options):
                 ids = [option.number for option in options]
                 if len(ids) > 2:
-                    raise ValidationError({'options': [
-                        f'No puedes añadir más opciones, ni editar los valores ya predefinidos. El número máximo de opciones permitidas es 3.']}) 
+                    raise ValidationError(
+                        {
+                            "options": [
+                                f"No puedes añadir más opciones, ni editar los valores ya predefinidos. El número máximo de opciones permitidas es 3."
+                            ]
+                        }
+                    )
                 elif 1 not in ids:
                     op3 = QuestionOption(question=instance, number=1, option="Depende")
                 elif 2 not in ids:
@@ -237,18 +248,18 @@ class Voting(models.Model):
 
         self.tally = response.json()
 
-        if self.voting_type == 'M':
+        if self.voting_type == "M":
             t = self.tally.copy()
             self.tally = []
             for vote in t:
-                v = str(vote).split('1010101')
+                v = str(vote).split("1010101")
                 v = [int(i) for i in v]
                 self.tally.append(v)
 
                 if len(v) != len(set(v)):
                     raise Exception("Non valid tally count")
-        
-        #print(self.tally)
+
+        # print(self.tally)
 
         self.save()
 
@@ -261,10 +272,10 @@ class Voting(models.Model):
         opts = []
         for opt in options:
             if isinstance(tally, list):
-                if self.voting_type == 'M':
+                if self.voting_type == "M":
                     votes = 0
                     for i in tally:
-                        votes += i[opt.number-1]/len(options)
+                        votes += i[opt.number - 1] / len(options)
                 else:
                     votes = tally.count(opt.number)
             else:

@@ -1,9 +1,5 @@
-from django.test import TestCase
 from base.tests import BaseTestCase
-from voting.models import Voting, Question, QuestionOption
-from mixnet.models import Auth
-from django.conf import settings
-from census.models import Census
+from voting.models import Voting
 from django.contrib.auth.models import User
 from base import mods
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
@@ -14,29 +10,27 @@ import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+
 
 class VotingPreferenceTestCaseSelenium(StaticLiveServerTestCase):
-   
     def setUp(self):
         self.client = APIClient()
-        self.base = BaseTestCase()  
+        self.base = BaseTestCase()
         self.base.setUp()
-        self.vars={}
+        self.vars = {}
         mods.mock_query(self.client)
-        
+
         options = webdriver.ChromeOptions()
         options.headless = True
         self.driver = webdriver.Chrome(options=options)
 
-        u = User(username='admin1')
-        u.set_password('admin1')
+        u = User(username="admin1")
+        u.set_password("admin1")
         u.is_staff = True
         u.is_superuser = True
         u.save()
 
-    def wait_for_window(self, timeout = 2):
+    def wait_for_window(self, timeout=2):
         time.sleep(round(timeout / 1000))
         wh_now = self.driver.window_handles
         wh_then = self.vars["window_handles"]
@@ -68,7 +62,9 @@ class VotingPreferenceTestCaseSelenium(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "id_name").send_keys("Votacion 1")
         self.driver.find_element(By.ID, "id_desc").click()
         self.driver.find_element(By.ID, "id_desc").send_keys("Esto es una votacion")
-        self.driver.find_element(By.CSS_SELECTOR, ".field-question .related-widget-wrapper").click()
+        self.driver.find_element(
+            By.CSS_SELECTOR, ".field-question .related-widget-wrapper"
+        ).click()
         self.vars["window_handles"] = self.driver.window_handles
         self.driver.find_element(By.CSS_SELECTOR, "#add_id_question > img").click()
         self.vars["win1332"] = self.wait_for_window(2000)
@@ -95,8 +91,8 @@ class VotingPreferenceTestCaseSelenium(StaticLiveServerTestCase):
         self.vars["win1617"] = self.wait_for_window(5000)
         self.driver.switch_to.window(self.vars["win1617"])
 
-        self.driver.find_element(By.ID, "id_name").send_keys(self.live_server_url+"/")
-        self.driver.find_element(By.ID, "id_url").send_keys(self.live_server_url+"/")
+        self.driver.find_element(By.ID, "id_name").send_keys(self.live_server_url + "/")
+        self.driver.find_element(By.ID, "id_url").send_keys(self.live_server_url + "/")
 
         self.driver.find_element(By.NAME, "_save").click()
         self.driver.switch_to.window(self.vars["root"])
@@ -121,15 +117,15 @@ class VotingPreferenceTestCaseSelenium(StaticLiveServerTestCase):
 
         voting = Voting.objects.get(name="Votacion 1")
         self.driver.get(f'{self.live_server_url+"/booth/"+voting.id.__str__()}')
-        
+
         element = self.driver.find_element(By.CSS_SELECTOR, ".btn-secondary")
-        
-        navbar_toggler = self.driver.find_element(By.CLASS_NAME, 'navbar-toggler')
+
+        navbar_toggler = self.driver.find_element(By.CLASS_NAME, "navbar-toggler")
         navbar_toggler.click()
         actions = ActionChains(self.driver)
         actions.move_to_element(element).perform()
         self.driver.find_element(By.CSS_SELECTOR, ".btn-secondary").click()
-        
+
         element = self.driver.find_element(By.CSS_SELECTOR, "body")
         actions = ActionChains(self.driver)
 
@@ -140,11 +136,13 @@ class VotingPreferenceTestCaseSelenium(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "password").send_keys("admin1")
         self.driver.find_element(By.CSS_SELECTOR, ".btn-primary").click()
         time.sleep(10)
-        self.assertTrue(self.live_server_url+"/booth/"+voting.id.__str__()+"/" == self.driver.current_url)
+        self.assertTrue(
+            self.live_server_url + "/booth/" + voting.id.__str__() + "/"
+            == self.driver.current_url
+        )
         time.sleep(5)
         self.assertTrue(self.driver.find_element(By.CSS_SELECTOR, "#option-1") != None)
-        
-        
+
     def tearDown(self):
         super().tearDown()
         self.driver.quit()
@@ -152,25 +150,24 @@ class VotingPreferenceTestCaseSelenium(StaticLiveServerTestCase):
 
 
 class VotingPreferenceTestCaseSeleniumSuccess(StaticLiveServerTestCase):
-   
     def setUp(self):
         self.client = APIClient()
-        self.base = BaseTestCase()  
+        self.base = BaseTestCase()
         self.base.setUp()
-        self.vars={}
+        self.vars = {}
         mods.mock_query(self.client)
-        
+
         options = webdriver.ChromeOptions()
         options.headless = True
         self.driver = webdriver.Chrome(options=options)
 
-        u = User(username='admin1')
-        u.set_password('admin1')
+        u = User(username="admin1")
+        u.set_password("admin1")
         u.is_staff = True
         u.is_superuser = True
         u.save()
 
-    def wait_for_window(self, timeout = 2):
+    def wait_for_window(self, timeout=2):
         time.sleep(round(timeout / 1000))
         wh_now = self.driver.window_handles
         wh_then = self.vars["window_handles"]
@@ -202,7 +199,9 @@ class VotingPreferenceTestCaseSeleniumSuccess(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "id_name").send_keys("Votacion 1")
         self.driver.find_element(By.ID, "id_desc").click()
         self.driver.find_element(By.ID, "id_desc").send_keys("Esto es una votacion")
-        self.driver.find_element(By.CSS_SELECTOR, ".field-question .related-widget-wrapper").click()
+        self.driver.find_element(
+            By.CSS_SELECTOR, ".field-question .related-widget-wrapper"
+        ).click()
         self.vars["window_handles"] = self.driver.window_handles
         self.driver.find_element(By.CSS_SELECTOR, "#add_id_question > img").click()
         self.vars["win1332"] = self.wait_for_window(2000)
@@ -230,8 +229,8 @@ class VotingPreferenceTestCaseSeleniumSuccess(StaticLiveServerTestCase):
         time.sleep(1)
         self.driver.switch_to.window(self.vars["win1617"])
 
-        self.driver.find_element(By.ID, "id_name").send_keys(self.live_server_url+"/")
-        self.driver.find_element(By.ID, "id_url").send_keys(self.live_server_url+"/")
+        self.driver.find_element(By.ID, "id_name").send_keys(self.live_server_url + "/")
+        self.driver.find_element(By.ID, "id_url").send_keys(self.live_server_url + "/")
 
         self.driver.find_element(By.NAME, "_save").click()
         self.driver.switch_to.window(self.vars["root"])
@@ -256,15 +255,15 @@ class VotingPreferenceTestCaseSeleniumSuccess(StaticLiveServerTestCase):
 
         voting = Voting.objects.get(name="Votacion 1")
         self.driver.get(f'{self.live_server_url+"/booth/"+voting.id.__str__()}')
-        
+
         element = self.driver.find_element(By.CSS_SELECTOR, ".btn-secondary")
-        
-        navbar_toggler = self.driver.find_element(By.CLASS_NAME, 'navbar-toggler')
+
+        navbar_toggler = self.driver.find_element(By.CLASS_NAME, "navbar-toggler")
         navbar_toggler.click()
         actions = ActionChains(self.driver)
         actions.move_to_element(element).perform()
         self.driver.find_element(By.CSS_SELECTOR, ".btn-secondary").click()
-        
+
         element = self.driver.find_element(By.CSS_SELECTOR, "body")
         actions = ActionChains(self.driver)
 
@@ -284,9 +283,13 @@ class VotingPreferenceTestCaseSeleniumSuccess(StaticLiveServerTestCase):
         self.driver.find_element(By.CSS_SELECTOR, ".btn-primary").click()
 
         time.sleep(5)
-        self.assertTrue(self.driver.find_element(By.XPATH, "//div[contains(text(), 'Unauthorized')]") != None)
-        
-        
+        self.assertTrue(
+            self.driver.find_element(
+                By.XPATH, "//div[contains(text(), 'Unauthorized')]"
+            )
+            != None
+        )
+
     def tearDown(self):
         super().tearDown()
         self.driver.quit()
@@ -294,25 +297,24 @@ class VotingPreferenceTestCaseSeleniumSuccess(StaticLiveServerTestCase):
 
 
 class VotingPreferenceTestCaseSeleniumFail(StaticLiveServerTestCase):
-   
     def setUp(self):
         self.client = APIClient()
-        self.base = BaseTestCase()  
+        self.base = BaseTestCase()
         self.base.setUp()
-        self.vars={}
+        self.vars = {}
         mods.mock_query(self.client)
-        
+
         options = webdriver.ChromeOptions()
         options.headless = True
         self.driver = webdriver.Chrome(options=options)
 
-        u = User(username='admin1')
-        u.set_password('admin1')
+        u = User(username="admin1")
+        u.set_password("admin1")
         u.is_staff = True
         u.is_superuser = True
         u.save()
 
-    def wait_for_window(self, timeout = 2):
+    def wait_for_window(self, timeout=2):
         time.sleep(round(timeout / 1000))
         wh_now = self.driver.window_handles
         wh_then = self.vars["window_handles"]
@@ -344,7 +346,9 @@ class VotingPreferenceTestCaseSeleniumFail(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "id_name").send_keys("Votacion 1")
         self.driver.find_element(By.ID, "id_desc").click()
         self.driver.find_element(By.ID, "id_desc").send_keys("Esto es una votacion")
-        self.driver.find_element(By.CSS_SELECTOR, ".field-question .related-widget-wrapper").click()
+        self.driver.find_element(
+            By.CSS_SELECTOR, ".field-question .related-widget-wrapper"
+        ).click()
         self.vars["window_handles"] = self.driver.window_handles
         self.driver.find_element(By.CSS_SELECTOR, "#add_id_question > img").click()
         self.vars["win1332"] = self.wait_for_window(2000)
@@ -371,8 +375,8 @@ class VotingPreferenceTestCaseSeleniumFail(StaticLiveServerTestCase):
         self.vars["win1617"] = self.wait_for_window(5000)
         self.driver.switch_to.window(self.vars["win1617"])
 
-        self.driver.find_element(By.ID, "id_name").send_keys(self.live_server_url+"/")
-        self.driver.find_element(By.ID, "id_url").send_keys(self.live_server_url+"/")
+        self.driver.find_element(By.ID, "id_name").send_keys(self.live_server_url + "/")
+        self.driver.find_element(By.ID, "id_url").send_keys(self.live_server_url + "/")
 
         self.driver.find_element(By.NAME, "_save").click()
         self.driver.switch_to.window(self.vars["root"])
@@ -397,15 +401,15 @@ class VotingPreferenceTestCaseSeleniumFail(StaticLiveServerTestCase):
 
         voting = Voting.objects.get(name="Votacion 1")
         self.driver.get(f'{self.live_server_url+"/booth/"+voting.id.__str__()}')
-        
+
         element = self.driver.find_element(By.CSS_SELECTOR, ".btn-secondary")
-        
-        navbar_toggler = self.driver.find_element(By.CLASS_NAME, 'navbar-toggler')
+
+        navbar_toggler = self.driver.find_element(By.CLASS_NAME, "navbar-toggler")
         navbar_toggler.click()
         actions = ActionChains(self.driver)
         actions.move_to_element(element).perform()
         self.driver.find_element(By.CSS_SELECTOR, ".btn-secondary").click()
-        
+
         element = self.driver.find_element(By.CSS_SELECTOR, "body")
         actions = ActionChains(self.driver)
 
@@ -425,9 +429,13 @@ class VotingPreferenceTestCaseSeleniumFail(StaticLiveServerTestCase):
         self.driver.find_element(By.CSS_SELECTOR, ".btn-primary").click()
 
         time.sleep(5)
-        self.assertTrue(self.driver.find_element(By.XPATH, "//div[contains(text(), 'Order of options not valid')]") != None)
-        
-        
+        self.assertTrue(
+            self.driver.find_element(
+                By.XPATH, "//div[contains(text(), 'Order of options not valid')]"
+            )
+            != None
+        )
+
     def tearDown(self):
         super().tearDown()
         self.driver.quit()
