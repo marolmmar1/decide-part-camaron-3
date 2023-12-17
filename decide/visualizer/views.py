@@ -20,7 +20,9 @@ def dict_to_csv(values, name):
 
 def build_census_map(census):
     rows = {"Name": [], "Id": []}
+    print("aaaaaaaaaa")
     for user in census:
+        print(user)
         rows.get("Name").append(User.objects.get(pk=int(user)).username)
         rows.get("Id").append(user)
     return rows
