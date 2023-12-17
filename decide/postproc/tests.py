@@ -50,7 +50,7 @@ class PostProcTestCase(BaseTestCase):
             name="test voting", postproc_type=postproc, voting_type=type
         )
         v.save()
-        v.questions.add(q)
+        v.questions.set([q])
         v.save()
 
         a, _ = Auth.objects.get_or_create(
@@ -81,20 +81,21 @@ class PostProcTestCase(BaseTestCase):
         voter = voters.pop()
 
         clear = {}
-        for opt in v.question.options.all():
-            clear[opt.number] = 0
-            for _ in range(5):
-                a, b = self.encrypt_msg(opt.number, v)
-                data = {
-                    "voting": v.id,
-                    "voter": voter.voter_id,
-                    "vote": {"a": a, "b": b},
-                }
-                clear[opt.number] += 1
-                user = self.get_or_create_user(voter.voter_id)
-                self.login(user=user.username)
-                voter = voters.pop()
-                mods.post("store", json=data)
+        for question in v.questions.all():
+            for opt in question.options.all():
+                clear[opt.number] = 0
+                for _ in range(5):
+                    a, b = self.encrypt_msg(opt.number, v)
+                    data = {
+                        "voting": v.id,
+                        "voter": voter.voter_id,
+                        "vote": {"a": a, "b": b},
+                    }
+                    clear[opt.number] += 1
+                    user = self.get_or_create_user(voter.voter_id)
+                    self.login(user=user.username)
+                    voter = voters.pop()
+                    mods.post("store", json=data)
         return clear
 
     def test_correct_postproc(self):
@@ -300,7 +301,7 @@ class PostProcTestsSaintLague(BaseTestCase):
             name="test voting", postproc_type=postproc, voting_type=type
         )
         v.save()
-        v.questions.add(q)
+        v.questions.set([q])
         v.save()
 
         a, _ = Auth.objects.get_or_create(
@@ -331,20 +332,21 @@ class PostProcTestsSaintLague(BaseTestCase):
         voter = voters.pop()
 
         clear = {}
-        for opt in v.question.options.all():
-            clear[opt.number] = 0
-            for _ in range(5):
-                a, b = self.encrypt_msg(opt.number, v)
-                data = {
-                    "voting": v.id,
-                    "voter": voter.voter_id,
-                    "vote": {"a": a, "b": b},
-                }
-                clear[opt.number] += 1
-                user = self.get_or_create_user(voter.voter_id)
-                self.login(user=user.username)
-                voter = voters.pop()
-                mods.post("store", json=data)
+        for question in v.questions.all():
+            for opt in question.options.all():
+                clear[opt.number] = 0
+                for _ in range(5):
+                    a, b = self.encrypt_msg(opt.number, v)
+                    data = {
+                        "voting": v.id,
+                        "voter": voter.voter_id,
+                        "vote": {"a": a, "b": b},
+                    }
+                    clear[opt.number] += 1
+                    user = self.get_or_create_user(voter.voter_id)
+                    self.login(user=user.username)
+                    voter = voters.pop()
+                    mods.post("store", json=data)
         return clear
 
     def test_saint_function(self):

@@ -1,4 +1,4 @@
-"""
+'''
 >>> B = 256
 >>> k1 = MixCrypt(bits=B)
 >>> k2 = MixCrypt(k=k1.k, bits=B)
@@ -31,8 +31,10 @@ True
 False
 >>> sorted(clears) == sorted(d)
 True
-"""
+'''
 
+
+from pprint import pprint
 
 from Crypto.PublicKey import ElGamal
 from Crypto.Random import random
@@ -43,8 +45,7 @@ from Crypto.Util.number import GCD
 def rand(p):
     while True:
         k = random.StrongRandom().randint(1, int(p) - 1)
-        if GCD(k, int(p) - 1) == 1:
-            break
+        if GCD(k, int(p) - 1) == 1: break
     return k
 
 
@@ -72,9 +73,8 @@ def multiple_decrypt_shuffle(ciphers, *crypts):
         b = k.shuffle_decrypt(b, last)
     return b
 
-
 def multiple_decrypt_shuffle2(ciphers, *crypts, pubkey=None):
-    """
+    '''
     >>> B = 256
     >>> k1 = MixCrypt(bits=B)
     >>> k2 = MixCrypt(k=k1.k, bits=B)
@@ -88,7 +88,7 @@ def multiple_decrypt_shuffle2(ciphers, *crypts, pubkey=None):
     False
     >>> sorted(clears) == sorted(d)
     True
-    """
+    '''
 
     b = ciphers.copy()
 
@@ -150,8 +150,9 @@ class MixCrypt:
     def shuffle_decrypt(self, msgs, last=True):
         msgs2 = msgs.copy()
         msgs3 = []
-        for msg in msgs2:
-            a, b = msg
+        while msgs2:
+            n = random.StrongRandom().randint(0, len(msgs2) - 1)
+            a, b = msgs2.pop(n)
             clear = self.decrypt((a, b))
             if last:
                 msg = clear
@@ -162,7 +163,7 @@ class MixCrypt:
         return msgs3
 
     def reencrypt(self, cipher, pubkey=None):
-        """
+        '''
         >>> B = 256
         >>> k = MixCrypt(bits=B)
         >>> clears = [random.StrongRandom().randint(1, B) for i in range(5)]
@@ -174,7 +175,7 @@ class MixCrypt:
         True
         >>> cipher != cipher2
         True
-        """
+        '''
 
         if pubkey:
             p, g, y = pubkey
@@ -198,12 +199,14 @@ class MixCrypt:
         return x
 
     def shuffle(self, msgs, pubkey=None):
-        """
-        Reencrypt without shuffling
-        """
+        '''
+        Reencrypt and shuffle
+        '''
 
         msgs2 = msgs.copy()
-        for i, m in enumerate(msgs):
+        perm = self.gen_perm(len(msgs))
+        for i, p in enumerate(perm):
+            m = msgs[p]
             nm = self.reencrypt(m, pubkey)
             msgs2[i] = nm
 
@@ -212,5 +215,4 @@ class MixCrypt:
 
 if __name__ == "__main__":
     import doctest
-
     doctest.testmod()

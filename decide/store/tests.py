@@ -303,7 +303,9 @@ class RealTimeDataTestCase(TestCase):
         super().setUp()
         # Crea una pregunta y una votación
         question = Question.objects.create(desc="Test Question")
-        self.voting = Voting.objects.create(name="Test Voting", question=question)
+        self.voting = Voting.objects.create(name="Test Voting")
+        self.voting.save()
+        self.voting.questions.set([question])
         self.voting.save()
 
     def tearDown(self):
@@ -585,7 +587,9 @@ class DashboardTestCase(StaticLiveServerTestCase):
         )
         self.user = User.objects.create_superuser("prueba", "p@example.com", "1111")
         question = Question.objects.create(desc="Test Question")
-        self.voting = Voting.objects.create(name="Test Voting", question=question)
+        self.voting = Voting.objects.create(name="Test Voting")
+        self.voting.save()
+        self.voting.questions.set([question])
         self.voting.save()
         self.census1 = Census(voting_id=self.voting.id, voter_id=self.user.id)
         self.census1.save()
