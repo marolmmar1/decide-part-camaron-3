@@ -64,7 +64,6 @@ def export_votes_xls(request, **kwargs):
     data ={}
     if len(a.get('postproc')) == 0:
         data = build_vote_map(a)
-        print("nulo!")
     else:   
         match a.get('postproc').get('type_postproc'):
             case "DRO":
@@ -99,7 +98,6 @@ def download_votes_csv(request, **kwargs):
     data ={}
     if len(a.get('postproc')) == 0:
         data = build_vote_map(a)
-        print("nulo!")
     else:   
         match a.get('postproc').get('type_postproc'):
             case "DRO":
@@ -119,21 +117,23 @@ def build_vote_map(a):
     res = {}
     i =1
     j= 0
-    print(a)
     for question in a.get('questions'):
         rows = {"number": [],"option": [], "votes": []}
+        k=0
         for option in question.get('options'):
             rows["number"].append(option.get('number'))
             rows["option"].append(option.get('option'))
-            rows["votes"].append("esperando a tally")
+            if a.get("tally")[k] == option.get('number'):
+                rows["votes"].append(1)
+            else:
+                rows["votes"].append(0)
+        k=k+1
         res["question "+str(i)] = rows
         i=i+1
-    print(res)
     return res
 
     
 def process_dho_voting_data(a):
-    print("Using dho!")
     res = {}
     i =1
     j= 0
