@@ -60,6 +60,23 @@ class StoreTextCase(BaseTestCase):
     def tearDown(self):
         super().tearDown()
 
+    def gen_voting(self, pk):
+        voting = Voting(
+            pk=pk,
+            name="v1",
+            question=self.question,
+            start_date=timezone.now(),
+            end_date=timezone.now() + datetime.timedelta(days=1),
+        )
+        voting.save()
+
+    def get_or_create_user(self, pk):
+        user, _ = User.objects.get_or_create(pk=pk)
+        user.username = "user{}".format(pk)
+        user.set_password("qwerty")
+        user.save()
+        return user
+
     def gen_voting(self, pk, question_desc=None):
         voting = Voting(
             pk=pk,
@@ -105,61 +122,6 @@ class StoreTextCase(BaseTestCase):
         user.set_password("qwerty")
         user.save()
         return user
-
-    def gen_votes(self):
-        votings = [random.randint(1, 5000) for i in range(10)]
-        users = [random.randint(4, 5003) for i in range(50)]
-        for v in votings:
-            a = random.randint(2, 500)
-            b = random.randint(2, 500)
-            self.gen_voting(v)
-            random_user = random.choice(users)
-            user = self.get_or_create_user(random_user)
-            self.login(user=user.username)
-            census = Census(voting_id=v, voter_id=random_user)
-            census.save()
-            data = {"voting": v, "voter": random_user, "vote": {"a": a, "b": b}}
-            response = self.client.post("/store/", data, format="json")
-            self.assertEqual(response.status_code, 200)
-
-        self.logout()
-        return votings, users
-
-    def gen_vote_for_one_user(self):
-        votings = [random.randint(1, 5000) for i in range(10)]
-        u = 3
-        a = random.randint(2, 500)
-        b = random.randint(2, 500)
-        random_voting = random.choice(votings)
-        self.gen_voting(random_voting)
-        user = self.get_or_create_user(u)
-        self.login(user=user.username)
-        census = Census(voting_id=random_voting, voter_id=u)
-        census.save()
-        data = {"voting": random_voting, "voter": u, "vote": {"a": a, "b": b}}
-        response = self.client.post("/store/", data, format="json")
-        self.assertEqual(response.status_code, 200)
-        self.logout()
-        return u
-
-    def gen_many_votes_for_one_user(self):
-        votings = [random.randint(1, 5000) for i in range(10)]
-        users = [random.randint(4, 5003) for i in range(50)]
-        random_user = random.choice(users)
-        for v in votings:
-            a = random.randint(2, 500)
-            b = random.randint(2, 500)
-            self.gen_voting(v)
-            user = self.get_or_create_user(random_user)
-            self.login(user=user.username)
-            census = Census(voting_id=v, voter_id=random_user)
-            census.save()
-            data = {"voting": v, "voter": random_user, "vote": {"a": a, "b": b}}
-            response = self.client.post("/store/", data, format="json")
-            self.assertEqual(response.status_code, 200)
-
-        self.logout()
-        return random_user
 
     def test_gen_vote_invalid(self):
         data = {"voting": 1, "voter": 1, "vote": {"a": 1, "b": 1}}
@@ -298,6 +260,7 @@ class StoreTextCase(BaseTestCase):
         question2 = Question(desc="Question 2")
         question2.save()
         voting.questions.add(question2)
+
         votes = [{"vote": {"a": CTE_A, "b": CTE_B}}]
         data = {
             "voting": VOTING_PK,
@@ -310,14 +273,6 @@ class StoreTextCase(BaseTestCase):
         self.login(user=user.username)
         response = self.client.post("/store/", data, format="json")
         self.assertEqual(response.status_code, 200)
-class DjangoChannelsTest(TestCase):
-    def setUp(self):
-        super().setUp()
-        # Crea una pregunta y una votación
-        question = Question.objects.create(desc="Test Question")
-        self.voting = Voting.objects.create(name="Test Voting")
-        self.voting.questions.set([question])
-        self.voting.save()
 
         self.assertEqual(Vote.objects.count(), 1)
         self.assertEqual(Vote.objects.first().voting_id, VOTING_PK)
@@ -342,12 +297,17 @@ class DjangoChannelsTest(TestCase):
         data = {"voting": 1, "voter": 1, "votes": [{"vote": {"a": 1, "b": 1}}]}
         response = self.client.post("/store/", data, format="json")
         self.assertEqual(response.status_code, 401)
-    def get_or_create_user(self, pk):
-        user, _ = User.objects.get_or_create(pk=pk)
-        user.username = "user{}".format(pk)
-        user.set_password("qwerty")
-        user.save()
-        return user
+
+class RealTimeDataTestCase(TestCase):
+    def setUp(self):
+        super().setUp()
+        # Crea una pregunta y una votación
+        question = Question.objects.create(desc="Test Question")
+        self.voting = Voting.objects.create(name="Test Voting", question=question)
+        self.voting.save()
+
+    def tearDown(self):
+        super().tearDown()
 
     async def test_vote_consumer_connection(self):
         # Define la ruta del WebSocket para el consumidor de votos
@@ -452,44 +412,6 @@ class DjangoChannelsTest(TestCase):
         self.assertEqual(response["voting_id"], self.voting.id)
 
         await communicator.disconnect()
-    def test_vote_history_not_registered(self):
-        response = self.client.get("/store/voteHistory/")
-        self.assertEqual(response.status_code, 401)
-
-    def test_vote_history_no_votes(self):
-        self.login(user="admin")
-        response = self.client.get("/store/voteHistory/")
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("votes", response.context)
-        history = response.context["votes"]
-        self.assertListEqual(list(history), [])
-
-    def test_vote_history_one_vote(self):
-        u = self.gen_vote_for_one_user()
-        user = self.get_or_create_user(u)
-        self.login(user=user.username)
-        response = self.client.get("/store/voteHistory/")
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("votes", response.context)
-        history = response.context["votes"]
-        self.assertEqual(len(history), 1)
-        self.assertEqual(
-            history[0], Vote.objects.filter(voter_id=user.id).order_by("-voted").first()
-        )
-
-    def test_vote_history_many_votes(self):
-        random_user = self.gen_many_votes_for_one_user()
-        user = self.get_or_create_user(random_user)
-        self.login(user=user.username)
-        response = self.client.get("/store/voteHistory/")
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("votes", response.context)
-        history = response.context["votes"]
-        self.assertEqual(len(history), Vote.objects.filter(voter_id=user.id).count())
-        for i, vote in enumerate(history):
-            self.assertEqual(
-                vote, Vote.objects.filter(voter_id=user.id).order_by("-voted")[i]
-            )
 
 
 class BackupTestCase(TestCase):
@@ -525,17 +447,6 @@ class BackupTestCase(TestCase):
     def setUp(self):
         self.client = Client()
         super().setUp()
-
-class DjangoChannelsTest(TestCase):
-
-    def setUp(self):
-        super().setUp()
-        # Crea una pregunta y una votación
-        question = Question.objects.create(desc='Test Question')
-        self.voting = Voting.objects.create(name='Test Voting')
-        self.voting.questions.set([question])
-        self.voting.save()
-        census = Census.objects.create(voting_id=self.voting.id, voter_id=user.id)
 
     def tearDown(self):
         super().tearDown()
@@ -662,73 +573,161 @@ class DjangoChannelsTest(TestCase):
             delete_url, {"selected_backup": f"{inexistent_backup_name}.psql.bin"}
         )
         self.assertEqual(response.status_code, 400)  # bad request
-    def get_or_create_user(self, pk):
-        user, _ = User.objects.get_or_create(pk=pk)
-        user.username = 'user{}'.format(pk)
-        user.set_password('qwerty')
-        user.save()
-        return user
-    
-    async def test_vote_consumer_connection(self):
-        # Define la ruta del WebSocket para el consumidor de votos
-        application = URLRouter([
-            re_path(r'ws/votes/$', VoteConsumer.as_asgi()),
-        ])
 
-        # Crea un comunicador WebSocket para la ruta del consumidor de votos
-        communicator = WebsocketCommunicator(application, 'ws/votes/')
 
-        # Intenta conectar al WebSocket
-        connected, _ = await communicator.connect()
-        self.assertTrue(connected)
+class DashboardTestCase(StaticLiveServerTestCase):
+    def setUp(self):
+        self.base = BaseTestCase()
+        self.base.setUp()
 
-        # Desconecta
-        await communicator.disconnect()
-
-    async def test_vote_consumer_message(self):
-
-        # Define la ruta del WebSocket para el consumidor de votos
-        application = URLRouter([
-            re_path(r'ws/votes/$', VoteConsumer.as_asgi()),
-        ])
-
-        # Crea un comunicador WebSocket para la ruta del consumidor de votos
-        communicator = WebsocketCommunicator(application, 'ws/votes/')
-
-        # Conecta al WebSocket
-        connected, _ = await communicator.connect()
-        self.assertTrue(connected)
-
-        # Manda mensaje por Django Channels
-        channel_layer = get_channel_layer()
-        await channel_layer.group_send(
-            'votes', 
-            {
-                'type': 'vote.added',
-                'vote_id': self.voting.id,
-            }
+        self.userlog = User.objects.create_superuser(
+            "adminprueba", "admin@example.com", "1111"
         )
         self.user = User.objects.create_superuser("prueba", "p@example.com", "1111")
         question = Question.objects.create(desc="Test Question")
-        self.voting = Voting.objects.create(name="Test Voting")
-        self.voting.questions.set([question])
+        self.voting = Voting.objects.create(name="Test Voting", question=question)
         self.voting.save()
         self.census1 = Census(voting_id=self.voting.id, voter_id=self.user.id)
         self.census1.save()
         self.census2 = Census(voting_id=self.voting.id, voter_id=self.userlog.id)
         self.census2.save()
 
-        # Recibe el mensaje del WebSocket
-        response = await communicator.receive_json_from()
-        
-        # Verifica que el mensaje sea correcto
-        self.assertEqual(response, {
-            'message': 'Vote received',
-            'vote_id': self.voting.id,
-            'vote_count': 0,
-            'vote_percentage': 0.0,
-        })
+        self.driver = webdriver.Chrome()
+        self.vars = {}
 
-        # Desconecta
-        await communicator.disconnect()
-        
+        options = webdriver.ChromeOptions()
+        options.headless = True
+        self.driver = webdriver.Chrome(options=options)
+
+        super().setUp()
+
+    def tearDown(self):
+        super().tearDown()
+        self.driver.quit()
+        self.base.tearDown()
+
+    def test_elementos_dashboard(self):
+        self.driver.get(self.live_server_url + "/admin/login/?next=/admin/")
+        self.driver.set_window_size(1280, 720)
+
+        self.driver.find_element(By.ID, "id_username").send_keys("adminprueba")
+        self.driver.find_element(By.ID, "id_password").send_keys("1111")
+        self.driver.find_element(By.ID, "id_password").send_keys(Keys.ENTER)
+
+        # Hacer votacion activa
+        self.driver.find_element(By.LINK_TEXT, "Votings").click()
+        select_element = self.driver.find_element(By.NAME, "action")
+        select = Select(select_element)
+        select.select_by_value("start")
+        self.driver.find_elements(By.CLASS_NAME, "action-select")[0].click()
+        self.driver.find_element(By.NAME, "index").click()
+        self.driver.find_element(By.LINK_TEXT, "Votes").click()
+
+        # Hacer voto
+        self.driver.find_element(By.LINK_TEXT, "Votes").click()
+        self.driver.find_element(By.CSS_SELECTOR, "li > .addlink").click()
+        self.driver.find_element(By.ID, "id_voting_id").send_keys(str(self.voting.id))
+        self.driver.find_element(By.ID, "id_voter_id").click()
+        self.driver.find_element(By.ID, "id_voter_id").send_keys(str(self.user.id))
+        self.driver.find_element(By.ID, "id_a").click()
+        self.driver.find_element(By.ID, "id_a").send_keys("1")
+        self.driver.find_element(By.ID, "id_b").click()
+        self.driver.find_element(By.ID, "id_b").send_keys("1")
+        self.driver.find_element(By.NAME, "_save").click()
+
+        # Nombre votacion
+        nombre = self.driver.find_element(
+            By.ID, "vote-name-" + str(self.voting.id)
+        ).text
+        self.assertEqual(nombre, "Name: " + self.voting.name)
+
+        # Comprueba que se refleja en el dashboard correctamente
+        fechaInicio = self.driver.find_element(
+            By.ID, "start-date-" + str(self.voting.id)
+        ).text
+        self.assertTrue(fechaInicio != "Started: None")
+        fechaFin = self.driver.find_element(
+            By.ID, "end-date-" + str(self.voting.id)
+        ).text
+        self.assertEqual(fechaFin, "Finished: None")
+
+        # Hacer votacion parada
+        self.driver.find_element(By.LINK_TEXT, "Votings").click()
+        select_element = self.driver.find_element(By.NAME, "action")
+        select = Select(select_element)
+        select.select_by_value("stop")
+        self.driver.find_elements(By.CLASS_NAME, "action-select")[0].click()
+        self.driver.find_element(By.NAME, "index").click()
+        self.driver.find_element(By.LINK_TEXT, "Votes").click()
+
+        # Comprueba que se cambian los datos
+        fechaInicio = self.driver.find_element(
+            By.ID, "start-date-" + str(self.voting.id)
+        ).text
+        self.assertTrue(fechaInicio != "Started: None")
+        fechaFin = self.driver.find_element(
+            By.ID, "end-date-" + str(self.voting.id)
+        ).text
+        self.assertTrue(fechaFin != "Finished: None")
+
+    def test_funciones_dashboard(self):
+        self.driver.get(self.live_server_url + "/admin/login/?next=/admin/")
+        self.driver.set_window_size(1280, 720)
+
+        self.driver.find_element(By.ID, "id_username").send_keys("adminprueba")
+        self.driver.find_element(By.ID, "id_password").send_keys("1111")
+        self.driver.find_element(By.ID, "id_password").send_keys(Keys.ENTER)
+
+        # Hacer votacion activa
+        self.driver.find_element(By.LINK_TEXT, "Votings").click()
+        select_element = self.driver.find_element(By.NAME, "action")
+        select = Select(select_element)
+        select.select_by_value("start")
+        self.driver.find_elements(By.CLASS_NAME, "action-select")[0].click()
+        self.driver.find_element(By.NAME, "index").click()
+
+        # Hacer voto
+        self.driver.find_element(By.LINK_TEXT, "Votes").click()
+        self.driver.find_element(By.CSS_SELECTOR, "li > .addlink").click()
+        self.driver.find_element(By.ID, "id_voting_id").send_keys(str(self.voting.id))
+        self.driver.find_element(By.ID, "id_voter_id").click()
+        self.driver.find_element(By.ID, "id_voter_id").send_keys(str(self.user.id))
+        self.driver.find_element(By.ID, "id_a").click()
+        self.driver.find_element(By.ID, "id_a").send_keys("1")
+        self.driver.find_element(By.ID, "id_b").click()
+        self.driver.find_element(By.ID, "id_b").send_keys("1")
+        self.driver.find_element(By.NAME, "_save").click()
+
+        # Comprueba que se refleja en el dashboard correctamente
+        contador = self.driver.find_element(
+            By.ID, "vote-count-" + str(self.voting.id)
+        ).text
+        self.assertEqual(contador, "Number of votes: 1")
+        pctge = self.driver.find_element(
+            By.ID, "vote-percentage-" + str(self.voting.id)
+        ).text
+        self.assertEqual(pctge, "Percentage: 50.00%")
+
+        # Hacer otro
+        self.driver.find_element(By.LINK_TEXT, "Votes").click()
+        self.driver.find_element(By.CSS_SELECTOR, "li > .addlink").click()
+        self.driver.find_element(By.ID, "id_voting_id").send_keys(str(self.voting.id))
+        self.driver.find_element(By.ID, "id_voter_id").click()
+        self.driver.find_element(By.ID, "id_voter_id").send_keys(str(self.userlog.id))
+        self.driver.find_element(By.ID, "id_a").click()
+        self.driver.find_element(By.ID, "id_a").send_keys("1")
+        self.driver.find_element(By.ID, "id_b").click()
+        self.driver.find_element(By.ID, "id_b").send_keys("1")
+        self.driver.find_element(By.NAME, "_save").click()
+
+        # Comprueba que el dashboard se actualiza correctamente
+        contador = self.driver.find_element(
+            By.ID, "vote-count-" + str(self.voting.id)
+        ).text
+        self.assertEqual(contador, "Number of votes: 2")
+        pctge = self.driver.find_element(
+            By.ID, "vote-percentage-" + str(self.voting.id)
+        ).text
+        self.assertEqual(pctge, "Percentage: 100.00%")
+
+
