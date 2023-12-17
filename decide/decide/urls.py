@@ -32,9 +32,5 @@ urlpatterns = [
     ),
 ]
 
-from store import views
-
-urlpatterns += [path("history/", views.VoteHistoryView.as_view())]
-
 for module in settings.MODULES:
     urlpatterns += [path("{}/".format(module), include("{}.urls".format(module)))]

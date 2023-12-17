@@ -96,6 +96,61 @@ class StoreTextCase(BaseTestCase):
         user.save()
         return user
 
+    def gen_votes(self):
+        votings = [random.randint(1, 5000) for i in range(10)]
+        users = [random.randint(4, 5003) for i in range(50)]
+        for v in votings:
+            a = random.randint(2, 500)
+            b = random.randint(2, 500)
+            self.gen_voting(v)
+            random_user = random.choice(users)
+            user = self.get_or_create_user(random_user)
+            self.login(user=user.username)
+            census = Census(voting_id=v, voter_id=random_user)
+            census.save()
+            data = {"voting": v, "voter": random_user, "vote": {"a": a, "b": b}}
+            response = self.client.post("/store/", data, format="json")
+            self.assertEqual(response.status_code, 200)
+
+        self.logout()
+        return votings, users
+
+    def gen_vote_for_one_user(self):
+        votings = [random.randint(1, 5000) for i in range(10)]
+        u = 3
+        a = random.randint(2, 500)
+        b = random.randint(2, 500)
+        random_voting = random.choice(votings)
+        self.gen_voting(random_voting)
+        user = self.get_or_create_user(u)
+        self.login(user=user.username)
+        census = Census(voting_id=random_voting, voter_id=u)
+        census.save()
+        data = {"voting": random_voting, "voter": u, "vote": {"a": a, "b": b}}
+        response = self.client.post("/store/", data, format="json")
+        self.assertEqual(response.status_code, 200)
+        self.logout()
+        return u
+
+    def gen_many_votes_for_one_user(self):
+        votings = [random.randint(1, 5000) for i in range(10)]
+        users = [random.randint(4, 5003) for i in range(50)]
+        random_user = random.choice(users)
+        for v in votings:
+            a = random.randint(2, 500)
+            b = random.randint(2, 500)
+            self.gen_voting(v)
+            user = self.get_or_create_user(random_user)
+            self.login(user=user.username)
+            census = Census(voting_id=v, voter_id=random_user)
+            census.save()
+            data = {"voting": v, "voter": random_user, "vote": {"a": a, "b": b}}
+            response = self.client.post("/store/", data, format="json")
+            self.assertEqual(response.status_code, 200)
+
+        self.logout()
+        return random_user
+
     def test_gen_vote_invalid(self):
         data = {"voting": 1, "voter": 1, "vote": {"a": 1, "b": 1}}
         response = self.client.post("/store/", data, format="json")
@@ -224,6 +279,45 @@ class StoreTextCase(BaseTestCase):
         self.voting.save()
         response = self.client.post("/store/", data, format="json")
         self.assertEqual(response.status_code, 401)
+
+    def test_vote_history_not_registered(self):
+        response = self.client.get("/store/voteHistory/")
+        self.assertEqual(response.status_code, 401)
+
+    def test_vote_history_no_votes(self):
+        self.login(user="admin")
+        response = self.client.get("/store/voteHistory/")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("votes", response.context)
+        history = response.context["votes"]
+        self.assertListEqual(list(history), [])
+
+    def test_vote_history_one_vote(self):
+        u = self.gen_vote_for_one_user()
+        user = self.get_or_create_user(u)
+        self.login(user=user.username)
+        response = self.client.get("/store/voteHistory/")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("votes", response.context)
+        history = response.context["votes"]
+        self.assertEqual(len(history), 1)
+        self.assertEqual(
+            history[0], Vote.objects.filter(voter_id=user.id).order_by("-voted").first()
+        )
+
+    def test_vote_history_many_votes(self):
+        random_user = self.gen_many_votes_for_one_user()
+        user = self.get_or_create_user(random_user)
+        self.login(user=user.username)
+        response = self.client.get("/store/voteHistory/")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("votes", response.context)
+        history = response.context["votes"]
+        self.assertEqual(len(history), Vote.objects.filter(voter_id=user.id).count())
+        for i, vote in enumerate(history):
+            self.assertEqual(
+                vote, Vote.objects.filter(voter_id=user.id).order_by("-voted")[i]
+            )
 
 
 class RealTimeDataTestCase(TestCase):
