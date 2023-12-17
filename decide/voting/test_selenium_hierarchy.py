@@ -10,8 +10,6 @@ import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 
 
 class VotingHierarchyTestCaseSelenium(StaticLiveServerTestCase):
@@ -66,7 +64,7 @@ class VotingHierarchyTestCaseSelenium(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "id_desc").send_keys("Esto es una votacion")
         self.vars["window_handles"] = self.driver.window_handles
         self.driver.find_element(By.CSS_SELECTOR, "#add_id_questions > img").click()
-        
+
         self.vars["win1332"] = self.wait_for_window(2000)
         self.vars["root"] = self.driver.current_window_handle
         self.driver.switch_to.window(self.vars["win1332"])
