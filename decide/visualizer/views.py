@@ -65,13 +65,14 @@ def export_votes_xls(request, **kwargs):
     if len(a.get('postproc')) == 0:
         data = build_vote_map(a)
     else:   
-        match a.get('postproc').get('type_postproc'):
-            case "DRO":
-                data = process_post_voting_data(a, "droop")
-            case "PAR":
-                data = process_post_voting_data(a, "saintLague")
-            case "DHO":
-                data = process_dho_voting_data(a)
+        type_postproc = a.get('postproc').get('type_postproc')
+        if type_postproc == "DRO":
+            data = process_post_voting_data(a, "droop")
+        elif type_postproc == "PAR":
+            data = process_post_voting_data(a, "saintLague")
+        elif type_postproc == "DHO":
+            data = process_dho_voting_data(a)
+    
 
     output = BytesIO()
 
@@ -99,13 +100,13 @@ def download_votes_csv(request, **kwargs):
     if len(a.get('postproc')) == 0:
         data = build_vote_map(a)
     else:   
-        match a.get('postproc').get('type_postproc'):
-            case "DRO":
-                data = process_post_voting_data(a, "droop")
-            case "PAR":
-                data = process_post_voting_data(a, "saintLague")
-            case "DHO":
-                data = process_dho_voting_data(a)
+        type_postproc = a.get('postproc').get('type_postproc')
+        if type_postproc == "DRO":
+            data = process_post_voting_data(a, "droop")
+        elif type_postproc == "PAR":
+            data = process_post_voting_data(a, "saintLague")
+        elif type_postproc == "DHO":
+            data = process_dho_voting_data(a)
     
 
     csv_data = dict_to_csv(data, a.get('name'))
