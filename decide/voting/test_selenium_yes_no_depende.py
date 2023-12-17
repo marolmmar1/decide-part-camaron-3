@@ -3,9 +3,7 @@ from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from rest_framework.test import APIClient
 
 from selenium import webdriver
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
 
 import time
 from selenium.webdriver.common.action_chains import ActionChains
@@ -64,7 +62,7 @@ class TestSelenium(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "id_desc").click()
         self.driver.find_element(By.ID, "id_desc").send_keys("Ganar la champions")
         self.vars["window_handles"] = self.driver.window_handles
-        self.driver.find_element(By.CSS_SELECTOR, "#add_id_question > img").click()
+        self.driver.find_element(By.CSS_SELECTOR, "#add_id_questions > img").click()
         self.vars["win504"] = self.wait_for_window(2000)
         self.vars["root"] = self.driver.current_window_handle
         self.driver.switch_to.window(self.vars["win504"])
@@ -87,11 +85,8 @@ class TestSelenium(StaticLiveServerTestCase):
             self.driver.switch_to.window(self.vars["win5929"])
         else:
             print("La ventana no existe o ya ha sido cerrada.")
-        element = WebDriverWait(self.driver, 10).until(
-            EC.presence_of_element_located((By.ID, "id_url"))
-        )
-        element.click()
-        self.driver.find_element(By.ID, "id_url").send_keys("http://localhost:8000")
+        self.driver.find_element(By.ID, "id_url").click()
+        self.driver.find_element(By.ID, "id_url").send_keys(self.live_server_url + "/")
         self.driver.find_element(By.ID, "id_name").click()
         self.driver.find_element(By.ID, "id_name").click()
         element = self.driver.find_element(By.ID, "id_name")
@@ -112,6 +107,11 @@ class TestSelenium(StaticLiveServerTestCase):
         elementDepende = self.driver.find_element(By.ID, "id_options-2-option")
         self.assertTrue(elementDepende.text == "Depende")
         self.driver.find_element(By.NAME, "_save").click()
+
+    def tearDown(self):
+        super().tearDown()
+        self.driver.quit()
+        self.base.tearDown()
 
 
 class TestSelenium1(StaticLiveServerTestCase):
@@ -149,7 +149,7 @@ class TestSelenium1(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "id_name").send_keys("Votacion Atleti")
         self.driver.find_element(By.ID, "id_desc").click()
         self.vars["window_handles"] = self.driver.window_handles
-        self.driver.find_element(By.CSS_SELECTOR, "#add_id_question > img").click()
+        self.driver.find_element(By.CSS_SELECTOR, "#add_id_questions > img").click()
         self.vars["win7257"] = self.wait_for_window(2000)
         self.vars["root"] = self.driver.current_window_handle
         self.driver.switch_to.window(self.vars["win7257"])
@@ -216,6 +216,11 @@ class TestSelenium1(StaticLiveServerTestCase):
         self.assertTrue(elementDepende.text == "Ganara una liga")
         self.driver.find_element(By.NAME, "_save").click()
 
+    def tearDown(self):
+        super().tearDown()
+        self.driver.quit()
+        self.base.tearDown()
+
 
 class TestSelenium2(StaticLiveServerTestCase):
     def setUp(self):
@@ -260,7 +265,7 @@ class TestSelenium2(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "id_name").click()
         self.driver.find_element(By.ID, "id_name").send_keys("Votacion Atleti")
         self.vars["window_handles"] = self.driver.window_handles
-        self.driver.find_element(By.CSS_SELECTOR, "#add_id_question > img").click()
+        self.driver.find_element(By.CSS_SELECTOR, "#add_id_questions > img").click()
         self.vars["win8675"] = self.wait_for_window(2000)
         self.vars["root"] = self.driver.current_window_handle
         self.driver.switch_to.window(self.vars["win8675"])
@@ -300,11 +305,8 @@ class TestSelenium2(StaticLiveServerTestCase):
             print("La ventana no existe o ya ha sido cerrada.")
         self.driver.find_element(By.ID, "id_name").click()
         self.driver.find_element(By.ID, "id_name").send_keys("url")
-        element = WebDriverWait(self.driver, 5).until(
-            EC.presence_of_element_located((By.ID, "id_url"))
-        )
         self.driver.find_element(By.ID, "id_url").click()
-        self.driver.find_element(By.ID, "id_url").send_keys("http://localhost:8000")
+        self.driver.find_element(By.ID, "id_url").send_keys(self.live_server_url + "/")
         self.driver.find_element(By.NAME, "_save").click()
         self.driver.switch_to.window(self.vars["root"])
         self.driver.find_element(By.NAME, "_save").click()
@@ -333,3 +335,8 @@ class TestSelenium2(StaticLiveServerTestCase):
         elementDepende = self.driver.find_element(By.ID, "id_options-2-option")
         self.assertTrue(elementDepende.text == "Depende")
         self.driver.find_element(By.NAME, "_save").click()
+
+    def tearDown(self):
+        super().tearDown()
+        self.driver.quit()
+        self.base.tearDown()
