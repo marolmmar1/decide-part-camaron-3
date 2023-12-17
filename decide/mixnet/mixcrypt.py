@@ -160,6 +160,7 @@ class MixCrypt:
             msgs3.append(msg)
 
         return msgs3
+
     def reencrypt(self, cipher, pubkey=None):
         """
         >>> B = 256
