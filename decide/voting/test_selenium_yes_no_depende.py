@@ -1,53 +1,38 @@
-import random
-import itertools
-from django.utils import timezone
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-from django.test import TestCase
 from rest_framework.test import APIClient
-from rest_framework.test import APITestCase
 
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.keys import Keys
 
 import time
-import json
 from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 from base import mods
 from base.tests import BaseTestCase
-from census.models import Census
-from mixnet.mixcrypt import ElGamal
-from mixnet.mixcrypt import MixCrypt
-from mixnet.models import Auth
-from voting.models import Voting, Question, QuestionOption
-from datetime import datetime
-from django.core.exceptions import ValidationError
+
 
 class TestSelenium(StaticLiveServerTestCase):
     def setUp(self):
         self.client = APIClient()
-        self.base = BaseTestCase()  
+        self.base = BaseTestCase()
         self.base.setUp()
-        self.vars={}
+        self.vars = {}
         mods.mock_query(self.client)
-        
+
         options = webdriver.ChromeOptions()
         options.headless = True
         self.driver = webdriver.Chrome(options=options)
 
-        u = User(username='admin1')
-        u.set_password('admin1')
+        u = User(username="admin1")
+        u.set_password("admin1")
         u.is_staff = True
         u.is_superuser = True
         u.save()
 
-    def wait_for_window(self, timeout = 2):
+    def wait_for_window(self, timeout=2):
         time.sleep(round(timeout / 1000))
         wh_now = self.driver.window_handles
         wh_then = self.vars["window_handles"]
@@ -84,9 +69,15 @@ class TestSelenium(StaticLiveServerTestCase):
         self.vars["root"] = self.driver.current_window_handle
         self.driver.switch_to.window(self.vars["win504"])
         self.driver.find_element(By.ID, "id_desc").click()
-        self.driver.find_element(By.ID, "id_desc").send_keys("¿Ganará el Atletico de Madrid la Champions?")
-        self.driver.find_element(By.CSS_SELECTOR, ".field-optionSiNo .vCheckboxLabel").click()
-        self.driver.find_element(By.CSS_SELECTOR, ".field-third_option .vCheckboxLabel").click()
+        self.driver.find_element(By.ID, "id_desc").send_keys(
+            "¿Ganará el Atletico de Madrid la Champions?"
+        )
+        self.driver.find_element(
+            By.CSS_SELECTOR, ".field-optionSiNo .vCheckboxLabel"
+        ).click()
+        self.driver.find_element(
+            By.CSS_SELECTOR, ".field-third_option .vCheckboxLabel"
+        ).click()
         self.driver.find_element(By.NAME, "_save").click()
         self.driver.switch_to.window(self.vars["root"])
         self.vars["window_handles"] = self.driver.window_handles
@@ -111,7 +102,9 @@ class TestSelenium(StaticLiveServerTestCase):
         self.driver.switch_to.window(self.vars["root"])
         self.driver.find_element(By.NAME, "_save").click()
         self.driver.find_element(By.LINK_TEXT, "Questions").click()
-        self.driver.find_element(By.LINK_TEXT, "¿Ganará el Atletico de Madrid la Champions?").click()
+        self.driver.find_element(
+            By.LINK_TEXT, "¿Ganará el Atletico de Madrid la Champions?"
+        ).click()
         elementSi = self.driver.find_element(By.ID, "id_options-0-option")
         self.assertTrue(elementSi.text == "Sí")
         elementNo = self.driver.find_element(By.ID, "id_options-1-option")
@@ -124,20 +117,20 @@ class TestSelenium(StaticLiveServerTestCase):
 class TestSelenium1(StaticLiveServerTestCase):
     def setUp(self):
         self.client = APIClient()
-        self.base = BaseTestCase()  
+        self.base = BaseTestCase()
         self.base.setUp()
-        self.vars={}
+        self.vars = {}
         mods.mock_query(self.client)
         options = webdriver.ChromeOptions()
         options.headless = True
         self.driver = webdriver.Chrome(options=options)
-        u = User(username='admin1')
-        u.set_password('admin1')
+        u = User(username="admin1")
+        u.set_password("admin1")
         u.is_staff = True
         u.is_superuser = True
         u.save()
 
-    def wait_for_window(self, timeout = 2):
+    def wait_for_window(self, timeout=2):
         time.sleep(round(timeout / 1000))
         wh_now = self.driver.window_handles
         wh_then = self.vars["window_handles"]
@@ -184,7 +177,9 @@ class TestSelenium1(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "content").click()
         self.driver.find_element(By.LINK_TEXT, "¿Ganará algo?").click()
         self.driver.find_element(By.ID, "id_options-0-number").click()
-        self.driver.find_element(By.CSS_SELECTOR, ".field-third_option .vCheckboxLabel").click()
+        self.driver.find_element(
+            By.CSS_SELECTOR, ".field-third_option .vCheckboxLabel"
+        ).click()
         self.driver.find_element(By.ID, "id_options-0-number").click()
         self.driver.find_element(By.ID, "id_options-0-number").send_keys("1")
         self.driver.find_element(By.ID, "id_options-0-option").click()
@@ -198,13 +193,19 @@ class TestSelenium1(StaticLiveServerTestCase):
         actions = ActionChains(self.driver)
         actions.move_to_element(element).release().perform()
         self.driver.find_element(By.ID, "id_options-0-option").click()
-        self.driver.find_element(By.ID, "id_options-0-option").send_keys("Si ganara algo")
+        self.driver.find_element(By.ID, "id_options-0-option").send_keys(
+            "Si ganara algo"
+        )
         self.driver.find_element(By.ID, "id_options-1-number").click()
         self.driver.find_element(By.ID, "id_options-1-number").send_keys("2")
         self.driver.find_element(By.ID, "id_options-1-option").click()
-        self.driver.find_element(By.ID, "id_options-1-option").send_keys("Ganara una liga")
+        self.driver.find_element(By.ID, "id_options-1-option").send_keys(
+            "Ganara una liga"
+        )
         self.driver.find_element(By.NAME, "_save").click()
-        self.driver.find_element(By.CSS_SELECTOR, "tr:nth-child(1) > .field-__str__ > a").click()
+        self.driver.find_element(
+            By.CSS_SELECTOR, "tr:nth-child(1) > .field-__str__ > a"
+        ).click()
         self.driver.find_element(By.NAME, "_save").click()
         self.driver.find_element(By.LINK_TEXT, "¿Ganará algo?").click()
         elementSi = self.driver.find_element(By.ID, "id_options-0-option")
@@ -215,23 +216,24 @@ class TestSelenium1(StaticLiveServerTestCase):
         self.assertTrue(elementDepende.text == "Ganara una liga")
         self.driver.find_element(By.NAME, "_save").click()
 
+
 class TestSelenium2(StaticLiveServerTestCase):
     def setUp(self):
         self.client = APIClient()
-        self.base = BaseTestCase()  
+        self.base = BaseTestCase()
         self.base.setUp()
-        self.vars={}
+        self.vars = {}
         mods.mock_query(self.client)
         options = webdriver.ChromeOptions()
         options.headless = True
         self.driver = webdriver.Chrome(options=options)
-        u = User(username='admin1')
-        u.set_password('admin1')
+        u = User(username="admin1")
+        u.set_password("admin1")
         u.is_staff = True
         u.is_superuser = True
         u.save()
 
-    def wait_for_window(self, timeout = 2):
+    def wait_for_window(self, timeout=2):
         time.sleep(round(timeout / 1000))
         wh_now = self.driver.window_handles
         wh_then = self.vars["window_handles"]
@@ -244,7 +246,7 @@ class TestSelenium2(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "id_username").send_keys("admin1")
         self.driver.find_element(By.ID, "id_password").send_keys("admin1")
         self.driver.find_element(By.CSS_SELECTOR, "form input[type='submit']").click()
-        self.driver.find_element(By.LINK_TEXT, "Votings").click()    
+        self.driver.find_element(By.LINK_TEXT, "Votings").click()
         self.driver.find_element(By.CSS_SELECTOR, "li > .addlink").click()
         element = self.driver.find_element(By.ID, "id_voting_type")
         actions = ActionChains(self.driver)
@@ -278,11 +280,15 @@ class TestSelenium2(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "id_options-0-number").click()
         self.driver.find_element(By.ID, "id_options-0-number").send_keys("2")
         self.driver.find_element(By.ID, "id_options-0-option").click()
-        self.driver.find_element(By.ID, "id_options-0-option").send_keys("Si, se irá el cholo")
+        self.driver.find_element(By.ID, "id_options-0-option").send_keys(
+            "Si, se irá el cholo"
+        )
         self.driver.find_element(By.ID, "id_options-1-number").click()
         self.driver.find_element(By.ID, "id_options-1-number").send_keys("3")
         self.driver.find_element(By.ID, "id_options-1-option").click()
-        self.driver.find_element(By.ID, "id_options-1-option").send_keys("No, se quedará el cholo")
+        self.driver.find_element(By.ID, "id_options-1-option").send_keys(
+            "No, se quedará el cholo"
+        )
         self.driver.find_element(By.NAME, "_save").click()
         self.driver.switch_to.window(self.vars["root"])
         self.vars["window_handles"] = self.driver.window_handles
@@ -313,9 +319,13 @@ class TestSelenium2(StaticLiveServerTestCase):
         actions.move_to_element(element).release().perform()
         self.driver.find_element(By.LINK_TEXT, "Questions").click()
         self.driver.find_element(By.LINK_TEXT, "¿Cambiará de entrenador?").click()
-        self.driver.find_element(By.CSS_SELECTOR, ".field-third_option .vCheckboxLabel").click()
+        self.driver.find_element(
+            By.CSS_SELECTOR, ".field-third_option .vCheckboxLabel"
+        ).click()
         self.driver.find_element(By.NAME, "_save").click()
-        self.driver.find_element(By.CSS_SELECTOR, "tr:nth-child(1) > .field-__str__ > a").click()
+        self.driver.find_element(
+            By.CSS_SELECTOR, "tr:nth-child(1) > .field-__str__ > a"
+        ).click()
         elementSegunda = self.driver.find_element(By.ID, "id_options-0-option")
         self.assertTrue(elementSegunda.text == "Si, se irá el cholo")
         elementTercera = self.driver.find_element(By.ID, "id_options-1-option")
