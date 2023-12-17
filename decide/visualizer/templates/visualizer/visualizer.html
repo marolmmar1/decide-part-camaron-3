@@ -102,6 +102,9 @@
         var tally = []
         for(i=0; i<voting.questions.length; i++) {
           var questiontally = voting.tally.filter((value,index)=>index%voting.questions.length==i)
+          if(voting.voting_type == "M"){
+            questiontally = questiontally.map((l)=>l[0])
+          }
 
           questiontally = questiontally.reduce((acc,value) => {
             acc[value] = (acc[value] || 0) + 1
