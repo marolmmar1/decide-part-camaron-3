@@ -44,7 +44,14 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "rest_framework_swagger",
     "gateway",
+    "channels",
 ]
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
@@ -101,7 +108,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "decide.wsgi.application"
-
+ASGI_APPLICATION = "decide.asgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
