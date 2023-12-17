@@ -167,16 +167,6 @@
     </style>
 {% endblock %}
 
-{% block object-tools-items %}
-    {{ block.super }}
-    <li>
-        <a href="{% url 'store:vote_create_backup' %}" class="button">Create a Backup</a>
-    </li>
-    <li>
-        <a href="{% url 'store:vote_restore_backup' %}" class="button">Restore Database</a>
-    </li>
-{% endblock %}
-
 {% block content %}
     <div class="content-wrapper">
         {{ block.super }}
