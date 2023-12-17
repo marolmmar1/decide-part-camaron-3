@@ -12,7 +12,7 @@ from mixnet.mixcrypt import MixCrypt, ElGamal
 from base.tests import BaseTestCase
 
 from voting.models import Voting, Question
-from .views import build_census_map, build_vote_map, process_dho_voting_data
+from .views import build_census_map, build_vote_map, process_dho_voting_data, process_post_voting_data
 from rest_framework.test import APIClient
 from postproc.models import PostProcessing
 
@@ -449,6 +449,216 @@ class exportPosprocDhont(BaseTestCase):
                 j=j+1
             i =i+1 
         
+
+class exportPosprocPAR(BaseTestCase):
+    def setUp(self):
+        self.client = APIClient()
+        mods.mock_query(self.client)
+        super().setUp()
+
+    def tearDown(self):
+        self.client = None
+        super().tearDown()
+
+    def encrypt_msg(self, msg, v, bits=settings.KEYBITS):
+        pk = v.pub_key
+        p, g, y = (pk.p, pk.g, pk.y)
+        k = MixCrypt(bits=bits)
+        k.k = ElGamal.construct((p, g, y))
+        return k.encrypt(msg)
+
+    def create_voting(self, postproc, type):
+        q = Question(desc="test question")
+        q.save()
+        for i in range(5):
+            opt = QuestionOption(
+                question=q, option="option {}".format(i + 1), number=i + 2
+            )
+            opt.save()
+        v = Voting(
+            name="test voting", postproc_type=postproc, voting_type=type
+        )
+        v.save()
+        v.questions.set([q])
+        v.save()
+
+        a, _ = Auth.objects.get_or_create(
+            url=settings.BASEURL, defaults={"me": True, "name": "test auth"}
+        )
+        a.save()
+        v.auths.add(a)
+
+        return v
+
+    def create_voters(self, v):
+        for i in range(100):
+            u, _ = User.objects.get_or_create(username="testvoter{}".format(i))
+            u.is_active = True
+            u.save()
+            c = Census(voter_id=u.id, voting_id=v.id)
+            c.save()
+
+    def get_or_create_user(self, pk):
+        user, _ = User.objects.get_or_create(pk=pk)
+        user.username = "user{}".format(pk)
+        user.set_password("qwerty")
+        user.save()
+        return user
+
+    def store_votes(self, v):
+        voters = list(Census.objects.filter(voting_id=v.id))
+        voter = voters.pop()
+
+        clear = {}
+        for question in v.questions.all():
+            for opt in question.options.all():
+                clear[opt.number] = 0
+                for _ in range(5):
+                    a, b = self.encrypt_msg(opt.number, v)
+                    data = {
+                        "voting": v.id,
+                        "voter": voter.voter_id,
+                        "vote": {"a": a, "b": b},
+                    }
+                    clear[opt.number] += 1
+                    user = self.get_or_create_user(voter.voter_id)
+                    self.login(user=user.username)
+                    voter = voters.pop()
+                    mods.post("store", json=data)
+        return clear
     
+    def test_correct_postproc1(self):
+        v = self.create_voting("PAR", "S")
+
+        self.create_voters(v)
+
+        v.create_pubkey()
+        v.start_date = timezone.now()
+        v.save()
+
+        self.store_votes(v)
+
+        self.login()  # set token
+        v.tally_votes(self.token)
     
+        r = 0
+        a = 0
+        r = mods.get("voting", params={"id": v.id})
+        a = json.loads(json.dumps(r[0]))
+        res= process_post_voting_data(a, "saintLague")
+        i = 1
+        j = 0
+        for question in a.get("questions"):
+            for option in question.get("options"):
+                x = int(a.get("postproc").get("results")[j].get("saintLague"))
+                y = int(res.get("question 1").get("saintLague")[j])
+                self.assertEquals(x,y)
+                j = j + 1
+            i = i + 1
+  
     
+class exportPosprocPAR(BaseTestCase):
+    def setUp(self):
+        self.client = APIClient()
+        mods.mock_query(self.client)
+        super().setUp()
+
+    def tearDown(self):
+        self.client = None
+        super().tearDown()
+
+    def encrypt_msg(self, msg, v, bits=settings.KEYBITS):
+        pk = v.pub_key
+        p, g, y = (pk.p, pk.g, pk.y)
+        k = MixCrypt(bits=bits)
+        k.k = ElGamal.construct((p, g, y))
+        return k.encrypt(msg)
+
+    def create_voting(self, postproc, type):
+        q = Question(desc="test question")
+        q.save()
+        for i in range(5):
+            opt = QuestionOption(
+                question=q, option="option {}".format(i + 1), number=i + 2
+            )
+            opt.save()
+        v = Voting(
+            name="test voting", postproc_type=postproc, voting_type=type
+        )
+        v.save()
+        v.questions.set([q])
+        v.save()
+
+        a, _ = Auth.objects.get_or_create(
+            url=settings.BASEURL, defaults={"me": True, "name": "test auth"}
+        )
+        a.save()
+        v.auths.add(a)
+
+        return v
+
+    def create_voters(self, v):
+        for i in range(100):
+            u, _ = User.objects.get_or_create(username="testvoter{}".format(i))
+            u.is_active = True
+            u.save()
+            c = Census(voter_id=u.id, voting_id=v.id)
+            c.save()
+
+    def get_or_create_user(self, pk):
+        user, _ = User.objects.get_or_create(pk=pk)
+        user.username = "user{}".format(pk)
+        user.set_password("qwerty")
+        user.save()
+        return user
+
+    def store_votes(self, v):
+        voters = list(Census.objects.filter(voting_id=v.id))
+        voter = voters.pop()
+
+        clear = {}
+        for question in v.questions.all():
+            for opt in question.options.all():
+                clear[opt.number] = 0
+                for _ in range(5):
+                    a, b = self.encrypt_msg(opt.number, v)
+                    data = {
+                        "voting": v.id,
+                        "voter": voter.voter_id,
+                        "vote": {"a": a, "b": b},
+                    }
+                    clear[opt.number] += 1
+                    user = self.get_or_create_user(voter.voter_id)
+                    self.login(user=user.username)
+                    voter = voters.pop()
+                    mods.post("store", json=data)
+        return clear
+    
+    def test_correct_postproc1(self):
+        v = self.create_voting("DRO", "S")
+
+        self.create_voters(v)
+
+        v.create_pubkey()
+        v.start_date = timezone.now()
+        v.save()
+
+        self.store_votes(v)
+
+        self.login()  # set token
+        v.tally_votes(self.token)
+    
+        r = 0
+        a = 0
+        r = mods.get("voting", params={"id": v.id})
+        a = json.loads(json.dumps(r[0]))
+        res= process_post_voting_data(a, "droop")
+        i = 1
+        j = 0
+        for question in a.get("questions"):
+            for option in question.get("options"):
+                x = int(a.get("postproc").get("results")[j].get("droop"))
+                y = int(res.get("question 1").get("droop")[j])
+                self.assertEquals(x,y)
+                j = j + 1
+            i = i + 1
