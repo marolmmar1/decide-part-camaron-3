@@ -69,10 +69,11 @@ def export_votes_xls(request, **kwargs):
     a = json.loads(json.dumps(r[0])) 
     file_name = "votos-"+a.get('name') + "-"+str(a.get('end_date'))
     data ={}
-    if a.get('postproc').get('type_postproc')== "DRO":
-        data = process_dro_voting_data(a)
-    else:
-        data =process_voting_data(a)
+    match a.get('postproc').get('type_postproc'):
+        case "DRO":
+            data = process_post_voting_data(a, "droop")
+        case "PAR":
+            data = process_post_voting_data(a, "saintLague")
 
     output = BytesIO()
 
