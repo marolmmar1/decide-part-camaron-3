@@ -71,21 +71,25 @@ class StoreView(generics.ListAPIView):
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
 
         # the user is in the census
-        perms = mods.get(
-            "census/{}".format(vid), params={"voter_id": uid}, response=True
-        )
+        perms = mods.get('census/{}'.format(vid), params={'voter_id': uid}, response=True)
         if perms.status_code == 401:
+            # print("por aqui 65")
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
 
-        for vote in votes:
-            nested_vote = vote.get("vote")
-            if nested_vote:
-                a = nested_vote.get("a")
-                b = nested_vote.get("b")
-                v = Vote(voting_id=vid, voter_id=uid, a=a, b=b)
-                v.save()
 
+        a = votes.get("a")
+        b = votes.get("b")
+        
         defs = {"a": a, "b": b}
+
+        if voting[0].get("voting_type", None) != "H":
+            v, _ = Vote.objects.get_or_create(voting_id=vid, voter_id=uid,
+                                            defaults=defs)
+            v.a = a
+            v.b = b
+
+            v.save()
+
         if voting[0].get("voting_type", None) == "H":
             census = mods.get(
                 "census/role/{}".format(vid), params={"voter_id": uid}, response=True
