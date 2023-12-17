@@ -124,7 +124,7 @@
             <h1>[[ voting.id ]] - [[ voting.name ]]</h1>
             <form id="vote" v-for="(question, index) in voting.questions" :key="index">
                 <div class="form-group">
-                    <h2>[[ question.desc ]]</h2>
+                    <h2 class="h2">[[ question.desc ]]</h2>
                     <div v-if="voting.voting_type == 'M'">
                         <ul id="M-voting">
                             <li v-for="opt in question.options">
