@@ -23,7 +23,7 @@ class VotingHierarchyTestCaseSelenium(StaticLiveServerTestCase):
         mods.mock_query(self.client)
 
         options = webdriver.ChromeOptions()
-        options.headless = False
+        options.headless = True
         self.driver = webdriver.Chrome(options=options)
 
         u = User(username="admin1")
@@ -90,12 +90,14 @@ class VotingHierarchyTestCaseSelenium(StaticLiveServerTestCase):
         self.driver.switch_to.window(self.vars["root"])
         self.vars["window_handles"] = self.driver.window_handles
         self.driver.find_element(By.CSS_SELECTOR, "#add_id_auths > img").click()
+        self.vars["win451"] = self.wait_for_window(2000)
+        self.driver.switch_to.window(self.vars["win451"])
+        self.driver.find_element(By.ID, "id_name").click()
         self.driver.find_element(By.ID, "id_name").send_keys("test auth")
         self.driver.find_element(By.ID, "id_url").click()
         self.driver.find_element(By.ID, "id_url").send_keys(self.live_server_url + "/")
         self.driver.find_element(By.NAME, "_save").click()
 
-        self.driver.find_element(By.NAME, "_save").click()
         self.driver.switch_to.window(self.vars["root"])
         self.driver.find_element(By.NAME, "_save").click()
         self.driver.find_element(By.NAME, "_selected_action").click()
@@ -147,12 +149,10 @@ class VotingHierarchyTestCaseSelenium(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "username").send_keys("admin1")
         self.driver.find_element(By.ID, "password").send_keys("admin1")
         self.driver.find_element(By.CSS_SELECTOR, ".btn-primary").click()
-        time.sleep(10)
         self.assertTrue(
             self.live_server_url + "/booth/" + voting.id.__str__() + "/"
             == self.driver.current_url
         )
-        time.sleep(5)
         self.assertTrue(
             self.driver.find_element(By.CSS_SELECTOR, ".h1").text == "Hierarchy Voting"
         )

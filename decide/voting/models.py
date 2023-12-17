@@ -258,13 +258,13 @@ class Voting(models.Model):
 
                 if len(v) != len(set(v)):
                     raise Exception("Non valid tally count")
-
-        # print(self.tally)
-        aux = []
-        for i in self.tally:
-            for j in i:
-                aux.append([*str(j)])
-        self.tally = aux
+        
+            # print(self.tally)
+            aux = []
+            for i in self.tally:
+                for j in i:
+                    aux.append([*str(j)])
+            self.tally = aux
         self.save()
 
         self.do_postproc()
