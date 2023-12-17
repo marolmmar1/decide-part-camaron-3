@@ -14,11 +14,10 @@ from voting.models import Voting, Question, QuestionOption
 from mixnet.models import Auth
 from django.conf import settings
 from census.models import Census
-from django.test import TestCase
 import time
-from django.test import TestCase
 
 import time
+
 
 class BoothTestCase(StaticLiveServerTestCase):
     def setUp(self):

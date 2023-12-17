@@ -31,15 +31,11 @@ from django.conf import settings
 from django.test import Client
 import os
 from django.db import transaction
-from rest_framework.authtoken.models import Token
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
-import time
-import json
-from selenium.webdriver.common.action_chains import ActionChains
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
@@ -347,6 +343,7 @@ class StoreTextCase(BaseTestCase):
         data = {"voting": 1, "voter": 1, "votes": [{"vote": {"a": 1, "b": 1}}]}
         response = self.client.post("/store/", data, format="json")
         self.assertEqual(response.status_code, 401)
+
     def test_vote_history_not_registered(self):
         response = self.client.get("/store/voteHistory/")
         self.assertEqual(response.status_code, 401)
@@ -822,5 +819,3 @@ class DashboardTestCase(StaticLiveServerTestCase):
             By.ID, "vote-percentage-" + str(self.voting.id)
         ).text
         self.assertEqual(pctge, "Percentage: 100.00%")
-
-

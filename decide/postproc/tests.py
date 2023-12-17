@@ -46,9 +46,7 @@ class PostProcTestCase(BaseTestCase):
                 question=q, option="option {}".format(i + 1), number=i + 2
             )
             opt.save()
-        v = Voting(
-            name="test voting", postproc_type=postproc, voting_type=type
-        )
+        v = Voting(name="test voting", postproc_type=postproc, voting_type=type)
         v.save()
         v.questions.set([q])
         v.save()
@@ -297,9 +295,7 @@ class PostProcTestsSaintLague(BaseTestCase):
                 question=q, option="option {}".format(i + 1), number=i + 2
             )
             opt.save()
-        v = Voting(
-            name="test voting", postproc_type=postproc, voting_type=type
-        )
+        v = Voting(name="test voting", postproc_type=postproc, voting_type=type)
         v.save()
         v.questions.set([q])
         v.save()
