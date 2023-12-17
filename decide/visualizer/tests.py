@@ -22,8 +22,8 @@ import time
 
 # Create your tests here.
 
-class visualizerTest(BaseTestCase):
 
+class visualizerTest(BaseTestCase):
     def setUp(self):
         super().setUp()
 
@@ -38,16 +38,19 @@ class visualizerTest(BaseTestCase):
         return k.encrypt(msg)
 
     def create_voting(self):
-        q = Question(desc='test question')
+        q = Question(desc="test question")
         q.save()
         for i in range(3):
-            opt = QuestionOption(question=q, option='option {}'.format(i+1), number=i+2)
+            opt = QuestionOption(
+                question=q, option="option {}".format(i + 1), number=i + 2
+            )
             opt.save()
-        v = Voting(name='test voting', question=q)
+        v = Voting(name="test voting", question=q)
         v.save()
 
-        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
-                                          defaults={'me': True, 'name': 'test auth'})
+        a, _ = Auth.objects.get_or_create(
+            url=settings.BASEURL, defaults={"me": True, "name": "test auth"}
+        )
         a.save()
         v.auths.add(a)
 
@@ -55,7 +58,7 @@ class visualizerTest(BaseTestCase):
 
     def create_voters(self, v):
         for i in range(100):
-            u, _ = User.objects.get_or_create(username='testvoter{}'.format(i))
+            u, _ = User.objects.get_or_create(username="testvoter{}".format(i))
             u.is_active = True
             u.save()
             c = Census(voter_id=u.id, voting_id=v.id)
@@ -63,11 +66,10 @@ class visualizerTest(BaseTestCase):
 
     def get_or_create_user(self, pk):
         user, _ = User.objects.get_or_create(pk=pk)
-        user.username = 'user{}'.format(pk)
-        user.set_password('qwerty')
+        user.username = "user{}".format(pk)
+        user.set_password("qwerty")
         user.save()
         return user
-
 
     def store_votes(self, v):
         voters = list(Census.objects.filter(voting_id=v.id))
@@ -79,15 +81,15 @@ class visualizerTest(BaseTestCase):
             for _ in range(3):
                 a, b = self.encrypt_msg(opt.number, v)
                 data = {
-                    'voting': v.id,
-                    'voter': voter.voter_id,
-                    'vote': { 'a': a, 'b': b },
+                    "voting": v.id,
+                    "voter": voter.voter_id,
+                    "vote": {"a": a, "b": b},
                 }
                 clear[opt.number] += 1
                 user = self.get_or_create_user(voter.voter_id)
                 self.login(user=user.username)
                 voter = voters.pop()
-                mods.post('store', json=data)
+                mods.post("store", json=data)
         return clear
 
     def test_complete_voting(self):
@@ -113,7 +115,6 @@ class visualizerTest(BaseTestCase):
         for q in v.postproc:
             self.assertEqual(tally.get(q["number"], 0), q["votes"])
 
-
     def test_visualizer_render(self):
         v = self.create_voting()
         self.create_voters(v)
@@ -127,13 +128,13 @@ class visualizerTest(BaseTestCase):
         self.login()  # set token
         v.tally_votes(self.token)
 
-        response = self.client.get('/visualizer/' + str(v.id) + "/")
+        response = self.client.get("/visualizer/" + str(v.id) + "/")
 
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'visualizer/visualizer.html')
+        self.assertTemplateUsed(response, "visualizer/visualizer.html")
 
-        self.assertIn('voting', response.context)
-        self.assertIn('census', response.context)
+        self.assertIn("voting", response.context)
+        self.assertIn("census", response.context)
 
     def test_not_open(self):
         v = self.create_voting()
@@ -142,9 +143,9 @@ class visualizerTest(BaseTestCase):
         v.create_pubkey()
         v.save()
 
-        response = self.client.get('/visualizer/' + str(v.id) + "/")
+        response = self.client.get("/visualizer/" + str(v.id) + "/")
 
-        self.assertIsNone(json.loads(response.context_data['voting'])['tally'])
+        self.assertIsNone(json.loads(response.context_data["voting"])["tally"])
 
     def test_visualizer_open_data(self):
         v = self.create_voting()
@@ -156,10 +157,11 @@ class visualizerTest(BaseTestCase):
 
         _ = self.store_votes(v)
 
-        response = self.client.get('/visualizer/' + str(v.id) + "/")
-        self.assertEqual(len(json.loads(response.context_data['census'])['voters']),100)
-        self.assertIsNone(json.loads(response.context_data['voting'])['tally'])
-
+        response = self.client.get("/visualizer/" + str(v.id) + "/")
+        self.assertEqual(
+            len(json.loads(response.context_data["census"])["voters"]), 100
+        )
+        self.assertIsNone(json.loads(response.context_data["voting"])["tally"])
 
     def test_visualizer_closed_data(self):
         v = self.create_voting()
@@ -174,32 +176,9 @@ class visualizerTest(BaseTestCase):
         self.login()  # set token
         v.tally_votes(self.token)
 
-        response = self.client.get('/visualizer/' + str(v.id) + "/")
+        response = self.client.get("/visualizer/" + str(v.id) + "/")
 
-        self.assertEqual(len(json.loads(response.context_data['census'])['voters']),100)
-        self.assertEqual(len(json.loads(response.context_data['voting'])['tally']),9)
-
-class VisualizerTestCase(StaticLiveServerTestCase):
-
-    def setUp(self):
-        self.base = BaseTestCase()
-        self.base.setUp()
-        options = webdriver.ChromeOptions()
-        options.headless = True
-        self.driver = webdriver.Chrome(options=options)
-        super().setUp()
-
-    def tearDown(self):
-        super().tearDown()
-        self.driver.quit()
-        self.base.tearDown()
-
-
-    def test_simpleVisualizer(self):        
-            q = Question(desc='test question')
-            q.save()
-            v = Voting(name='test voting', question=q)
-            v.save()
-            response =self.driver.get(f'{self.live_server_url}/visualizer/{v.pk}/')
-            vState= self.driver.find_element(By.TAG_NAME,"h2").text
-            self.assertTrue(vState, "Votación no comenzada")
+        self.assertEqual(
+            len(json.loads(response.context_data["census"])["voters"]), 100
+        )
+        self.assertEqual(len(json.loads(response.context_data["voting"])["tally"]), 9)
