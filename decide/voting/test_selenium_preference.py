@@ -21,7 +21,7 @@ class VotingPreferenceTestCaseSelenium(StaticLiveServerTestCase):
         mods.mock_query(self.client)
 
         options = webdriver.ChromeOptions()
-        #options.headless = True
+        options.headless = True
         self.driver = webdriver.Chrome(options=options)
 
         u = User(username="admin1")
