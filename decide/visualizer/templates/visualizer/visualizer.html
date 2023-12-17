@@ -42,7 +42,7 @@
                     <tr>
                   </table>
 
-              <div v-if="voting.end_date">
+              <div v-if="voting.end_date && voting.tally">
                   <h2 class="heading">Resultados:</h2>
 
                     <div v-for="(question, index) in voting.questions">
@@ -100,35 +100,36 @@
         console.log(voting)
 
         var tally = []
-        for(i=0; i<voting.questions.length; i++) {
-          var questiontally = voting.tally.filter((value,index)=>index%voting.questions.length==i)
-          if(voting.voting_type == "M"){
-            questiontally = questiontally.map((l)=>l[0])
-          }
-
-          questiontally = questiontally.reduce((acc,value) => {
-            acc[value] = (acc[value] || 0) + 1
-            return acc
-          }, {})
-          voting.questions[i].options.forEach((o)=>{
-            if(!questiontally[o.number]) {
-              questiontally[o.number] = 0
+        if(voting.tally){
+          for(i=0; i<voting.questions.length; i++) {
+            var questiontally = voting.tally.filter((value,index)=>index%voting.questions.length==i)
+            if(voting.voting_type == "M"){
+              questiontally = questiontally.map((l)=>l[0])
             }
-          })
-          tally.push(questiontally)
-        }
 
+            questiontally = questiontally.reduce((acc,value) => {
+              acc[value] = (acc[value] || 0) + 1
+              return acc
+            }, {})
+            voting.questions[i].options.forEach((o)=>{
+              if(!questiontally[o.number]) {
+                questiontally[o.number] = 0
+              }
+            })
+            tally.push(questiontally)
+          }
+        }
 
 
         var seats = null
-        switch(voting.postproc.type_postproc) {
-          case "DHO":
-            seats = calcDhontSeats(voting)
-            break
-          case "PAR":
-            seats = voting.postproc.results.map((res)=>res.saintLague)
-            break
-        }
+          switch(voting.postproc?.type_postproc) {
+            case "DHO":
+              seats = calcDhontSeats(voting)
+              break
+            case "PAR":
+              seats = voting.postproc.results.map((res)=>res.saintLague)
+              break
+          }
 
         const { createApp } = Vue
         createApp({
@@ -142,50 +143,52 @@
                 }
             },
             mounted() {
-              for(i=0;i<voting.questions.length;i++){
-                var subtally = tally[i]
-                var xValues = voting.questions[i].options.map((o)=>o.option)
-                var yValues = Object.keys(subtally).sort((a,b)=>a-b).map(i=>subtally[i])
-                var barColors = ["red", "orange","yellow","lime","turquoise","blue","purple"];
+              if(voting.tally){
+                for(i=0;i<voting.questions.length;i++){
+                  var subtally = tally[i]
+                  var xValues = voting.questions[i].options.map((o)=>o.option)
+                  var yValues = Object.keys(subtally).sort((a,b)=>a-b).map(i=>subtally[i])
+                  var barColors = ["red", "orange","yellow","lime","turquoise","blue","purple"];
 
-                new Chart("stats-bar"+i, {
-                  type: "bar",
-                  data: {
-                    labels: xValues,
-                    datasets: [{
-                      backgroundColor: barColors,
-                      data: yValues
-                    }]
-                  },
-                  options: {
-                    maintainAspectRatio:false,
-                    plugins: {
-                      legend: {
-                        display: false
+                  new Chart("stats-bar"+i, {
+                    type: "bar",
+                    data: {
+                      labels: xValues,
+                      datasets: [{
+                        backgroundColor: barColors,
+                        data: yValues
+                      }]
+                    },
+                    options: {
+                      maintainAspectRatio:false,
+                      plugins: {
+                        legend: {
+                          display: false
+                        }
                       }
                     }
-                  }
-                });
+                  });
 
-                new Chart("stats-pie"+i, {
-                  type: "pie",
-                  data: {
-                    labels: xValues,
-                    datasets: [{
-                      backgroundColor: barColors,
-                      data: yValues
-                    }]
-                  },
-                  options: {
-                    plugins: {
-                      legend: {
-                        display: false
+                  new Chart("stats-pie"+i, {
+                    type: "pie",
+                    data: {
+                      labels: xValues,
+                      datasets: [{
+                        backgroundColor: barColors,
+                        data: yValues
+                      }]
+                    },
+                    options: {
+                      plugins: {
+                        legend: {
+                          display: false
+                        }
                       }
                     }
-                  }
-                });
+                  });
+                }
               }
-          }
+            }
         }).mount('#app-visualizer')
 
 
