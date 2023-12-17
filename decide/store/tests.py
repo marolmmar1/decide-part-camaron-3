@@ -230,8 +230,6 @@ class StoreTextCase(BaseTestCase):
         response = self.client.post("/store/", data, format="json")
         self.assertEqual(response.status_code, 401)
 
-
-
     def test_store_vote_two_questions(self):
         VOTING_PK = 345
         CTE_A = 96

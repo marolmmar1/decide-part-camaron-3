@@ -2,22 +2,12 @@ from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from rest_framework.test import APIClient
 from base import mods
 import time
-import json
-from django.test import TestCase
 from base.tests import BaseTestCase
 from selenium import webdriver
-from voting.models import Voting, Question, QuestionOption
-from django.conf import settings
-from mixnet.models import Auth
-from django.utils import timezone
-from census.models import Census
 from django.contrib.auth.models import User
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.support import expected_conditions
-from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 # Create your tests here.
 
@@ -158,11 +148,9 @@ class BoothTestCase(StaticLiveServerTestCase):
         elements = self.driver.find_elements(By.CSS_SELECTOR, ".h2")
         assert any(element.text == "test question 2" for element in elements)
 
+        ### SELENIUM TESTS
 
-        ### SELENIUM TESTS 
     def test_selenium_vote_multiple_questions_not_started(self):
-        
-        
         self.driver.get(f'{self.live_server_url+"/admin/login/?next=/admin/"}')
         self.driver.set_window_size(910, 880)
         self.driver.find_element(By.ID, "id_username").send_keys("admin1")
@@ -232,7 +220,7 @@ class BoothTestCase(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "id_voter_id").send_keys("1")
         self.driver.find_element(By.NAME, "_save").click()
         self.driver.get(self.live_server_url + "/booth/1")
+        self.assertTrue(self.live_server_url + "/booth/1/" == self.driver.current_url)
         self.assertTrue(
-            self.live_server_url+"/booth/1/" == self.driver.current_url)
-        self.assertTrue(
-            self.driver.find_element(By.CSS_SELECTOR, "h1").text == "Not Found")
+            self.driver.find_element(By.CSS_SELECTOR, "h1").text == "Not Found"
+        )
