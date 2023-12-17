@@ -17,14 +17,7 @@ def dict_to_csv(values, name):
         writer.writerow(value)
     return csv_buffer.getvalue()
     
-def build_vote_map(votes):
-    rows = {"number": [],"option": [],"votes": [], "postproc": []}
-    for vote in votes:
-        rows.get("number").append(vote.get('number'))
-        rows.get("option").append(vote.get('option'))
-        rows.get("votes").append(vote.get('votes'))
-        rows.get("postproc").append(vote.get('postproc'))
-    return rows
+
 
 def build_census_map(census):
     rows = {"Name": [],"Id": []}
@@ -69,13 +62,17 @@ def export_votes_xls(request, **kwargs):
     a = json.loads(json.dumps(r[0])) 
     file_name = "votos-"+a.get('name') + "-"+str(a.get('end_date'))
     data ={}
-    match a.get('postproc').get('type_postproc'):
-        case "DRO":
-            data = process_post_voting_data(a, "droop")
-        case "PAR":
-            data = process_post_voting_data(a, "saintLague")
-        case "DHO":
-            data = process_dho_voting_data(a)
+    if len(a.get('postproc')) == 0:
+        data = build_vote_map(a)
+        print("nulo!")
+    else:   
+        match a.get('postproc').get('type_postproc'):
+            case "DRO":
+                data = process_post_voting_data(a, "droop")
+            case "PAR":
+                data = process_post_voting_data(a, "saintLague")
+            case "DHO":
+                data = process_dho_voting_data(a)
 
     output = BytesIO()
 
@@ -100,18 +97,40 @@ def download_votes_csv(request, **kwargs):
     a = json.loads(json.dumps(r[0]))
     file_name = "votos-"+a.get('name') + "-"+str(a.get('end_date'))
     data ={}
-    match a.get('postproc').get('type_postproc'):
-        case "DRO":
-            data = process_post_voting_data(a, "droop")
-        case "PAR":
-            data = process_post_voting_data(a, "saintLague")
-        case "DHO":
-            data = process_dho_voting_data(a)
+    if len(a.get('postproc')) == 0:
+        data = build_vote_map(a)
+        print("nulo!")
+    else:   
+        match a.get('postproc').get('type_postproc'):
+            case "DRO":
+                data = process_post_voting_data(a, "droop")
+            case "PAR":
+                data = process_post_voting_data(a, "saintLague")
+            case "DHO":
+                data = process_dho_voting_data(a)
+    
 
     csv_data = dict_to_csv(data, a.get('name'))
     response = HttpResponse(csv_data, content_type='text/csv')
     response['Content-Disposition'] = f'attachment; filename="{file_name}.csv"'
     return response
+    
+def build_vote_map(a):
+    res = {}
+    i =1
+    j= 0
+    print(a)
+    for question in a.get('questions'):
+        rows = {"number": [],"option": [], "votes": []}
+        for option in question.get('options'):
+            rows["number"].append(option.get('number'))
+            rows["option"].append(option.get('option'))
+            rows["votes"].append("esperando a tally")
+        res["question "+str(i)] = rows
+        i=i+1
+    print(res)
+    return res
+
     
 def process_dho_voting_data(a):
     print("Using dho!")
