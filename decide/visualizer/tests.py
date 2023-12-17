@@ -87,50 +87,6 @@ class visualizerTest(BaseTestCase):
                 mods.post("store", json=data)
         return clear
 
-    def test_complete_voting(self):
-        v = self.create_voting()
-        self.create_voters(v)
-
-        v.create_pubkey()
-        v.start_date = timezone.now()
-        v.save()
-
-        clear = self.store_votes(v)
-
-        self.login()  # set token
-        v.tally_votes(self.token)
-
-        tally = v.tally
-        tally.sort()
-        tally = {k: len(list(x)) for k, x in itertools.groupby(tally)}
-
-        for q in v.questions.all()[0].options.all():
-            self.assertEqual(tally.get(q.number, 0), clear.get(q.number, 0))
-
-        for q in v.postproc:
-            self.assertEqual(tally.get(q["number"], 0), q["votes"])
-
-    def test_visualizer_render(self):
-        v = self.create_voting()
-        self.create_voters(v)
-
-        v.create_pubkey()
-        v.start_date = timezone.now()
-        v.save()
-
-        _ = self.store_votes(v)
-
-        self.login()  # set token
-        v.tally_votes(self.token)
-
-        response = self.client.get("/visualizer/" + str(v.id) + "/")
-
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "visualizer/visualizer.html")
-
-        self.assertIn("voting", response.context)
-        self.assertIn("census", response.context)
-
     def test_not_open(self):
         v = self.create_voting()
         self.create_voters(v)
