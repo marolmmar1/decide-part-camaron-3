@@ -842,8 +842,9 @@ class VotingModelTestCasePreference(BaseTestCase):
         opt3 = QuestionOption(question=q, option="opcion preference 3", number=3)
         opt3.save()
 
-        self.v = Voting(name="Votacion", question=q, voting_type="M")
+        self.v = Voting(name="Votacion",  voting_type="M")
         self.v.save()
+        self.v.questions.set([q])
 
         a, _ = Auth.objects.get_or_create(
             url=settings.BASEURL, defaults={"me": True, "name": "test auth"}
@@ -956,8 +957,9 @@ class VotingModelTestCasePreferenceInvalid(BaseTestCase):
         opt3 = QuestionOption(question=q, option="opcion preference 3", number=3)
         opt3.save()
 
-        self.v = Voting(name="Votacion", question=q, voting_type="M")
+        self.v = Voting(name="Votacion",  voting_type="M")
         self.v.save()
+        self.v.questions.set([q])
 
         a, _ = Auth.objects.get_or_create(
             url=settings.BASEURL, defaults={"me": True, "name": "test auth"}

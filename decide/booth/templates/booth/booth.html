@@ -304,6 +304,7 @@
                 },
                 decideSend(evt) {
                     evt.preventDefault();
+                    let votes = [];
 
                     if (this.voting.voting_type == "M") {
                         if (!this.check_order_ok()) { this.showAlert("danger", 'Order of options not valid'); return; }
@@ -323,7 +324,7 @@
                             .replace(',', '1010101'));
                         //Can only encrypt numbers. 1010101 is extremely weird to appear in the votes by itself, so we use it as a coma marker
                         console.log(v);
-
+                    }
                     for (let question of this.voting.questions) {
                         if (voting.voting_type == "M") {
                             if (!this.check_order_ok()) { this.showAlert("danger", 'Order of options not valid'); return; }

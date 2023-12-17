@@ -23,7 +23,7 @@ class VotingHierarchyTestCaseSelenium(StaticLiveServerTestCase):
         mods.mock_query(self.client)
 
         options = webdriver.ChromeOptions()
-        options.headless = True
+        options.headless = False
         self.driver = webdriver.Chrome(options=options)
 
         u = User(username="admin1")
@@ -64,11 +64,9 @@ class VotingHierarchyTestCaseSelenium(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "id_name").send_keys("Votacion 1")
         self.driver.find_element(By.ID, "id_desc").click()
         self.driver.find_element(By.ID, "id_desc").send_keys("Esto es una votacion")
-        self.driver.find_element(
-            By.CSS_SELECTOR, ".field-question .related-widget-wrapper"
-        ).click()
         self.vars["window_handles"] = self.driver.window_handles
-        self.driver.find_element(By.CSS_SELECTOR, "#add_id_question > img").click()
+        self.driver.find_element(By.CSS_SELECTOR, "#add_id_questions > img").click()
+        
         self.vars["win1332"] = self.wait_for_window(2000)
         self.vars["root"] = self.driver.current_window_handle
         self.driver.switch_to.window(self.vars["win1332"])
@@ -92,20 +90,10 @@ class VotingHierarchyTestCaseSelenium(StaticLiveServerTestCase):
         self.driver.switch_to.window(self.vars["root"])
         self.vars["window_handles"] = self.driver.window_handles
         self.driver.find_element(By.CSS_SELECTOR, "#add_id_auths > img").click()
-
-        self.vars["win2215"] = self.wait_for_window(1000)
-        if self.vars["win2215"] in self.driver.window_handles:
-            self.driver.switch_to.window(self.vars["win2215"])
-        else:
-            print("La ventana no existe o ya ha sido cerrada.")
-        self.driver.find_element(By.ID, "id_name").send_keys(self.live_server_url + "/")
-
-        element = WebDriverWait(self.driver, 5).until(
-            EC.presence_of_element_located((By.ID, "id_url"))
-        )
-        element.click()
-
+        self.driver.find_element(By.ID, "id_name").send_keys("test auth")
+        self.driver.find_element(By.ID, "id_url").click()
         self.driver.find_element(By.ID, "id_url").send_keys(self.live_server_url + "/")
+        self.driver.find_element(By.NAME, "_save").click()
 
         self.driver.find_element(By.NAME, "_save").click()
         self.driver.switch_to.window(self.vars["root"])
