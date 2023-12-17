@@ -260,34 +260,37 @@ class Voting(models.Model):
                     raise Exception("Non valid tally count")
 
         # print(self.tally)
-
+        aux = []
+        for i in self.tally:
+            for j in i:
+                aux.append([*str(j)])
+        self.tally = aux
         self.save()
 
         self.do_postproc()
 
     def do_postproc(self):
         tally = self.tally
-        options = self.question.options.all()
-
         opts = []
-        for opt in options:
-            if isinstance(tally, list):
-                if self.voting_type == "M":
-                    votes = 0
-                    for i in tally:
-                        votes += i[opt.number - 1] / len(options)
+        for question in self.questions.all():
+            options = question.options.all()
+            for opt in options:
+                if isinstance(tally, list):
+                    if self.voting_type == "M":
+                        votes = 0
+                        for i in tally:
+                            votes += int(i[opt.number - 1]) / len(options)
+                    else:
+                        votes = tally.count(opt.number)
                 else:
-                    votes = tally.count(opt.number)
-            else:
-                votes = 0
-            opts.append({"option": opt.option, "number": opt.number, "votes": votes})
-        data = {
-            "options": opts,
-            "voting_id": self.id,
-            "question_id": self.question.id,
-            "total_seats": self.seats,
-            "type": self.postproc_type,
-        }
+                    votes = 0
+                opts.append({"option": opt.option, "number": opt.number, "votes": votes})
+            data = {
+                "options": opts,
+                "voting_id": self.id,
+                "total_seats": self.seats,
+                "type": self.postproc_type,
+            }
 
         response = mods.post("postproc", json=data)
 
