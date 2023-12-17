@@ -14,7 +14,6 @@ from base.tests import BaseTestCase
 from voting.models import Voting, Question
 
 
-
 # Create your tests here.
 
 
