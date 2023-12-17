@@ -82,12 +82,7 @@ class StoreView(generics.ListAPIView):
             if nested_vote:
                 a = nested_vote.get("a")
                 b = nested_vote.get("b")
-                defs = {"a": a, "b": b}
-                v, _ = Vote.objects.get_or_create(
-                    voting_id=vid, voter_id=uid, defaults=defs
-                )
-                v.a = a
-                v.b = b
+                v = Vote(voting_id=vid, voter_id=uid, a=a, b=b)
                 v.save()
 
         return Response({})
