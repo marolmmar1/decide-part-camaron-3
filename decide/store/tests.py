@@ -236,7 +236,6 @@ class StoreTextCase(BaseTestCase):
         CTE_B = 184
         census = Census(voting_id=VOTING_PK, voter_id=1)
         census.save()
-        # Generate a voting with two questions
         voting = self.gen_voting(VOTING_PK, question_desc="Question 1")
         question2 = Question(desc="Question 2")
         question2.save()
@@ -255,17 +254,29 @@ class StoreTextCase(BaseTestCase):
         response = self.client.post("/store/", data, format="json")
         self.assertEqual(response.status_code, 200)
 
-        # Verify that the voting was created correctly
         self.assertEqual(Vote.objects.count(), 1)
         self.assertEqual(Vote.objects.first().voting_id, VOTING_PK)
         self.assertEqual(Vote.objects.first().voter_id, 1)
         self.assertEqual(Vote.objects.first().a, CTE_A)
         self.assertEqual(Vote.objects.first().b, CTE_B)
 
-        # Verify that both questions were added to the voting
         self.assertEqual(voting.questions.count(), 2)
         self.assertEqual(voting.questions.first().desc, "Question 1")
         self.assertEqual(voting.questions.last().desc, "Question 2")
+
+    def test_invalid_data(self):
+        data = {"voting": 9999, "voter": 9999, "votes": [{"vote": {"a": 1, "b": 1}}]}
+        response = self.client.post("/store/", data, format="json")
+        self.assertEqual(response.status_code, 401)  # or whatever status code you return for invalid data
+
+    def test_vote_outside_voting_period(self):
+        voting = self.gen_voting(1)
+        voting.start_date = timezone.now() + datetime.timedelta(days=1)
+        voting.end_date = timezone.now() + datetime.timedelta(days=2)
+        voting.save()
+        data = {"voting": 1, "voter": 1, "votes": [{"vote": {"a": 1, "b": 1}}]}
+        response = self.client.post("/store/", data, format="json")
+        self.assertEqual(response.status_code, 401)  # or whatever status code you return for voting outside the voting period
 
 
 class BackupTestCase(TestCase):
