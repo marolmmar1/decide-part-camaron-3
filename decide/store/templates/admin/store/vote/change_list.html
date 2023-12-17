@@ -3,18 +3,6 @@
 
 {% block extrahead %}
     {{ block.super }}
-    <li>
-        <a href="{% url 'store:vote_create_backup' %}" class="button">Create a Backup</a>
-    </li>
-    <li>
-        <a href="{% url 'store:vote_restore_backup_list' %}" class="button">Restore Database</a>
-    </li>
-    <li>
-        <a href="{% url 'store:delete_backups' %}" class="historylink">Eliminar Backups</a>
-    </li>
-{% endblock %}
-{% block extrahead %}
-    {{ block.super }}
     {% load static %}
 
     <script>
@@ -240,7 +228,7 @@
                     <button class="close-voting button" data-id="{{ vote.voting_id }}" disabled>Voting {{ vote.voting_id }} Closed</button>
                 {% else %}
                     <button class="start-voting button" data-id="{{ vote.voting_id }}" disabled>Voting {{ vote.voting_id }} Started</button>
-                    <button class="close-voting button" data-id="{{ vote.voting_id }}">Close Voting {{ vote.voting_id }}</button>
+                    <button class="close-v oting button" data-id="{{ vote.voting_id }}">Close Voting {{ vote.voting_id }}</button>
                 {% endif %}
             </div>
         {% endfor %}
