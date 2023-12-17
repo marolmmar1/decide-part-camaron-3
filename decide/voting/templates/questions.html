@@ -1,0 +1,27 @@
+{% extends 'base_dashboard.html' %}
+{% block content %}
+<div>
+    {% if preguntas.count > 0 %}
+    <table border="5" style="margin: 0 auto;">
+        <tr>
+            <td>Description</td>
+            <td>Third Option</td>
+            <td>Action</td>
+        </tr>
+        {% for p in preguntas %}
+        <tr>
+            <td><a href="/question/questiondetails/{{ p.id }}">{{p.desc}}</a></td>
+            <td>{{ p.third_option }}</td>
+            <td><a class="fa fa-trash-o" href="{% url 'borrar_preguntas' p.id %}" 
+                onClick="return confirm('Do you want to delete the question {{p.desc}}?');">
+                    Delete
+                </a></td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+    <button class="btn btn-secondary btn-lg"><a href="{% url 'crear_preguntas' %}">Create question</a></button>  
+    <button class="btn btn-secondary btn-lg"><a href="{% url 'create_questionYesNo' %}">Create question Yes/No</a></button>   
+</div>
+
+{% endblock %}

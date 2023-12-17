@@ -24,6 +24,10 @@ class Migration(migrations.Migration):
                 ),
                 ("voting_id", models.PositiveIntegerField()),
                 ("voter_id", models.PositiveIntegerField()),
+                (
+                    "value",
+                    models.PositiveIntegerField(blank=True, default=0, null=True),
+                ),
                 ("a", base.models.BigBigField()),
                 ("b", base.models.BigBigField()),
                 ("voted", models.DateTimeField(auto_now=True)),

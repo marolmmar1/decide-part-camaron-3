@@ -25,6 +25,20 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("desc", models.TextField()),
+                (
+                    "optionSiNo",
+                    models.BooleanField(
+                        default=False,
+                        help_text="Marca esta casilla si quieres limitar las opciones a 'Sí' o 'No'. No podrás añadir más opciones si esta casilla está marcada.",
+                    ),
+                ),
+                (
+                    "third_option",
+                    models.BooleanField(
+                        default=False,
+                        help_text="Marca esta casilla para añadir una tercera opción con el valor 'Depende'",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
@@ -41,6 +55,32 @@ class Migration(migrations.Migration):
                 ),
                 ("name", models.CharField(max_length=200)),
                 ("desc", models.TextField(blank=True, null=True)),
+                (
+                    "voting_type",
+                    models.CharField(
+                        choices=[
+                            ("S", "Single Choice"),
+                            ("M", "Multiple Choice"),
+                            ("H", "Hierarchy"),
+                            ("Q", "Many Questions"),
+                        ],
+                        default="S",
+                        max_length=1,
+                    ),
+                ),
+                (
+                    "postproc_type",
+                    models.CharField(
+                        choices=[
+                            ("NON", "NONE"),
+                            ("DHO", "DHONDT"),
+                            ("PAR", "SAINT"),
+                            ("DRO", "DROOP"),
+                        ],
+                        default="NON",
+                        max_length=3,
+                    ),
+                ),
                 ("start_date", models.DateTimeField(blank=True, null=True)),
                 ("end_date", models.DateTimeField(blank=True, null=True)),
                 ("tally", models.JSONField(blank=True, null=True)),

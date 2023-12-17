@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
 
+
 app_name = "store"
 
 urlpatterns = [
@@ -19,4 +20,5 @@ urlpatterns = [
         views.delete_selected_backup,
         name="delete_backup",
     ),
+    path("voteHistory/", views.VoteHistoryView.as_view()),
 ]
