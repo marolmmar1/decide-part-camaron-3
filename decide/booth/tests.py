@@ -56,7 +56,6 @@ class BoothTestCase(StaticLiveServerTestCase):
         if len(wh_now) > len(wh_then):
             return set(wh_now).difference(set(wh_then)).pop()
 
-
         ### SELENIUM TESTS
 
     def test_selenium_vote_multiple_questions_not_started(self):

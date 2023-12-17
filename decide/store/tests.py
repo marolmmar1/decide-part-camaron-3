@@ -7,7 +7,6 @@ from django.test import TestCase
 from django.urls import reverse
 
 from .models import Vote
-from .serializers import VoteSerializer
 from base.tests import BaseTestCase
 from census.models import Census
 from voting.models import Question
@@ -176,7 +175,6 @@ class StoreTextCase(BaseTestCase):
         self.assertEqual(Vote.objects.first().voter_id, 1)
         self.assertEqual(Vote.objects.first().a, CTE_A)
         self.assertEqual(Vote.objects.first().b, CTE_B)
-
 
     def test_voting_status(self):
         votes = [{"vote": {"a": 30, "b": 55}}]

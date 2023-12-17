@@ -37,7 +37,6 @@ class VotingPreferenceTestCaseSelenium(StaticLiveServerTestCase):
         if len(wh_now) > len(wh_then):
             return set(wh_now).difference(set(wh_then)).pop()
 
-
     def tearDown(self):
         super().tearDown()
         self.driver.quit()

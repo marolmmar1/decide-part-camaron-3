@@ -112,8 +112,94 @@ class PostProcTestCase(BaseTestCase):
 
         postproc = PostProcessing.objects.get(voting=v)
 
-        dhont = postproc.results        
-        expected = [{'dhont': [{'seat': 1, 'percentaje': 0.0}, {'seat': 2, 'percentaje': 0.0}, {'seat': 3, 'percentaje': 0.0}, {'seat': 4, 'percentaje': 0.0}, {'seat': 5, 'percentaje': 0.0}, {'seat': 6, 'percentaje': 0.0}, {'seat': 7, 'percentaje': 0.0}, {'seat': 8, 'percentaje': 0.0}, {'seat': 9, 'percentaje': 0.0}, {'seat': 10, 'percentaje': 0.0}], 'votes': 0, 'number': 2, 'option': 'option 1'}, {'dhont': [{'seat': 1, 'percentaje': 0.0}, {'seat': 2, 'percentaje': 0.0}, {'seat': 3, 'percentaje': 0.0}, {'seat': 4, 'percentaje': 0.0}, {'seat': 5, 'percentaje': 0.0}, {'seat': 6, 'percentaje': 0.0}, {'seat': 7, 'percentaje': 0.0}, {'seat': 8, 'percentaje': 0.0}, {'seat': 9, 'percentaje': 0.0}, {'seat': 10, 'percentaje': 0.0}], 'votes': 0, 'number': 3, 'option': 'option 2'}, {'dhont': [{'seat': 1, 'percentaje': 0.0}, {'seat': 2, 'percentaje': 0.0}, {'seat': 3, 'percentaje': 0.0}, {'seat': 4, 'percentaje': 0.0}, {'seat': 5, 'percentaje': 0.0}, {'seat': 6, 'percentaje': 0.0}, {'seat': 7, 'percentaje': 0.0}, {'seat': 8, 'percentaje': 0.0}, {'seat': 9, 'percentaje': 0.0}, {'seat': 10, 'percentaje': 0.0}], 'votes': 0, 'number': 4, 'option': 'option 3'}, {'dhont': [{'seat': 1, 'percentaje': 0.0}, {'seat': 2, 'percentaje': 0.0}, {'seat': 3, 'percentaje': 0.0}, {'seat': 4, 'percentaje': 0.0}, {'seat': 5, 'percentaje': 0.0}, {'seat': 6, 'percentaje': 0.0}, {'seat': 7, 'percentaje': 0.0}, {'seat': 8, 'percentaje': 0.0}, {'seat': 9, 'percentaje': 0.0}, {'seat': 10, 'percentaje': 0.0}], 'votes': 0, 'number': 5, 'option': 'option 4'}, {'dhont': [{'seat': 1, 'percentaje': 0.0}, {'seat': 2, 'percentaje': 0.0}, {'seat': 3, 'percentaje': 0.0}, {'seat': 4, 'percentaje': 0.0}, {'seat': 5, 'percentaje': 0.0}, {'seat': 6, 'percentaje': 0.0}, {'seat': 7, 'percentaje': 0.0}, {'seat': 8, 'percentaje': 0.0}, {'seat': 9, 'percentaje': 0.0}, {'seat': 10, 'percentaje': 0.0}], 'votes': 0, 'number': 6, 'option': 'option 5'}]
+        dhont = postproc.results
+        expected = [
+            {
+                "dhont": [
+                    {"seat": 1, "percentaje": 0.0},
+                    {"seat": 2, "percentaje": 0.0},
+                    {"seat": 3, "percentaje": 0.0},
+                    {"seat": 4, "percentaje": 0.0},
+                    {"seat": 5, "percentaje": 0.0},
+                    {"seat": 6, "percentaje": 0.0},
+                    {"seat": 7, "percentaje": 0.0},
+                    {"seat": 8, "percentaje": 0.0},
+                    {"seat": 9, "percentaje": 0.0},
+                    {"seat": 10, "percentaje": 0.0},
+                ],
+                "votes": 0,
+                "number": 2,
+                "option": "option 1",
+            },
+            {
+                "dhont": [
+                    {"seat": 1, "percentaje": 0.0},
+                    {"seat": 2, "percentaje": 0.0},
+                    {"seat": 3, "percentaje": 0.0},
+                    {"seat": 4, "percentaje": 0.0},
+                    {"seat": 5, "percentaje": 0.0},
+                    {"seat": 6, "percentaje": 0.0},
+                    {"seat": 7, "percentaje": 0.0},
+                    {"seat": 8, "percentaje": 0.0},
+                    {"seat": 9, "percentaje": 0.0},
+                    {"seat": 10, "percentaje": 0.0},
+                ],
+                "votes": 0,
+                "number": 3,
+                "option": "option 2",
+            },
+            {
+                "dhont": [
+                    {"seat": 1, "percentaje": 0.0},
+                    {"seat": 2, "percentaje": 0.0},
+                    {"seat": 3, "percentaje": 0.0},
+                    {"seat": 4, "percentaje": 0.0},
+                    {"seat": 5, "percentaje": 0.0},
+                    {"seat": 6, "percentaje": 0.0},
+                    {"seat": 7, "percentaje": 0.0},
+                    {"seat": 8, "percentaje": 0.0},
+                    {"seat": 9, "percentaje": 0.0},
+                    {"seat": 10, "percentaje": 0.0},
+                ],
+                "votes": 0,
+                "number": 4,
+                "option": "option 3",
+            },
+            {
+                "dhont": [
+                    {"seat": 1, "percentaje": 0.0},
+                    {"seat": 2, "percentaje": 0.0},
+                    {"seat": 3, "percentaje": 0.0},
+                    {"seat": 4, "percentaje": 0.0},
+                    {"seat": 5, "percentaje": 0.0},
+                    {"seat": 6, "percentaje": 0.0},
+                    {"seat": 7, "percentaje": 0.0},
+                    {"seat": 8, "percentaje": 0.0},
+                    {"seat": 9, "percentaje": 0.0},
+                    {"seat": 10, "percentaje": 0.0},
+                ],
+                "votes": 0,
+                "number": 5,
+                "option": "option 4",
+            },
+            {
+                "dhont": [
+                    {"seat": 1, "percentaje": 0.0},
+                    {"seat": 2, "percentaje": 0.0},
+                    {"seat": 3, "percentaje": 0.0},
+                    {"seat": 4, "percentaje": 0.0},
+                    {"seat": 5, "percentaje": 0.0},
+                    {"seat": 6, "percentaje": 0.0},
+                    {"seat": 7, "percentaje": 0.0},
+                    {"seat": 8, "percentaje": 0.0},
+                    {"seat": 9, "percentaje": 0.0},
+                    {"seat": 10, "percentaje": 0.0},
+                ],
+                "votes": 0,
+                "number": 6,
+                "option": "option 5",
+            },
+        ]
 
         for i in range(len(dhont)):
             for j in range(len(dhont[i]["dhont"])):
@@ -122,7 +208,6 @@ class PostProcTestCase(BaseTestCase):
                     expected[i]["dhont"][j],
                     "Métricas no coinciden",
                 )
-
 
     def test_droop_wikipedia_example(self):
         # validating the functionality of the function using the wikipedia example
@@ -164,10 +249,15 @@ class PostProcTestCase(BaseTestCase):
 
         droop = postproc.results
 
-        expected_result = [{'droop': 1, 'votes': 0, 'number': 2, 'option': 'option 1'}, {'droop': 1, 'votes': 0, 'number': 3, 'option': 'option 2'}, {'droop': 1, 'votes': 0, 'number': 4, 'option': 'option 3'}, {'droop': 1, 'votes': 0, 'number': 5, 'option': 'option 4'}, {'droop': 1, 'votes': 0, 'number': 6, 'option': 'option 5'}]
+        expected_result = [
+            {"droop": 1, "votes": 0, "number": 2, "option": "option 1"},
+            {"droop": 1, "votes": 0, "number": 3, "option": "option 2"},
+            {"droop": 1, "votes": 0, "number": 4, "option": "option 3"},
+            {"droop": 1, "votes": 0, "number": 5, "option": "option 4"},
+            {"droop": 1, "votes": 0, "number": 6, "option": "option 5"},
+        ]
 
         self.assertEqual(droop, expected_result)
-
 
     def test_invalid_config_voting(self):
         try:
@@ -179,7 +269,6 @@ class PostProcTestCase(BaseTestCase):
             )
         else:
             self.fail("Se esperaba una excepción ValidationError, pero no se lanzó")
-
 
     def test_invalid_droop_postproc(self):
         invalid_voting_types = ["M", "H", "Q"]
@@ -290,6 +379,7 @@ class PostProcTestsSaintLague(BaseTestCase):
                 (option["votes"] / sum(o["votes"] for o in opts)) * total_seats
             )
             self.assertEqual(option["saintLague"], expected_seats)
+
 
 class TestSimulacionDroop(StaticLiveServerTestCase):
     def setUp(self):
