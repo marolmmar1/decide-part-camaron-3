@@ -49,8 +49,8 @@ class PostProcTestCase(BaseTestCase):
         v = Voting(
             name="test voting", postproc_type=postproc, voting_type=type
         )
-        v.questions.set(q)
-        v.questions.set()
+        v.save()
+        v.questions.add(q)
         v.save()
 
         a, _ = Auth.objects.get_or_create(
@@ -299,7 +299,8 @@ class PostProcTestsSaintLague(BaseTestCase):
         v = Voting(
             name="test voting", postproc_type=postproc, voting_type=type
         )
-        v.questions.set(q)
+        v.save()
+        v.questions.add(q)
         v.save()
 
         a, _ = Auth.objects.get_or_create(

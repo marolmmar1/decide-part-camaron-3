@@ -316,7 +316,7 @@ class DjangoChannelsTest(TestCase):
         # Crea una pregunta y una votación
         question = Question.objects.create(desc="Test Question")
         self.voting = Voting.objects.create(name="Test Voting")
-        self.voting.questions.set(question)
+        self.voting.questions.set([question])
         self.voting.save()
 
         self.assertEqual(Vote.objects.count(), 1)
@@ -532,7 +532,8 @@ class DjangoChannelsTest(TestCase):
         super().setUp()
         # Crea una pregunta y una votación
         question = Question.objects.create(desc='Test Question')
-        self.voting = Voting.objects.create(name='Test Voting', question=question)
+        self.voting = Voting.objects.create(name='Test Voting')
+        self.voting.questions.set([question])
         self.voting.save()
         census = Census.objects.create(voting_id=self.voting.id, voter_id=user.id)
 
@@ -710,7 +711,7 @@ class DjangoChannelsTest(TestCase):
         self.user = User.objects.create_superuser("prueba", "p@example.com", "1111")
         question = Question.objects.create(desc="Test Question")
         self.voting = Voting.objects.create(name="Test Voting")
-        self.voting.questions(question)
+        self.voting.questions.set([question])
         self.voting.save()
         self.census1 = Census(voting_id=self.voting.id, voter_id=self.user.id)
         self.census1.save()
