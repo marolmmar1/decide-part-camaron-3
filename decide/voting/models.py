@@ -155,8 +155,6 @@ class Voting(models.Model):
         The tally is a shuffle and then a decrypt
         '''
 
-        print("enteeeeeeeeeeeeeeer")
-
         votes = self.get_votes(token)
 
         auth = self.auths.first()
@@ -190,6 +188,9 @@ class Voting(models.Model):
                 v = str(vote).split('1010101')
                 v = [int(i) for i in v]
                 self.tally.append(v)
+
+                if len(v) != len(set(v)):
+                    raise Exception("Non valid tally count")
         
         #print(self.tally)
 
