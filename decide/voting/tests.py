@@ -9,8 +9,6 @@ from django.test import TestCase
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 
-import time
-from selenium.webdriver.common.action_chains import ActionChains
 
 from base import mods
 from base.tests import BaseTestCase
@@ -20,7 +18,6 @@ from mixnet.mixcrypt import MixCrypt
 from mixnet.models import Auth
 from voting.models import Voting, Question, QuestionOption
 from django.core.exceptions import ValidationError
-
 
 
 class VotingTestCase(BaseTestCase):
@@ -651,7 +648,7 @@ class VotingModelTestCasePreference(BaseTestCase):
         opt3 = QuestionOption(question=q, option="opcion preference 3", number=3)
         opt3.save()
 
-        self.v = Voting(name="Votacion",  voting_type="M")
+        self.v = Voting(name="Votacion", voting_type="M")
         self.v.save()
         self.v.questions.set([q])
 
@@ -738,13 +735,12 @@ class VotingModelTestCasePreference(BaseTestCase):
         self.v.start_date = timezone.now()
         self.v.save()
 
-        clear = self.store_votes(self.v)
+        self.store_votes(self.v)
 
         self.login()  # set token
         self.v.tally_votes(self.token)
 
         tally = self.v.tally
-
 
         for q in self.v.postproc:
             for question in v.questions.all():
@@ -767,7 +763,7 @@ class VotingModelTestCasePreferenceInvalid(BaseTestCase):
         opt3 = QuestionOption(question=q, option="opcion preference 3", number=3)
         opt3.save()
 
-        self.v = Voting(name="Votacion",  voting_type="M")
+        self.v = Voting(name="Votacion", voting_type="M")
         self.v.save()
         self.v.questions.set([q])
 
@@ -846,5 +842,3 @@ class VotingModelTestCasePreferenceInvalid(BaseTestCase):
             voter = voters.pop()
             mods.post("store", json=data)
         return clear
-
-           
