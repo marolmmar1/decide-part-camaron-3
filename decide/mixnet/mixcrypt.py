@@ -34,7 +34,6 @@ True
 """
 
 
-
 from Crypto.PublicKey import ElGamal
 from Crypto.Random import random
 from Crypto import Random
