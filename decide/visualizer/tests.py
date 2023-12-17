@@ -39,8 +39,9 @@ class visualizerTest(BaseTestCase):
                 question=q, option="option {}".format(i + 1), number=i + 2
             )
             opt.save()
-        v = Voting(name="test voting", question=q)
+        v = Voting(name="test voting")
         v.save()
+        v.questions.set([q])
 
         a, _ = Auth.objects.get_or_create(
             url=settings.BASEURL, defaults={"me": True, "name": "test auth"}
@@ -70,7 +71,7 @@ class visualizerTest(BaseTestCase):
         voter = voters.pop()
 
         clear = {}
-        for opt in v.question.options.all():
+        for opt in v.questions.all()[0].options.all():
             clear[opt.number] = 0
             for _ in range(3):
                 a, b = self.encrypt_msg(opt.number, v)
@@ -103,7 +104,7 @@ class visualizerTest(BaseTestCase):
         tally.sort()
         tally = {k: len(list(x)) for k, x in itertools.groupby(tally)}
 
-        for q in v.question.options.all():
+        for q in v.questions.all()[0].options.all():
             self.assertEqual(tally.get(q.number, 0), clear.get(q.number, 0))
 
         for q in v.postproc:
