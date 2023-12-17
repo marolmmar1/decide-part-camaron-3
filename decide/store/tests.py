@@ -231,6 +231,45 @@ class StoreTextCase(BaseTestCase):
         self.assertEqual(response.status_code, 401)
 
 
+
+    def test_store_vote_two_questions(self):
+        VOTING_PK = 345
+        CTE_A = 96
+        CTE_B = 184
+        census = Census(voting_id=VOTING_PK, voter_id=1)
+        census.save()
+        # Generate a voting with two questions
+        voting = self.gen_voting(VOTING_PK, question_desc="Question 1")
+        question2 = Question(desc="Question 2")
+        question2.save()
+        voting.questions.add(question2)
+
+        votes = [{"vote": {"a": CTE_A, "b": CTE_B}}]
+        data = {
+            "voting": VOTING_PK,
+            "voter": 1,
+            "votes": votes,
+            "voting_type": "classic",
+        }
+
+        user = self.get_or_create_user(1)
+        self.login(user=user.username)
+        response = self.client.post("/store/", data, format="json")
+        self.assertEqual(response.status_code, 200)
+
+        # Verify that the voting was created correctly
+        self.assertEqual(Vote.objects.count(), 1)
+        self.assertEqual(Vote.objects.first().voting_id, VOTING_PK)
+        self.assertEqual(Vote.objects.first().voter_id, 1)
+        self.assertEqual(Vote.objects.first().a, CTE_A)
+        self.assertEqual(Vote.objects.first().b, CTE_B)
+
+        # Verify that both questions were added to the voting
+        self.assertEqual(voting.questions.count(), 2)
+        self.assertEqual(voting.questions.first().desc, "Question 1")
+        self.assertEqual(voting.questions.last().desc, "Question 2")
+
+
 class BackupTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
