@@ -9,17 +9,33 @@
         <div style="padding-left: 5%;
                     display: list-item;
                     align-content: center;
+                    border: black;
                     ">
             <big>
                 <a href="/visualizer/{{voting.id}}/">
                     <p>
-                        <strong>Voting: </strong> {{voting}}
+                        <strong>Voting name: </strong> {{voting.name}}
                     </p>
                 </a>
                 <p>
-                    <strong> Vote date:</strong> {{vote.voted}}
+                    <strong>Voting description: </strong> {{voting.description}}
                 </p>
-                <p><strong>Voting questions: </strong></p>
+                <p>
+                    <strong>The voting started on: </strong> {{voting.start_date}}
+                </p>
+                <p>
+                    <strong> You voted on:</strong> {{vote.voted}}
+                </p>
+                {%if voting.end_date %}
+                    <p>
+                        <strong> The voting ended on:</strong> {{voting.end_date}}
+                    </p>
+                {%else%}
+                    <p>
+                        <strong> The voting has not ended yet</strong>
+                    </p>
+                {%endif%}
+                <p><strong>Questions: </strong></p>
                 {% for question in voting.questions %}
                     <li>{{question}}</li>
                 {%endfor%}
