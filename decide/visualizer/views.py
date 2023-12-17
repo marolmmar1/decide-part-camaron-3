@@ -35,7 +35,7 @@ def build_census_map(census):
 
 def export_census_xls(request, **kwargs):
     vid = kwargs.get('voting_id', 0)
-    r = mods.get('voting', params={'voting_id': vid})
+    r = mods.get('voting', params={'id': vid})
     a = json.loads(json.dumps(r[0])) 
     c = mods.get('census', params={'voting_id': vid})
     file_name = "censo-"+a.get('name') + "-"+str(a.get('end_date'))
@@ -53,7 +53,7 @@ def export_census_xls(request, **kwargs):
 
 def download_census_csv(request, **kwargs):
     vid = kwargs.get('voting_id', 0)
-    r = mods.get('voting', params={'voting_id': vid})
+    r = mods.get('voting', params={'id': vid})
     a = json.loads(json.dumps(r[0])) 
     c = mods.get('census', params={'voting_id': vid})
     file_name = "censo-"+a.get('name') + "-"+str(a.get('end_date'))
@@ -65,7 +65,7 @@ def download_census_csv(request, **kwargs):
     
 def export_votes_xls(request, **kwargs):
     vid = kwargs.get('voting_id', 0)
-    r = mods.get('voting', params={'voting_id': vid})
+    r = mods.get('voting', params={'id': vid})
     a = json.loads(json.dumps(r[0])) 
     file_name = "votos-"+a.get('name') + "-"+str(a.get('end_date'))
     data ={}
@@ -93,14 +93,16 @@ def download_votes_csv(request, **kwargs):
     vid = kwargs.get('voting_id', 0)
     r=0
     a=0
-    r = mods.get('voting', params={'voting_id': vid})
+    r = mods.get('voting', params={'id': vid})
     a = json.loads(json.dumps(r[0]))
     file_name = "votos-"+a.get('name') + "-"+str(a.get('end_date'))
     data ={}
-    if a.get('postproc').get('type_postproc')== "DRO":
-        data = process_dro_voting_data(a)
-    else:
-        data =process_voting_data(a)
+    match a.get('postproc').get('type_postproc'):
+        case "DRO":
+            data = process_post_voting_data(a, "droop")
+        case "PAR":
+            data = process_post_voting_data(a, "saintLague")
+
     csv_data = dict_to_csv(data, a.get('name'))
     response = HttpResponse(csv_data, content_type='text/csv')
     response['Content-Disposition'] = f'attachment; filename="{file_name}.csv"'
@@ -118,17 +120,17 @@ def process_voting_data(a):
         i=i+1
     return res
 
-def process_dro_voting_data(a):
+def process_post_voting_data(a, type):
     res = {}
     i =1
     j= 0
     for question in a.get('questions'):
-        rows = {"number": [],"option": [], "votes": [], "droop": []}
+        rows = {"number": [],"option": [], "votes": [], type: []}
         for option in question.get('options'):
             rows["number"].append(option.get('number'))
             rows["option"].append(option.get('option'))
             rows["votes"].append(a.get('postproc').get('results')[j].get('votes'))
-            rows["droop"].append(a.get('postproc').get('results')[j].get('droop'))
+            rows[type].append(a.get('postproc').get('results')[j].get(type))
             j= j+1
         res["question "+str(i)] = rows
         i=i+1
