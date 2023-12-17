@@ -7,12 +7,12 @@ from base import mods
 from django.contrib.auth.models import User
 import csv
 import pandas as pd
+from io import BytesIO
 
 def dict_to_csv(values, name):
     csv_buffer = StringIO()
     writer = csv.writer(csv_buffer)
     writer.writerow([name])
-    print(values)
     for value in values.items():
         writer.writerow(value)
     return csv_buffer.getvalue()
@@ -68,28 +68,71 @@ def export_votes_xls(request, **kwargs):
     r = mods.get('voting', params={'voting_id': vid})
     a = json.loads(json.dumps(r[0])) 
     file_name = "votos-"+a.get('name') + "-"+str(a.get('end_date'))
-    data = build_vote_map(a.get('postproc', []))
+    data ={}
+    if a.get('postproc').get('type_postproc')== "DRO":
+        data = process_dro_voting_data(a)
+    else:
+        data =process_voting_data(a)
 
-    df = pd.DataFrame(data)
+    output = BytesIO()
 
-    response = HttpResponse(content_type='application/vnd.ms-excel')
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        
+        for page, question in data.items():
+            df = pd.DataFrame(question)
+            df.to_excel(writer, sheet_name=page, index=False)
+    
+    output.seek(0)
+
+    response = HttpResponse(output.read(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response['Content-Disposition'] = f'attachment; filename="{file_name}.xls"'
-
-    # Write the DataFrame to the HttpResponse as an Excel file
-    df.to_excel(response, index=False)
 
     return response
 
 def download_votes_csv(request, **kwargs):
     vid = kwargs.get('voting_id', 0)
+    r=0
+    a=0
     r = mods.get('voting', params={'voting_id': vid})
-    a = json.loads(json.dumps(r[0])) 
+    a = json.loads(json.dumps(r[0]))
     file_name = "votos-"+a.get('name') + "-"+str(a.get('end_date'))
-    votes = a.get('postproc', [])
-    csv_data = dict_to_csv(build_vote_map(votes), a.get('name'))
+    data ={}
+    if a.get('postproc').get('type_postproc')== "DRO":
+        data = process_dro_voting_data(a)
+    else:
+        data =process_voting_data(a)
+    csv_data = dict_to_csv(data, a.get('name'))
     response = HttpResponse(csv_data, content_type='text/csv')
     response['Content-Disposition'] = f'attachment; filename="{file_name}.csv"'
     return response
+    
+def process_voting_data(a):
+    res = {}
+    i =1
+    for question in a.get('questions'):
+        rows = {"number": [],"option": []}
+        for option in question.get('options'):
+            rows["number"].append(option.get('number'))
+            rows["option"].append(option.get('option'))
+        res["question "+str(i)] = rows
+        i=i+1
+    return res
+
+def process_dro_voting_data(a):
+    res = {}
+    i =1
+    j= 0
+    for question in a.get('questions'):
+        rows = {"number": [],"option": [], "votes": [], "droop": []}
+        for option in question.get('options'):
+            rows["number"].append(option.get('number'))
+            rows["option"].append(option.get('option'))
+            rows["votes"].append(a.get('postproc').get('results')[j].get('votes'))
+            rows["droop"].append(a.get('postproc').get('results')[j].get('droop'))
+            j= j+1
+        res["question "+str(i)] = rows
+        i=i+1
+    return res
 
 class VisualizerView(TemplateView):
     template_name = "visualizer/visualizer.html"
