@@ -15,6 +15,11 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 
+import time
+import json
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+
 from base import mods
 from base.tests import BaseTestCase
 from census.models import Census
@@ -24,6 +29,8 @@ from mixnet.models import Auth
 from voting.models import Voting, Question, QuestionOption
 from datetime import datetime
 from django.core.exceptions import ValidationError
+
+
 
 
 class VotingTestCase(BaseTestCase):
@@ -73,13 +80,9 @@ class VotingTestCase(BaseTestCase):
         return user
 
     def test_to_string(self):
-        #Crea un objeto votacion
         v = self.create_voting()
-        #Verifica que el nombre de la votacion es test voting
         self.assertEquals(str(v),"test voting")
-        #Verifica que la descripcion de la pregunta sea test question
         self.assertEquals(str(v.question),"test question")
-        #Verifica que la primera opcion es option1 (2)
         self.assertEquals(str(v.question.options.all()[0]),"option 1 (2)")
 
     def store_votes(self, v):
@@ -156,8 +159,6 @@ class VotingTestCase(BaseTestCase):
         voting = self.create_voting()
 
         data = {'action': 'start'}
-        #response = self.client.post('/voting/{}/'.format(voting.pk), data, format='json')
-        #self.assertEqual(response.status_code, 401)
 
         # login with user no admin
         self.login(user='noadmin')
@@ -232,7 +233,7 @@ class VotingTestCase(BaseTestCase):
 
     def test_update_voting_405(self):
         v = self.create_voting()
-        data = {} #El campo action es requerido en la request
+        data = {}
         self.login()
         response = self.client.post('/voting/{}/'.format(v.pk), data, format= 'json')
         self.assertEquals(response.status_code, 405)
@@ -471,30 +472,23 @@ class VotingModelTestCaseOptionSiNo(BaseTestCase):
             new_option.save()
     def test_cannot_delete_predefined_options(self):
         initial_option_count = self.v.question.options.count()
-
-        # Intentar eliminar la opción "Sí"
         yes_option = self.v.question.options.get(option="Sí")
         with self.assertRaises(ValidationError):
             yes_option.delete()
 
-        # Verificar que el número de opciones no ha cambiado
         final_option_count = self.v.question.options.count()
         self.assertEqual(initial_option_count, final_option_count)
 
     def test_cannot_edit_predefined_options(self):
-        # Intentar editar la opción "Sí"
         yes_option = self.v.question.options.get(option="Sí")
         with self.assertRaises(ValidationError):
             yes_option.option = "Maybe"
             yes_option.save()
 
     def test_can_change_options_to_depends(self):
-        # Cambiar la pregunta de "Sí/No" a "Depende"
         self.v.question.optionSiNo = False
         self.v.question.third_option = True
         self.v.question.save()
-
-        # Verificar que las opciones se han actualizado correctamente
         options = self.v.question.options.values_list('option', flat=True)
         self.assertIn("Depende", options)
 
@@ -507,15 +501,12 @@ class VotingModelTestCaseOptionSiNo(BaseTestCase):
             new_option.save()
 
     def test_can_add_third_option(self):
-        # Establecer third_option en True
+
         self.v.question.third_option = True
         self.v.question.save()
 
-        # Añadir una tercera opción
         new_option = QuestionOption(question=self.v.question, number=3, option="Depende")
         new_option.save()
-
-        # Verificar que la tercera opción se ha añadido correctamente
         options = self.v.question.options.values_list('option', flat=True)
         self.assertIn("Depende", options)
 
@@ -535,31 +526,20 @@ class VotingModelTestCaseThirdOption(TestCase):
         self.q.third_option = True
         self.q.save()
 
-        # Añadir una tercera opción
+
         new_option = QuestionOption(question=self.q, number=3, option="Depende")
         new_option.save()
-
-        # Cambiar third_option a False
         self.q.third_option = False
-
-        # Antes de guardar, eliminar la tercera opción
         new_option.delete()
-
-        # Ahora se puede guardar sin errores
         self.q.save()
-
         self.assertFalse(self.q.third_option)
 
     def test_can_set_third_option_true_if_more_than_two_options_defined(self):
-        # Añadir una tercera opción
         new_option = QuestionOption(question=self.q, number=3, option="Depende")
         new_option.save()
 
-        # Cambiar third_option a True
         self.q.third_option = True
         self.q.save()
-
-        # Verificar que third_option es True
         self.assertTrue(self.q.third_option)
 
     def test_can_toggle_third_option(self):
@@ -575,7 +555,6 @@ class VotingModelTestCaseThirdOption(TestCase):
 
         self.q.third_option = True
         self.q.save()
-
         self.assertTrue(self.q.third_option)
 
 class VotingModelTestCasePreference(BaseTestCase):

@@ -38,29 +38,41 @@ class Question(models.Model):
         super().save(*args, **kwargs)
 
 @receiver(post_save, sender=Question)
-def post_SiNo_Option(sender, instance,created, **kwargs):
+def post_question(sender, instance, created, **kwargs):
     if created:
         options = instance.options.all() 
         if options.count() == 0:
-            if instance.optionSiNo:
-                op1 = QuestionOption(question=instance, number=1, option="Sí")
+            option_number = 1
+            if instance.optionSiNo: 
+                op1 = QuestionOption(question=instance, number=option_number, option="Sí")
                 op1.save()
-                op2 = QuestionOption(question=instance, number=2, option="No")
+                option_number += 1
+                op2 = QuestionOption(question=instance, number=option_number, option="No")
                 op2.save()
+                option_number += 1
             if instance.third_option:
-                op3 = QuestionOption(question=instance, number=3, option="Depende")
+                op3 = QuestionOption(question=instance, number=option_number, option="Depende")
                 op3.save()
 
 @receiver(post_save, sender=Question)
-def update_SiNo_Option(sender, instance, created, **kwargs):
+def update_question(sender, instance, created, **kwargs):
     if not created:  
         if instance.third_option:
             options = instance.options.all()
             if not any(option.option == "Depende" for option in options):
-                op3 = QuestionOption(question=instance, number=3, option="Depende")
+                ids = [option.number for option in options]
+                if len(ids) > 2:
+                    raise ValidationError({'options': [
+                        f'No puedes añadir más opciones, ni editar los valores ya predefinidos. El número máximo de opciones permitidas es 3.']}) 
+                elif 1 not in ids:
+                    op3 = QuestionOption(question=instance, number=1, option="Depende")
+                elif 2 not in ids:
+                    op3 = QuestionOption(question=instance, number=2, option="Depende")
+                else:
+                    op3 = QuestionOption(question=instance, number=3, option="Depende")
                 op3.save()
 
-                
+
 class QuestionOption(models.Model):
     question = models.ForeignKey(Question, related_name='options', on_delete=models.CASCADE)
     number = models.PositiveIntegerField(blank=True, null=True)
