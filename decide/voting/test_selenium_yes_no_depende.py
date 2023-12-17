@@ -1,33 +1,15 @@
-import random
-import itertools
-from django.utils import timezone
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-from django.test import TestCase
 from rest_framework.test import APIClient
-from rest_framework.test import APITestCase
 
 from selenium import webdriver
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.keys import Keys
 
 import time
-import json
 from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 from base import mods
 from base.tests import BaseTestCase
-from census.models import Census
-from mixnet.mixcrypt import ElGamal
-from mixnet.mixcrypt import MixCrypt
-from mixnet.models import Auth
-from voting.models import Voting, Question, QuestionOption
-from datetime import datetime
-from django.core.exceptions import ValidationError
 
 
 class TestSelenium(StaticLiveServerTestCase):
@@ -130,6 +112,7 @@ class TestSelenium(StaticLiveServerTestCase):
         super().tearDown()
         self.driver.quit()
         self.base.tearDown()
+
 
 class TestSelenium1(StaticLiveServerTestCase):
     def setUp(self):
