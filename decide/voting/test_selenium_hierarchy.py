@@ -147,6 +147,7 @@ class VotingHierarchyTestCaseSelenium(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "username").send_keys("admin1")
         self.driver.find_element(By.ID, "password").send_keys("admin1")
         self.driver.find_element(By.CSS_SELECTOR, ".btn-primary").click()
+        time.sleep(1)
         self.assertTrue(
             self.live_server_url + "/booth/" + voting.id.__str__() + "/"
             == self.driver.current_url
