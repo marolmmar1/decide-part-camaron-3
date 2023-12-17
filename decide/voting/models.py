@@ -247,24 +247,24 @@ class Voting(models.Model):
             pass
 
         self.tally = response.json()
-        print(self.tally)
-        t2 = self.tally.copy()
-        self.tally = []
-        for vote in t2:
-            v = str(vote).split("2020202")
-            for e in v:
-                if self.voting_type != "M":
 
-                    self.tally.append([e])
-                elif self.voting_type == "M":
-                    v = str(e).split("1010101")
-                    v = [int(i) for i in v]
-                    self.tally.append(v)
+        if self.voting_type == "M":
+            t = self.tally.copy()
+            self.tally = []
+            for vote in t:
+                v = str(vote).split("1010101")
+                v = [int(i) for i in v]
+                self.tally.append(v)
 
-                    if len(v) != len(set(v)):
-                        raise Exception("Non valid tally count")    
+                if len(v) != len(set(v)):
+                    raise Exception("Non valid tally count")
 
-
+            # print(self.tally)
+            aux = []
+            for i in self.tally:
+                for j in i:
+                    aux.append([*str(j)])
+            self.tally = aux
         self.save()
 
         self.do_postproc()
@@ -276,7 +276,12 @@ class Voting(models.Model):
             options = question.options.all()
             for opt in options:
                 if isinstance(tally, list):
-                    votes = tally.count(opt.number)
+                    if self.voting_type == "M":
+                        votes = 0
+                        for i in tally:
+                            votes += int(i[opt.number - 1]) / len(options)
+                    else:
+                        votes = tally.count(opt.number)
                 else:
                     votes = 0
                 opts.append(
