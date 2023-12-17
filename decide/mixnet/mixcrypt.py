@@ -150,9 +150,8 @@ class MixCrypt:
     def shuffle_decrypt(self, msgs, last=True):
         msgs2 = msgs.copy()
         msgs3 = []
-        while msgs2:
-            n = random.StrongRandom().randint(0, len(msgs2) - 1)
-            a, b = msgs2.pop(n)
+        for msg in msgs2:
+            a, b = msg
             clear = self.decrypt((a, b))
             if last:
                 msg = clear
@@ -200,13 +199,11 @@ class MixCrypt:
 
     def shuffle(self, msgs, pubkey=None):
         """
-        Reencrypt and shuffle
+        Reencrypt without shuffling
         """
 
         msgs2 = msgs.copy()
-        perm = self.gen_perm(len(msgs))
-        for i, p in enumerate(perm):
-            m = msgs[p]
+        for i, m in enumerate(msgs):
             nm = self.reencrypt(m, pubkey)
             msgs2[i] = nm
 

@@ -124,7 +124,7 @@
             <h1>[[ voting.id ]] - [[ voting.name ]]</h1>
             <form id="vote" v-for="(question, index) in voting.questions" :key="index">
                 <div class="form-group">
-                    <h2>[[ question.desc ]]</h2>
+                    <h2 class="h2">[[ question.desc ]]</h2>
                     <div v-if="voting.voting_type == 'M'">
                         <ul id="M-voting">
                             <li v-for="opt in question.options">
@@ -306,7 +306,6 @@
 
                     var votes = []; // Array to hold the votes for each question
 
-                    
                     for (let question of this.voting.questions) {
                         if (voting.voting_type == "M") {
                             if (!this.check_order_ok()) { this.showAlert("danger", 'Order of options not valid'); return; }
@@ -317,16 +316,21 @@
                                 enc[parseInt(i.id.replace('option-', ''))-1] = parseInt(i.value);
                             }
                             console.log('enc:', enc);  // Log the value of enc
-                            var v = this.decideEncrypt(enc.toString());
-                        } else {
-                            console.log('this.selected:', Vue.toRaw(this.selected));
-                            var v = this.decideEncrypt(this.selected[0].toString());
+                            var vote = this.decideEncrypt(enc.toString());
+                            votes.push({
+                                vote: {a: vote.alpha.toString(), b: vote.beta.toString()},
+                            });
                         }
+                    }
 
-                        // Add the vote for this question to the votes array
-                        votes.push({
-                            vote: {a: v.alpha.toString(), b: v.beta.toString()},
-                        });
+                    if (voting.voting_type != "M") {
+                        for (let key in this.selected) {
+                            console.log('this.selected[' + key + ']:', Vue.toRaw(this.selected[key]));
+                            var vote = this.decideEncrypt(this.selected[key].toString());
+                            votes.push({
+                                vote: {a: vote.alpha.toString(), b: vote.beta.toString()},
+                            });
+                        }
                     }
 
                     var data = {
@@ -337,15 +341,14 @@
                     }
                     this.postData("{% url "gateway" "store" "/" %}", data)
                         .then(data => {
-                        this.successVote = true;
-                        this.alertShow = false;
-                        this.showAlert("success", '{% trans "Congratulations. Your vote has been sent" %}');
+                            this.successVote = true;
+                            this.alertShow = false;
+                            this.showAlert("success", '{% trans "Congratulations. Your vote has been sent" %}');
                         })
                         .catch(error => {
-                        this.succesVote = false;
-                        this.showAlert("danger", '{% trans "Error: " %}' + error);
+                            this.succesVote = false;
+                            this.showAlert("danger", '{% trans "Error: " %}' + error);
                         });
-
                 },
                 showAlert(lvl, msg) {
                     this.alertLvl = lvl;

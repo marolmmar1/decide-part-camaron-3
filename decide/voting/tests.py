@@ -306,7 +306,7 @@ class VotingTestCase(BaseTestCase):
         v.start_date = timezone.now()
         v.save()
 
-        clear = self.store_votes(v)
+        self.store_votes(v)
         self.login()  # set token
         v.tally_votes(self.token)
         tally = v.tally
