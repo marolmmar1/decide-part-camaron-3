@@ -74,6 +74,8 @@ def export_votes_xls(request, **kwargs):
             data = process_post_voting_data(a, "droop")
         case "PAR":
             data = process_post_voting_data(a, "saintLague")
+        case "DHO":
+            data = process_dho_voting_data(a)
 
     output = BytesIO()
 
@@ -103,20 +105,35 @@ def download_votes_csv(request, **kwargs):
             data = process_post_voting_data(a, "droop")
         case "PAR":
             data = process_post_voting_data(a, "saintLague")
+        case "DHO":
+            data = process_dho_voting_data(a)
 
     csv_data = dict_to_csv(data, a.get('name'))
     response = HttpResponse(csv_data, content_type='text/csv')
     response['Content-Disposition'] = f'attachment; filename="{file_name}.csv"'
     return response
     
-def process_voting_data(a):
+def process_dho_voting_data(a):
+    print("Using dho!")
     res = {}
     i =1
+    j= 0
     for question in a.get('questions'):
-        rows = {"number": [],"option": []}
+        rows = {"number": [],"option": [], "votes": []}
+        seats = []
+        for seat in a.get('postproc').get('results')[j].get('dhont'):
+               rows["seat "+str(seat.get('seat'))] = []
+               seats.append("seat "+str(seat.get('seat')))
         for option in question.get('options'):
             rows["number"].append(option.get('number'))
             rows["option"].append(option.get('option'))
+            rows["votes"].append(a.get('postproc').get('results')[j].get('votes'))
+            k=0
+            for seat in seats:
+                percent =a.get('postproc').get('results')[j].get('dhont')[k].get('percentaje')
+                rows[seat].append(percent)
+                k=k+1
+            j= j+1
         res["question "+str(i)] = rows
         i=i+1
     return res
