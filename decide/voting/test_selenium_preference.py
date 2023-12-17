@@ -62,14 +62,11 @@ class VotingPreferenceTestCaseSelenium(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "id_name").send_keys("Votacion 1")
         self.driver.find_element(By.ID, "id_desc").click()
         self.driver.find_element(By.ID, "id_desc").send_keys("Esto es una votacion")
-        self.driver.find_element(
-            By.CSS_SELECTOR, ".field-question .related-widget-wrapper"
-        ).click()
         self.vars["window_handles"] = self.driver.window_handles
-        self.driver.find_element(By.CSS_SELECTOR, "#add_id_question > img").click()
-        self.vars["win1332"] = self.wait_for_window(2000)
+        self.driver.find_element(By.CSS_SELECTOR, "#add_id_questions > img").click()
+        self.vars["win9215"] = self.wait_for_window(2000)
         self.vars["root"] = self.driver.current_window_handle
-        self.driver.switch_to.window(self.vars["win1332"])
+        self.driver.switch_to.window(self.vars["win9215"])
         self.driver.find_element(By.ID, "id_desc").send_keys("Esto es una pregunta")
         self.driver.find_element(By.ID, "id_options-0-number").click()
         self.driver.find_element(By.ID, "id_options-0-number").send_keys("1")
@@ -199,14 +196,11 @@ class VotingPreferenceTestCaseSeleniumSuccess(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "id_name").send_keys("Votacion 1")
         self.driver.find_element(By.ID, "id_desc").click()
         self.driver.find_element(By.ID, "id_desc").send_keys("Esto es una votacion")
-        self.driver.find_element(
-            By.CSS_SELECTOR, ".field-question .related-widget-wrapper"
-        ).click()
         self.vars["window_handles"] = self.driver.window_handles
-        self.driver.find_element(By.CSS_SELECTOR, "#add_id_question > img").click()
-        self.vars["win1332"] = self.wait_for_window(2000)
+        self.driver.find_element(By.CSS_SELECTOR, "#add_id_questions > img").click()
+        self.vars["win9215"] = self.wait_for_window(2000)
         self.vars["root"] = self.driver.current_window_handle
-        self.driver.switch_to.window(self.vars["win1332"])
+        self.driver.switch_to.window(self.vars["win9215"])
         self.driver.find_element(By.ID, "id_desc").send_keys("Esto es una pregunta")
         self.driver.find_element(By.ID, "id_options-0-number").click()
         self.driver.find_element(By.ID, "id_options-0-number").send_keys("1")
@@ -346,14 +340,11 @@ class VotingPreferenceTestCaseSeleniumFail(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "id_name").send_keys("Votacion 1")
         self.driver.find_element(By.ID, "id_desc").click()
         self.driver.find_element(By.ID, "id_desc").send_keys("Esto es una votacion")
-        self.driver.find_element(
-            By.CSS_SELECTOR, ".field-question .related-widget-wrapper"
-        ).click()
         self.vars["window_handles"] = self.driver.window_handles
-        self.driver.find_element(By.CSS_SELECTOR, "#add_id_question > img").click()
-        self.vars["win1332"] = self.wait_for_window(2000)
+        self.driver.find_element(By.CSS_SELECTOR, "#add_id_questions > img").click()
+        self.vars["win9215"] = self.wait_for_window(2000)
         self.vars["root"] = self.driver.current_window_handle
-        self.driver.switch_to.window(self.vars["win1332"])
+        self.driver.switch_to.window(self.vars["win9215"])
         self.driver.find_element(By.ID, "id_desc").send_keys("Esto es una pregunta")
         self.driver.find_element(By.ID, "id_options-0-number").click()
         self.driver.find_element(By.ID, "id_options-0-number").send_keys("1")
