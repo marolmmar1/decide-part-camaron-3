@@ -60,13 +60,22 @@ def post_SiNo_Option(sender, instance, created, **kwargs):
     if created:
         options = instance.options.all()
         if options.count() == 0:
+            option_number = 1
             if instance.optionSiNo:
-                op1 = QuestionOption(question=instance, number=1, option="Sí")
+                op1 = QuestionOption(
+                    question=instance, number=option_number, option="Sí"
+                )
                 op1.save()
-                op2 = QuestionOption(question=instance, number=2, option="No")
+                option_number += 1
+                op2 = QuestionOption(
+                    question=instance, number=option_number, option="No"
+                )
                 op2.save()
+                option_number += 1
             if instance.third_option:
-                op3 = QuestionOption(question=instance, number=3, option="Depende")
+                op3 = QuestionOption(
+                    question=instance, number=option_number, option="Depende"
+                )
                 op3.save()
 
 
@@ -76,7 +85,21 @@ def update_SiNo_Option(sender, instance, created, **kwargs):
         if instance.third_option:
             options = instance.options.all()
             if not any(option.option == "Depende" for option in options):
-                op3 = QuestionOption(question=instance, number=3, option="Depende")
+                ids = [option.number for option in options]
+                if len(ids) > 2:
+                    raise ValidationError(
+                        {
+                            "options": [
+                                f"No puedes añadir más opciones, ni editar los valores ya predefinidos. El número máximo de opciones permitidas es 3."
+                            ]
+                        }
+                    )
+                elif 1 not in ids:
+                    op3 = QuestionOption(question=instance, number=1, option="Depende")
+                elif 2 not in ids:
+                    op3 = QuestionOption(question=instance, number=2, option="Depende")
+                else:
+                    op3 = QuestionOption(question=instance, number=3, option="Depende")
                 op3.save()
 
 
@@ -224,29 +247,47 @@ class Voting(models.Model):
             pass
 
         self.tally = response.json()
+
+        if self.voting_type == "M":
+            t = self.tally.copy()
+            self.tally = []
+            for vote in t:
+                v = str(vote).split("1010101")
+                v = [int(i) for i in v]
+                self.tally.append(v)
+
+                if len(v) != len(set(v)):
+                    raise Exception("Non valid tally count")
+
+        # print(self.tally)
+
         self.save()
 
         self.do_postproc()
 
     def do_postproc(self):
         tally = self.tally
+        options = self.question.options.all()
+
         opts = []
-        for question in self.questions.all():
-            options = question.options.all()
-            for opt in options:
-                if isinstance(tally, list):
-                    votes = tally.count(opt.number)
-                else:
+        for opt in options:
+            if isinstance(tally, list):
+                if self.voting_type == "M":
                     votes = 0
-                opts.append(
-                    {"option": opt.option, "number": opt.number, "votes": votes}
-                )
-            data = {
-                "options": opts,
-                "voting_id": self.id,
-                "total_seats": self.seats,
-                "type": self.postproc_type,
-            }
+                    for i in tally:
+                        votes += i[opt.number - 1] / len(options)
+                else:
+                    votes = tally.count(opt.number)
+            else:
+                votes = 0
+            opts.append({"option": opt.option, "number": opt.number, "votes": votes})
+        data = {
+            "options": opts,
+            "voting_id": self.id,
+            "question_id": self.question.id,
+            "total_seats": self.seats,
+            "type": self.postproc_type,
+        }
 
         response = mods.post("postproc", json=data)
 

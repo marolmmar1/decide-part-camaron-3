@@ -801,13 +801,9 @@ class VotingModelTestCaseThirdOption(TestCase):
 
         new_option = QuestionOption(question=self.q, number=3, option="Depende")
         new_option.save()
-
         self.q.third_option = False
-
         new_option.delete()
-
         self.q.save()
-
         self.assertFalse(self.q.third_option)
 
     def test_can_set_third_option_true_if_more_than_two_options_defined(self):
@@ -816,7 +812,6 @@ class VotingModelTestCaseThirdOption(TestCase):
 
         self.q.third_option = True
         self.q.save()
-
         self.assertTrue(self.q.third_option)
 
     def test_can_toggle_third_option(self):
@@ -832,5 +827,221 @@ class VotingModelTestCaseThirdOption(TestCase):
 
         self.q.third_option = True
         self.q.save()
-
         self.assertTrue(self.q.third_option)
+
+
+class VotingModelTestCasePreference(BaseTestCase):
+    def setUp(self):
+        q = Question(desc="Test question")
+        q.save()
+
+        opt1 = QuestionOption(question=q, option="opcion preference 1", number=1)
+        opt1.save()
+        opt2 = QuestionOption(question=q, option="opcion preference 2", number=2)
+        opt2.save()
+        opt3 = QuestionOption(question=q, option="opcion preference 3", number=3)
+        opt3.save()
+
+        self.v = Voting(name="Votacion", question=q, voting_type="M")
+        self.v.save()
+
+        a, _ = Auth.objects.get_or_create(
+            url=settings.BASEURL, defaults={"me": True, "name": "test auth"}
+        )
+        a.save()
+        self.v.auths.add(a)
+
+        super().setUp()
+
+    def tearDown(self):
+        super().tearDown()
+        self.v = None
+
+    def testExist(self):
+        v = Voting.objects.get(name="Votacion")
+        self.assertTrue(v.question.options.count() == 3)
+        self.assertEquals(v.question.options.all()[0].option, "opcion preference 1")
+        self.assertEquals(v.question.options.all()[1].option, "opcion preference 2")
+        self.assertEquals(v.question.options.all()[2].option, "opcion preference 3")
+
+    def encrypt_msg(self, msg, v, bits=settings.KEYBITS):
+        pk = v.pub_key
+        p, g, y = (pk.p, pk.g, pk.y)
+        k = MixCrypt(bits=bits)
+        k.k = ElGamal.construct((p, g, y))
+        return k.encrypt(msg)
+
+    def get_or_create_user(self, pk):
+        user, _ = User.objects.get_or_create(pk=pk)
+        user.username = "user{}".format(pk)
+        user.set_password("qwerty")
+        user.save()
+        return user
+
+    def create_voters(self, v):
+        for i in range(100):
+            u, _ = User.objects.get_or_create(username="testvoter{}".format(i))
+            u.is_active = True
+            u.save()
+            c = Census(voter_id=u.id, voting_id=v.id)
+            c.save()
+
+    def store_votes(self, v):
+        voters = list(Census.objects.filter(voting_id=v.id))
+        voter = voters.pop()
+
+        clear = []
+        for _ in range(5):
+            bag = list(range(1, len(v.question.options.all()) + 1))
+            l = []
+            n = len(v.question.options.all()) - 1
+            for e in v.question.options.all():
+                l.append(bag.pop(random.randint(0, n)))
+                n -= 1
+
+            res = int(
+                str(l)
+                .replace("[", "")
+                .replace("]", "")
+                .replace(",", "1010101")
+                .replace(" ", "")
+            )
+            a, b = self.encrypt_msg(res, v)
+            data = {
+                "voting": v.id,
+                "voter": voter.voter_id,
+                "vote": {"a": a, "b": b},
+            }
+            clear.append(l)
+            user = self.get_or_create_user(voter.voter_id)
+            self.login(user=user.username)
+            voter = voters.pop()
+            mods.post("store", json=data)
+        return clear
+
+    def testVoting(self):
+        self.create_voters(self.v)
+
+        self.v.create_pubkey()
+        self.v.start_date = timezone.now()
+        self.v.save()
+
+        clear = self.store_votes(self.v)
+
+        self.login()  # set token
+        self.v.tally_votes(self.token)
+
+        tally = self.v.tally
+
+        for e in range(len(clear)):
+            self.assertTrue(tally[e] in clear)
+
+        for q in self.v.postproc:
+            self.assertEqual(
+                q["votes"],
+                sum(e[q["number"] - 1] for e in tally)
+                / len(self.v.question.options.all()),
+            )
+
+
+class VotingModelTestCasePreferenceInvalid(BaseTestCase):
+    def setUp(self):
+        q = Question(desc="Test question")
+        q.save()
+
+        opt1 = QuestionOption(question=q, option="opcion preference 1", number=1)
+        opt1.save()
+        opt2 = QuestionOption(question=q, option="opcion preference 2", number=2)
+        opt2.save()
+        opt3 = QuestionOption(question=q, option="opcion preference 3", number=3)
+        opt3.save()
+
+        self.v = Voting(name="Votacion", question=q, voting_type="M")
+        self.v.save()
+
+        a, _ = Auth.objects.get_or_create(
+            url=settings.BASEURL, defaults={"me": True, "name": "test auth"}
+        )
+        a.save()
+        self.v.auths.add(a)
+
+        super().setUp()
+
+    def tearDown(self):
+        super().tearDown()
+        self.v = None
+
+    def testExist(self):
+        v = Voting.objects.get(name="Votacion")
+        self.assertTrue(v.question.options.count() == 3)
+        self.assertEquals(v.question.options.all()[0].option, "opcion preference 1")
+        self.assertEquals(v.question.options.all()[1].option, "opcion preference 2")
+        self.assertEquals(v.question.options.all()[2].option, "opcion preference 3")
+
+    def encrypt_msg(self, msg, v, bits=settings.KEYBITS):
+        pk = v.pub_key
+        p, g, y = (pk.p, pk.g, pk.y)
+        k = MixCrypt(bits=bits)
+        k.k = ElGamal.construct((p, g, y))
+        return k.encrypt(msg)
+
+    def get_or_create_user(self, pk):
+        user, _ = User.objects.get_or_create(pk=pk)
+        user.username = "user{}".format(pk)
+        user.set_password("qwerty")
+        user.save()
+        return user
+
+    def create_voters(self, v):
+        for i in range(100):
+            u, _ = User.objects.get_or_create(username="testvoter{}".format(i))
+            u.is_active = True
+            u.save()
+            c = Census(voter_id=u.id, voting_id=v.id)
+            c.save()
+
+    def store_votes(self, v):
+        voters = list(Census.objects.filter(voting_id=v.id))
+        voter = voters.pop()
+
+        clear = []
+        for _ in range(5):
+            bag = [1 for _ in v.question.options.all()]
+            l = []
+            n = len(v.question.options.all()) - 1
+            for e in v.question.options.all():
+                l.append(bag.pop(random.randint(0, n)))
+                n -= 1
+
+            res = int(
+                str(l)
+                .replace("[", "")
+                .replace("]", "")
+                .replace(",", "1010101")
+                .replace(" ", "")
+            )
+            a, b = self.encrypt_msg(res, v)
+            data = {
+                "voting": v.id,
+                "voter": voter.voter_id,
+                "vote": {"a": a, "b": b},
+            }
+            clear.append(l)
+            user = self.get_or_create_user(voter.voter_id)
+            self.login(user=user.username)
+            voter = voters.pop()
+            mods.post("store", json=data)
+        return clear
+
+    def testVoting(self):
+        self.create_voters(self.v)
+
+        self.v.create_pubkey()
+        self.v.start_date = timezone.now()
+        self.v.save()
+
+        self.store_votes(self.v)
+
+        self.login()  # set token
+
+        self.assertRaises(Exception, self.v.tally_votes, token=self.token)
