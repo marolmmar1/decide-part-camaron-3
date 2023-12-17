@@ -15,6 +15,7 @@
     <nav class="navbar navbar-dark bg-primary">
         <div class="container-fluid">
             <div class="navbar-brand" >Decide</div>
+            <div v-if="user != null" class="navbar-brand" > Hello, [[ user.username ]]</div>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -116,8 +117,25 @@
 
         <!-- Voting -->
         <div v-if="!signup">
+            <div v-if="voting.voting_type == 'H'">
+                <h1>Hierarchy Voting</h1>
+                <br>
+            </div>
             <h1>[[ voting.id ]] - [[ voting.name ]]</h1>
             <h2>[[ voting.question.desc ]]</h2>
+            {% if voting_obj.voting_type == "M" %}
+                <ul id="M-voting">
+                    <li v-for="opt in voting.question.options">
+                        <select :name="'option-' + opt.number" :id="'option-' + opt.number">
+                            <option v-for="index in voting.order_options" :value="index" :key="index">
+                                [[ index ]]
+                            </option>
+                        </select>             
+                        <p>Number: [[ opt.number ]]</p>
+                        <p>[[ opt.option ]]</p>
+                    </li>
+                </ul>
+            {% else %}
             <form v-for="opt in voting.question.options" :key="opt.number">
                 <div class="form-group">
                     <input type="radio" v-model="selected"
@@ -127,6 +145,7 @@
                         [[ opt.option ]]
                 </div>
             </form>
+            {% endif %}
             <button class="btn btn-primary mt-3" v-on:click="decideSend">
                 {% trans "Vote" %}
             </button>
@@ -256,14 +275,42 @@
                     this.signup = true;
                     this.successVote = false;
                 },
-                decideEncrypt() {
-                    var bigmsg = BigInt.fromJSONObject(this.selected.toString());
+                decideEncrypt(num) {
+                    var bigmsg = BigInt.fromJSONObject(num);
                     var cipher = ElGamal.encrypt(this.bigpk, bigmsg);
                     return cipher;
                 },
+                check_order_ok() {
+                    var minflicto = []; //(More Intelligent Names For List I Can't Think Of)
+                    var l = document.getElementById("M-voting").getElementsByTagName("select");
+                    for (const i of l) { minflicto.push(parseInt(i.value)); }
+                    var comp = [...Array(l.length + 1).keys()];
+                    comp.shift()
+
+                    res = true
+                    for (const i of comp) {
+                        if (!minflicto.includes(i)) { res = false; }
+                    }
+                    return res;
+                },
                 decideSend(evt) {
                     evt.preventDefault();
-                    var v = this.decideEncrypt();
+
+                    if (this.voting.voting_type == "M") {
+                        if (!this.check_order_ok()) { this.showAlert("danger", 'Order of options not valid'); return; }
+                        var l = document.getElementById("M-voting").getElementsByTagName("select");
+                        //For M type votings, we save a toString array with the indexes been the question positions and the values been the preferences
+                        var enc = [...Array(l.length + 1).keys()];
+                        enc.shift();
+                        for (const i of l) {
+                            enc[parseInt(i.id.replace('option-', ''))-1] = parseInt(i.value);
+                        }
+                        //console.log(enc.toString())
+                        var v = this.decideEncrypt(enc.toString());
+
+                    } else {
+                        var v = this.decideEncrypt(this.selected.toString());
+                    }
                     var data = {
                         vote: {a: v.alpha.toString(), b: v.beta.toString()},
                         voting: this.voting.id,

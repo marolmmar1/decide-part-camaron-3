@@ -109,9 +109,9 @@ WSGI_APPLICATION = "decide.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "decide",
-        "USER": "decide",
-        "PASSWORD": "decide",
+        "NAME": "decidedb",
+        "USER": "decideuser",
+        "PASSWORD": "decidepass123",
         "HOST": "localhost",
         "PORT": "5432",
     }
@@ -119,7 +119,6 @@ DATABASES = {
 DBBACKUP_STORAGE = "django.core.files.storage.FileSystemStorage"
 DATABASE_BACKUP_DIR = BASE_DIR + "/store/backup"
 DBBACKUP_STORAGE_OPTIONS = {"location": DATABASE_BACKUP_DIR}
-
 
 # Password validation
 # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators

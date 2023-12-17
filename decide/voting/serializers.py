@@ -44,4 +44,4 @@ class SimpleVotingSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Voting
-        fields = ("name", "desc", "question", "start_date", "end_date")
+        fields = ("name", "desc", "voting_type", "question", "start_date", "end_date")
