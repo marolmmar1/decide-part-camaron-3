@@ -24,14 +24,8 @@ import os
 from django.db import transaction
 
 from selenium import webdriver
-from voting.models import QuestionOption
-from mixnet.models import Auth
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.support import expected_conditions
-from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 import time
 import json
@@ -491,13 +485,14 @@ class BackupTestCase(TestCase):
 
 
 class DashboardTestCase(StaticLiveServerTestCase):
-    
     def setUp(self):
         self.base = BaseTestCase()
         self.base.setUp()
 
-        self.userlog = User.objects.create_superuser('adminprueba', 'admin@example.com', '1111')
-        self.user = User.objects.create_superuser('prueba', 'p@example.com', '1111')
+        self.userlog = User.objects.create_superuser(
+            "adminprueba", "admin@example.com", "1111"
+        )
+        self.user = User.objects.create_superuser("prueba", "p@example.com", "1111")
         question = Question.objects.create(desc="Test Question")
         self.voting = Voting.objects.create(name="Test Voting", question=question)
         self.voting.save()
@@ -505,7 +500,7 @@ class DashboardTestCase(StaticLiveServerTestCase):
         self.census1.save()
         self.census2 = Census(voting_id=self.voting.id, voter_id=self.userlog.id)
         self.census2.save()
-        
+
         self.driver = webdriver.Chrome()
         self.vars = {}
 
@@ -514,7 +509,7 @@ class DashboardTestCase(StaticLiveServerTestCase):
         self.driver = webdriver.Chrome(options=options)
 
         super().setUp()
-        
+
     def tearDown(self):
         super().tearDown()
         self.driver.quit()
@@ -528,7 +523,7 @@ class DashboardTestCase(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "id_password").send_keys("1111")
         self.driver.find_element(By.ID, "id_password").send_keys(Keys.ENTER)
 
-        #Hacer votacion activa
+        # Hacer votacion activa
         self.driver.find_element(By.LINK_TEXT, "Votings").click()
         select_element = self.driver.find_element(By.NAME, "action")
         select = Select(select_element)
@@ -537,7 +532,7 @@ class DashboardTestCase(StaticLiveServerTestCase):
         self.driver.find_element(By.NAME, "index").click()
         self.driver.find_element(By.LINK_TEXT, "Votes").click()
 
-        #Hacer voto
+        # Hacer voto
         self.driver.find_element(By.LINK_TEXT, "Votes").click()
         self.driver.find_element(By.CSS_SELECTOR, "li > .addlink").click()
         self.driver.find_element(By.ID, "id_voting_id").send_keys(str(self.voting.id))
@@ -549,17 +544,23 @@ class DashboardTestCase(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "id_b").send_keys("1")
         self.driver.find_element(By.NAME, "_save").click()
 
-        #Nombre votacion
-        nombre = self.driver.find_element(By.ID, "vote-name-"+str(self.voting.id)).text
-        self.assertEqual(nombre, "Name: "+self.voting.name)
+        # Nombre votacion
+        nombre = self.driver.find_element(
+            By.ID, "vote-name-" + str(self.voting.id)
+        ).text
+        self.assertEqual(nombre, "Name: " + self.voting.name)
 
-        #Comprueba que se refleja en el dashboard correctamente
-        fechaInicio = self.driver.find_element(By.ID, "start-date-"+str(self.voting.id)).text
-        self.assertTrue(fechaInicio!="Started: None")
-        fechaFin = self.driver.find_element(By.ID, "end-date-"+str(self.voting.id)).text
+        # Comprueba que se refleja en el dashboard correctamente
+        fechaInicio = self.driver.find_element(
+            By.ID, "start-date-" + str(self.voting.id)
+        ).text
+        self.assertTrue(fechaInicio != "Started: None")
+        fechaFin = self.driver.find_element(
+            By.ID, "end-date-" + str(self.voting.id)
+        ).text
         self.assertEqual(fechaFin, "Finished: None")
 
-        #Hacer votacion parada
+        # Hacer votacion parada
         self.driver.find_element(By.LINK_TEXT, "Votings").click()
         select_element = self.driver.find_element(By.NAME, "action")
         select = Select(select_element)
@@ -568,11 +569,15 @@ class DashboardTestCase(StaticLiveServerTestCase):
         self.driver.find_element(By.NAME, "index").click()
         self.driver.find_element(By.LINK_TEXT, "Votes").click()
 
-        #Comprueba que se cambian los datos
-        fechaInicio = self.driver.find_element(By.ID, "start-date-"+str(self.voting.id)).text
-        self.assertTrue(fechaInicio!="Started: None")
-        fechaFin = self.driver.find_element(By.ID, "end-date-"+str(self.voting.id)).text
-        self.assertTrue(fechaFin!="Finished: None")
+        # Comprueba que se cambian los datos
+        fechaInicio = self.driver.find_element(
+            By.ID, "start-date-" + str(self.voting.id)
+        ).text
+        self.assertTrue(fechaInicio != "Started: None")
+        fechaFin = self.driver.find_element(
+            By.ID, "end-date-" + str(self.voting.id)
+        ).text
+        self.assertTrue(fechaFin != "Finished: None")
 
     def test_funciones_dashboard(self):
         self.driver.get(self.live_server_url + "/admin/login/?next=/admin/")
@@ -582,7 +587,7 @@ class DashboardTestCase(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "id_password").send_keys("1111")
         self.driver.find_element(By.ID, "id_password").send_keys(Keys.ENTER)
 
-        #Hacer votacion activa
+        # Hacer votacion activa
         self.driver.find_element(By.LINK_TEXT, "Votings").click()
         select_element = self.driver.find_element(By.NAME, "action")
         select = Select(select_element)
@@ -590,7 +595,7 @@ class DashboardTestCase(StaticLiveServerTestCase):
         self.driver.find_elements(By.CLASS_NAME, "action-select")[0].click()
         self.driver.find_element(By.NAME, "index").click()
 
-        #Hacer voto
+        # Hacer voto
         self.driver.find_element(By.LINK_TEXT, "Votes").click()
         self.driver.find_element(By.CSS_SELECTOR, "li > .addlink").click()
         self.driver.find_element(By.ID, "id_voting_id").send_keys(str(self.voting.id))
@@ -602,13 +607,17 @@ class DashboardTestCase(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "id_b").send_keys("1")
         self.driver.find_element(By.NAME, "_save").click()
 
-        #Comprueba que se refleja en el dashboard correctamente
-        contador = self.driver.find_element(By.ID, "vote-count-"+str(self.voting.id)).text
+        # Comprueba que se refleja en el dashboard correctamente
+        contador = self.driver.find_element(
+            By.ID, "vote-count-" + str(self.voting.id)
+        ).text
         self.assertEqual(contador, "Number of votes: 1")
-        pctge = self.driver.find_element(By.ID, "vote-percentage-"+str(self.voting.id)).text
+        pctge = self.driver.find_element(
+            By.ID, "vote-percentage-" + str(self.voting.id)
+        ).text
         self.assertEqual(pctge, "Percentage: 50.00%")
 
-        #Hacer otro
+        # Hacer otro
         self.driver.find_element(By.LINK_TEXT, "Votes").click()
         self.driver.find_element(By.CSS_SELECTOR, "li > .addlink").click()
         self.driver.find_element(By.ID, "id_voting_id").send_keys(str(self.voting.id))
@@ -620,8 +629,12 @@ class DashboardTestCase(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "id_b").send_keys("1")
         self.driver.find_element(By.NAME, "_save").click()
 
-        #Comprueba que el dashboard se actualiza correctamente
-        contador = self.driver.find_element(By.ID, "vote-count-"+str(self.voting.id)).text
+        # Comprueba que el dashboard se actualiza correctamente
+        contador = self.driver.find_element(
+            By.ID, "vote-count-" + str(self.voting.id)
+        ).text
         self.assertEqual(contador, "Number of votes: 2")
-        pctge = self.driver.find_element(By.ID, "vote-percentage-"+str(self.voting.id)).text
+        pctge = self.driver.find_element(
+            By.ID, "vote-percentage-" + str(self.voting.id)
+        ).text
         self.assertEqual(pctge, "Percentage: 100.00%")
