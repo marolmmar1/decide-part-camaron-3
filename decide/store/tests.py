@@ -27,9 +27,6 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
-import time
-import json
-from selenium.webdriver.common.action_chains import ActionChains
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium.webdriver.support.ui import Select
 
