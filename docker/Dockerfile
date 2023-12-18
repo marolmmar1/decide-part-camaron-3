@@ -10,7 +10,7 @@ RUN pip install ipython
 
 WORKDIR /app
 
-RUN git clone https://github.com/Moffinguer/decide-part-camaron-2.git .
+RUN git clone https://github.com/marolmmar1/decide-part-camaron-3.git .
 RUN pip install -r requirements.txt
 
 WORKDIR /app/decide
