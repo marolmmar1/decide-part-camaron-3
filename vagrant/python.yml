@@ -3,7 +3,7 @@
   become: yes
   become_user: decide
   git:
-    repo: 'https://github.com/Moffinguer/decide-part-camaron-2.git'
+    repo: 'https://github.com/marolmmar1/decide-part-camaron-3.git'
     dest: /home/decide/decide
     version: master
 
