@@ -31,9 +31,9 @@ class VotingPreferenceTestCaseSelenium(StaticLiveServerTestCase):
             "--ignore-certificate-errors",
             "--disable-extensions",
             "--no-sandbox",
-            "--disable-dev-shm-usage"
+            "--disable-dev-shm-usage",
         ]
-        
+
         for option in option_list:
             options.add_argument(option)
 
@@ -78,9 +78,9 @@ class VotingPreferenceTestCaseSeleniumSuccess(StaticLiveServerTestCase):
             "--ignore-certificate-errors",
             "--disable-extensions",
             "--no-sandbox",
-            "--disable-dev-shm-usage"
+            "--disable-dev-shm-usage",
         ]
-        
+
         for option in option_list:
             options.add_argument(option)
 
@@ -125,9 +125,9 @@ class VotingPreferenceTestCaseSeleniumFail(StaticLiveServerTestCase):
             "--ignore-certificate-errors",
             "--disable-extensions",
             "--no-sandbox",
-            "--disable-dev-shm-usage"
+            "--disable-dev-shm-usage",
         ]
-        
+
         for option in option_list:
             options.add_argument(option)
 

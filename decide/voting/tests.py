@@ -355,9 +355,9 @@ class LogInSuccessTests(StaticLiveServerTestCase):
             "--ignore-certificate-errors",
             "--disable-extensions",
             "--no-sandbox",
-            "--disable-dev-shm-usage"
+            "--disable-dev-shm-usage",
         ]
-        
+
         for option in option_list:
             options.add_argument(option)
 
@@ -403,9 +403,9 @@ class LogInErrorTests(StaticLiveServerTestCase):
             "--ignore-certificate-errors",
             "--disable-extensions",
             "--no-sandbox",
-            "--disable-dev-shm-usage"
+            "--disable-dev-shm-usage",
         ]
-        
+
         for option in option_list:
             options.add_argument(option)
 
@@ -476,9 +476,9 @@ class QuestionsTests(StaticLiveServerTestCase):
             "--ignore-certificate-errors",
             "--disable-extensions",
             "--no-sandbox",
-            "--disable-dev-shm-usage"
+            "--disable-dev-shm-usage",
         ]
-        
+
         for option in option_list:
             options.add_argument(option)
 

@@ -47,6 +47,7 @@ from selenium.webdriver.common.keys import Keys
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium.webdriver.support.ui import Select
 
+
 class StoreTextCase(BaseTestCase):
     def setUp(self):
         super().setUp()
@@ -250,7 +251,6 @@ class StoreTextCase(BaseTestCase):
         response = self.client.get("/store/voteHistory/")
         self.assertEqual(response.status_code, 401)
 
- 
 
 class RealTimeDataTestCase(TestCase):
     def setUp(self):
@@ -564,9 +564,9 @@ class DashboardTestCase(StaticLiveServerTestCase):
             "--ignore-certificate-errors",
             "--disable-extensions",
             "--no-sandbox",
-            "--disable-dev-shm-usage"
+            "--disable-dev-shm-usage",
         ]
-        
+
         for option in option_list:
             options.add_argument(option)
 

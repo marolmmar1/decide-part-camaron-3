@@ -38,9 +38,9 @@ class BoothTestCase(StaticLiveServerTestCase):
             "--ignore-certificate-errors",
             "--disable-extensions",
             "--no-sandbox",
-            "--disable-dev-shm-usage"
+            "--disable-dev-shm-usage",
         ]
-        
+
         for option in option_list:
             options.add_argument(option)
 
@@ -178,7 +178,7 @@ class BoothTestCase(StaticLiveServerTestCase):
             print("La ventana no existe o ya ha sido cerrada.")
         self.driver.find_element(By.ID, "id_desc").click()
         self.driver.find_element(By.ID, "id_desc").send_keys("test question 2")
-  
+
         self.driver.find_element(By.ID, "id_options-0-number").send_keys("1")
         self.driver.find_element(By.ID, "id_options-1-number").click()
         self.driver.find_element(By.ID, "id_options-1-number").send_keys("2")
@@ -271,9 +271,9 @@ class BoothTestCaseSelenium(StaticLiveServerTestCase):
             "--ignore-certificate-errors",
             "--disable-extensions",
             "--no-sandbox",
-            "--disable-dev-shm-usage"
+            "--disable-dev-shm-usage",
         ]
-        
+
         for option in option_list:
             options.add_argument(option)
 

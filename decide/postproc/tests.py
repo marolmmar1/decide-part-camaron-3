@@ -396,9 +396,9 @@ class TestSimulacionDroop(StaticLiveServerTestCase):
             "--ignore-certificate-errors",
             "--disable-extensions",
             "--no-sandbox",
-            "--disable-dev-shm-usage"
+            "--disable-dev-shm-usage",
         ]
-        
+
         for option in option_list:
             options.add_argument(option)
 
@@ -606,9 +606,9 @@ class TestSimulacionDhont(StaticLiveServerTestCase):
             "--ignore-certificate-errors",
             "--disable-extensions",
             "--no-sandbox",
-            "--disable-dev-shm-usage"
+            "--disable-dev-shm-usage",
         ]
-        
+
         for option in option_list:
             options.add_argument(option)
 
@@ -912,9 +912,9 @@ class TestSimulacionSaintLague(StaticLiveServerTestCase):
             "--ignore-certificate-errors",
             "--disable-extensions",
             "--no-sandbox",
-            "--disable-dev-shm-usage"
+            "--disable-dev-shm-usage",
         ]
-        
+
         for option in option_list:
             options.add_argument(option)
 
