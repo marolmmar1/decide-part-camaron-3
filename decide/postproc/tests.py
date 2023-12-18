@@ -387,8 +387,24 @@ class TestSimulacionDroop(StaticLiveServerTestCase):
         self.base.setUp()
         options = webdriver.ChromeOptions()
         options.headless = True
-        self.vars = {}
+
+        # Configuración de opciones
+        option_list = [
+            "--headless",
+            "--disable-gpu",
+            "--window-size=1920,1200",
+            "--ignore-certificate-errors",
+            "--disable-extensions",
+            "--no-sandbox",
+            "--disable-dev-shm-usage"
+        ]
+        
+        for option in option_list:
+            options.add_argument(option)
+
+        # Asignar opciones al controlador
         self.driver = webdriver.Chrome(options=options)
+        self.vars = {}
         user_admin = User(username="adminB", is_staff=True, is_superuser=True)
         user_admin.set_password("qwertyA")
         user_admin.save()
@@ -581,8 +597,24 @@ class TestSimulacionDhont(StaticLiveServerTestCase):
         self.base.setUp()
         options = webdriver.ChromeOptions()
         options.headless = True
-        self.vars = {}
+
+        # Configuración de opciones
+        option_list = [
+            "--headless",
+            "--disable-gpu",
+            "--window-size=1920,1200",
+            "--ignore-certificate-errors",
+            "--disable-extensions",
+            "--no-sandbox",
+            "--disable-dev-shm-usage"
+        ]
+        
+        for option in option_list:
+            options.add_argument(option)
+
+        # Asignar opciones al controlador
         self.driver = webdriver.Chrome(options=options)
+        self.vars = {}
         user_admin = User(username="adminB", is_staff=True, is_superuser=True)
         user_admin.set_password("qwertyA")
         user_admin.save()
@@ -871,8 +903,24 @@ class TestSimulacionSaintLague(StaticLiveServerTestCase):
         self.base.setUp()
         options = webdriver.ChromeOptions()
         options.headless = True
-        self.vars = {}
+
+        # Configuración de opciones
+        option_list = [
+            "--headless",
+            "--disable-gpu",
+            "--window-size=1920,1200",
+            "--ignore-certificate-errors",
+            "--disable-extensions",
+            "--no-sandbox",
+            "--disable-dev-shm-usage"
+        ]
+        
+        for option in option_list:
+            options.add_argument(option)
+
+        # Asignar opciones al controlador
         self.driver = webdriver.Chrome(options=options)
+        self.vars = {}
         user_admin = User(username="adminB", is_staff=True, is_superuser=True)
         user_admin.set_password("qwertyA")
         user_admin.save()

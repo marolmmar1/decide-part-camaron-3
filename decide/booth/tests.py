@@ -29,6 +29,22 @@ class BoothTestCase(StaticLiveServerTestCase):
 
         options = webdriver.ChromeOptions()
         options.headless = True
+
+        # Configuración de opciones
+        option_list = [
+            "--headless",
+            "--disable-gpu",
+            "--window-size=1920,1200",
+            "--ignore-certificate-errors",
+            "--disable-extensions",
+            "--no-sandbox",
+            "--disable-dev-shm-usage"
+        ]
+        
+        for option in option_list:
+            options.add_argument(option)
+
+        # Asignar opciones al controlador
         self.driver = webdriver.Chrome(options=options)
         u = User(username="admin1")
         u.set_password("admin1")
@@ -86,7 +102,9 @@ class BoothTestCase(StaticLiveServerTestCase):
             print("La ventana no existe o ya ha sido cerrada.")
         self.driver.find_element(By.ID, "id_desc").click()
         self.driver.find_element(By.ID, "id_desc").send_keys("test question 2")
+        time.sleep(1)
         self.driver.find_element(By.ID, "id_options-0-number").click()
+        time.sleep(1)
         self.driver.find_element(By.ID, "id_options-0-number").send_keys("1")
         self.driver.find_element(By.ID, "id_options-1-number").click()
         self.driver.find_element(By.ID, "id_options-1-number").send_keys("2")
@@ -215,8 +233,11 @@ class BoothTestCase(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "id_voter_id").send_keys("1")
         self.driver.find_element(By.NAME, "_save").click()
         self.driver.get(self.live_server_url + "/booth/1")
+        time.sleep(1)
         self.driver.find_element(By.CSS_SELECTOR, ".navbar-toggler-icon").click()
+        time.sleep(1)
         self.driver.find_element(By.CSS_SELECTOR, ".btn-secondary").click()
+        time.sleep(1)
         self.vars["win5024"] = self.wait_for_window(2000)
         self.driver.find_element(By.ID, "username").click()
         self.driver.find_element(By.ID, "username").send_keys("admin1")
@@ -241,6 +262,22 @@ class BoothTestCaseSelenium(StaticLiveServerTestCase):
 
         options = webdriver.ChromeOptions()
         options.headless = True
+
+        # Configuración de opciones
+        option_list = [
+            "--headless",
+            "--disable-gpu",
+            "--window-size=1920,1200",
+            "--ignore-certificate-errors",
+            "--disable-extensions",
+            "--no-sandbox",
+            "--disable-dev-shm-usage"
+        ]
+        
+        for option in option_list:
+            options.add_argument(option)
+
+        # Asignar opciones al controlador
         self.driver = webdriver.Chrome(options=options)
 
         # Create questions

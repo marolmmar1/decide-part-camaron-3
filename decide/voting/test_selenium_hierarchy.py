@@ -40,10 +40,6 @@ class VotingHierarchyTestCaseSelenium(StaticLiveServerTestCase):
         # Asignar opciones al controlador
         self.driver = webdriver.Chrome(options=options)
 
-        options = webdriver.ChromeOptions()
-        options.headless = True
-        self.driver = webdriver.Chrome(options=options)
-
         u = User(username="admin1")
         u.set_password("admin1")
         u.is_staff = True
