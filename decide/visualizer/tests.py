@@ -551,7 +551,7 @@ class exportPosprocPAR(BaseTestCase):
             i = i + 1
 
 
-class exportPosprocPAR(BaseTestCase):
+class exportPosprocDro(BaseTestCase):
     def setUp(self):
         self.client = APIClient()
         mods.mock_query(self.client)
