@@ -1,9 +1,5 @@
-from django.test import TestCase
 from base.tests import BaseTestCase
-from voting.models import Voting, Question, QuestionOption
-from mixnet.models import Auth
-from django.conf import settings
-from census.models import Census
+from voting.models import Voting
 from django.contrib.auth.models import User
 from base import mods
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
@@ -14,29 +10,43 @@ import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+
 
 class VotingHierarchyTestCaseSelenium(StaticLiveServerTestCase):
-   
     def setUp(self):
         self.client = APIClient()
-        self.base = BaseTestCase()  
+        self.base = BaseTestCase()
         self.base.setUp()
-        self.vars={}
+        self.vars = {}
         mods.mock_query(self.client)
-        
+
         options = webdriver.ChromeOptions()
         options.headless = True
+
+        # Configuración de opciones
+        option_list = [
+            "--headless",
+            "--disable-gpu",
+            "--window-size=1920,1200",
+            "--ignore-certificate-errors",
+            "--disable-extensions",
+            "--no-sandbox",
+            "--disable-dev-shm-usage",
+        ]
+
+        for option in option_list:
+            options.add_argument(option)
+
+        # Asignar opciones al controlador
         self.driver = webdriver.Chrome(options=options)
 
-        u = User(username='admin1')
-        u.set_password('admin1')
+        u = User(username="admin1")
+        u.set_password("admin1")
         u.is_staff = True
         u.is_superuser = True
         u.save()
 
-    def wait_for_window(self, timeout = 2):
+    def wait_for_window(self, timeout=2):
         time.sleep(round(timeout / 1000))
         wh_now = self.driver.window_handles
         wh_then = self.vars["window_handles"]
@@ -68,9 +78,9 @@ class VotingHierarchyTestCaseSelenium(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "id_name").send_keys("Votacion 1")
         self.driver.find_element(By.ID, "id_desc").click()
         self.driver.find_element(By.ID, "id_desc").send_keys("Esto es una votacion")
-        self.driver.find_element(By.CSS_SELECTOR, ".field-question .related-widget-wrapper").click()
         self.vars["window_handles"] = self.driver.window_handles
-        self.driver.find_element(By.CSS_SELECTOR, "#add_id_question > img").click()
+        self.driver.find_element(By.CSS_SELECTOR, "#add_id_questions > img").click()
+
         self.vars["win1332"] = self.wait_for_window(2000)
         self.vars["root"] = self.driver.current_window_handle
         self.driver.switch_to.window(self.vars["win1332"])
@@ -94,22 +104,14 @@ class VotingHierarchyTestCaseSelenium(StaticLiveServerTestCase):
         self.driver.switch_to.window(self.vars["root"])
         self.vars["window_handles"] = self.driver.window_handles
         self.driver.find_element(By.CSS_SELECTOR, "#add_id_auths > img").click()
-
-        self.vars["win2215"] = self.wait_for_window(1000)
-        if self.vars["win2215"] in self.driver.window_handles:
-            self.driver.switch_to.window(self.vars["win2215"])
-        else:
-            print("La ventana no existe o ya ha sido cerrada.")
-        self.driver.find_element(By.ID, "id_name").send_keys(self.live_server_url+"/")
-
-        element = WebDriverWait(self.driver, 5).until(
-            EC.presence_of_element_located((By.ID, "id_url"))
-        )
-        element.click()
-
-        self.driver.find_element(By.ID, "id_url").send_keys(self.live_server_url+"/")
-
+        self.vars["win451"] = self.wait_for_window(2000)
+        self.driver.switch_to.window(self.vars["win451"])
+        self.driver.find_element(By.ID, "id_name").click()
+        self.driver.find_element(By.ID, "id_name").send_keys("test auth")
+        self.driver.find_element(By.ID, "id_url").click()
+        self.driver.find_element(By.ID, "id_url").send_keys(self.live_server_url + "/")
         self.driver.find_element(By.NAME, "_save").click()
+
         self.driver.switch_to.window(self.vars["root"])
         self.driver.find_element(By.NAME, "_save").click()
         self.driver.find_element(By.NAME, "_selected_action").click()
@@ -143,15 +145,15 @@ class VotingHierarchyTestCaseSelenium(StaticLiveServerTestCase):
 
         voting = Voting.objects.get(name="Votacion 1")
         self.driver.get(f'{self.live_server_url+"/booth/"+voting.id.__str__()}')
-        
+
         element = self.driver.find_element(By.CSS_SELECTOR, ".btn-secondary")
-        
-        navbar_toggler = self.driver.find_element(By.CLASS_NAME, 'navbar-toggler')
+
+        navbar_toggler = self.driver.find_element(By.CLASS_NAME, "navbar-toggler")
         navbar_toggler.click()
         actions = ActionChains(self.driver)
         actions.move_to_element(element).perform()
         self.driver.find_element(By.CSS_SELECTOR, ".btn-secondary").click()
-        
+
         element = self.driver.find_element(By.CSS_SELECTOR, "body")
         actions = ActionChains(self.driver)
 
@@ -161,12 +163,15 @@ class VotingHierarchyTestCaseSelenium(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "username").send_keys("admin1")
         self.driver.find_element(By.ID, "password").send_keys("admin1")
         self.driver.find_element(By.CSS_SELECTOR, ".btn-primary").click()
-        time.sleep(10)
-        self.assertTrue(self.live_server_url+"/booth/"+voting.id.__str__()+"/" == self.driver.current_url)
-        time.sleep(5)
-        self.assertTrue(self.driver.find_element(By.CSS_SELECTOR, ".h1").text == "Hierarchy Voting")
-        
-        
+        time.sleep(1)
+        self.assertTrue(
+            self.live_server_url + "/booth/" + voting.id.__str__() + "/"
+            == self.driver.current_url
+        )
+        self.assertTrue(
+            self.driver.find_element(By.CSS_SELECTOR, ".h1").text == "Hierarchy Voting"
+        )
+
     def tearDown(self):
         super().tearDown()
         self.driver.quit()

@@ -18,7 +18,8 @@ ALLOWED_ORIGINS = ['http://*', 'https://*', 'https://localhost:8080', 'http://lo
 CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_SAMESITE = 'Strict'
 CSRF_TRUSTED_ORIGINS = ALLOWED_ORIGINS.copy()
-# Modules in use, commented modules that you won't use
+
+
 MODULES = [
     'authentication',
     'base',
