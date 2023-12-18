@@ -20,9 +20,7 @@ def dict_to_csv(values, name):
 
 def build_census_map(census):
     rows = {"Name": [], "Id": []}
-    print("aaaaaaaaaa")
     for user in census:
-        print(user)
         rows.get("Name").append(User.objects.get(pk=int(user)).username)
         rows.get("Id").append(user)
     return rows
@@ -129,10 +127,13 @@ def build_vote_map(a):
         for option in question.get("options"):
             rows["number"].append(option.get("number"))
             rows["option"].append(option.get("option"))
-            if a.get("tally")[k] == option.get("number"):
-                rows["votes"].append(1)
-            else:
+            if a.get("tally") == None:
                 rows["votes"].append(0)
+            else:
+                if a.get("tally")[k] == option.get("number"):
+                    rows["votes"].append(1)
+                else:
+                    rows["votes"].append(0)
         k = k + 1
         res["question " + str(i)] = rows
         i = i + 1
