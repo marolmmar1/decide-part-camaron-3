@@ -254,7 +254,6 @@ class Voting(models.Model):
             v = str(vote).split("2020202")
             for e in v:
                 if self.voting_type != "M":
-
                     self.tally.append([e])
                 elif self.voting_type == "M":
                     v = str(e).split("1010101")
@@ -262,8 +261,7 @@ class Voting(models.Model):
                     self.tally.append(v)
 
                     if len(v) != len(set(v)):
-                        raise Exception("Non valid tally count")    
-
+                        raise Exception("Non valid tally count")
 
         self.save()
 

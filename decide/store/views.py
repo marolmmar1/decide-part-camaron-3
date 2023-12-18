@@ -71,20 +71,22 @@ class StoreView(generics.ListAPIView):
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
 
         # the user is in the census
-        perms = mods.get('census/{}'.format(vid), params={'voter_id': uid}, response=True)
+        perms = mods.get(
+            "census/{}".format(vid), params={"voter_id": uid}, response=True
+        )
         if perms.status_code == 401:
             # print("por aqui 65")
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
 
-
         a = votes.get("a")
         b = votes.get("b")
-        
+
         defs = {"a": a, "b": b}
 
         if voting[0].get("voting_type", None) != "H":
-            v, _ = Vote.objects.get_or_create(voting_id=vid, voter_id=uid,
-                                            defaults=defs)
+            v, _ = Vote.objects.get_or_create(
+                voting_id=vid, voter_id=uid, defaults=defs
+            )
             v.a = a
             v.b = b
 
@@ -213,4 +215,3 @@ class VoteHistoryView(generics.ListAPIView):
         # Filtra los votos del usuario actual
         user = self.request.user
         return Vote.objects.filter(voter_id=user.id).order_by("-voted")
-        
