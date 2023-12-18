@@ -35,7 +35,7 @@
                       <th>Número de votos</th>
                       <td>[[voting.tally.length / voting.questions.length]]</td>
                     <tr>
-                    <tr>
+                    <tr v-if="voting.voting_type != 'H'">
                       <th>Porcentaje del censo que ha votado</th>
                       <td>[[voting.tally.length/voting.questions.length/census.voters.length * 100]] %</td>
                     <tr>
