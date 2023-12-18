@@ -19,7 +19,12 @@
             <h2 v-if="!voting.start_date">Votación no comenzada</h2>
             <div v-else>
               <h2 v-if="!voting.end_date">Votación en curso</h2>
-
+              <div>
+                <button onclick="window.location.href='/visualizer/export-csv/{{voting_id}}'">Export voting to CSV</button>
+                <button onclick="window.location.href='/visualizer/export-xls/{{voting_id}}'">Export voting to xls</button>
+                <button onclick="window.location.href='/visualizer/export-census-csv/{{voting_id}}'">Export census to CSV</button>
+                <button onclick="window.location.href='/visualizer/export-census-xls/{{voting_id}}'">Export census to xls</button>
+              </div>
               <h2>Estadísticas de la votación:</h2>
                   <table v-if="voting.tally" class="table table-bordered table-striped">
                     <tr>

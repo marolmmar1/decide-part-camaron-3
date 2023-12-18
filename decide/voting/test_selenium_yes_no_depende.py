@@ -3,9 +3,7 @@ from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from rest_framework.test import APIClient
 
 from selenium import webdriver
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
 
 import time
 from selenium.webdriver.common.action_chains import ActionChains
@@ -39,79 +37,10 @@ class TestSelenium(StaticLiveServerTestCase):
         if len(wh_now) > len(wh_then):
             return set(wh_now).difference(set(wh_then)).pop()
 
-    def test_selenium(self):
-        user = User.objects.get(username="admin1")
-        self.driver.get(f'{self.live_server_url+"/admin/login/?next=/admin/"}')
-        self.driver.find_element(By.ID, "id_username").send_keys("admin1")
-        self.driver.find_element(By.ID, "id_password").send_keys("admin1")
-        self.driver.find_element(By.CSS_SELECTOR, "form input[type='submit']").click()
-        self.driver.find_element(By.LINK_TEXT, "Votings").click()
-        self.driver.find_element(By.CSS_SELECTOR, "li > .addlink").click()
-        dropdown = self.driver.find_element(By.ID, "id_voting_type")
-        dropdown.find_element(By.XPATH, "//option[. = 'Single Choice']").click()
-        element = self.driver.find_element(By.ID, "id_voting_type")
-        actions = ActionChains(self.driver)
-        actions.move_to_element(element).click_and_hold().perform()
-        element = self.driver.find_element(By.ID, "id_voting_type")
-        actions = ActionChains(self.driver)
-        actions.move_to_element(element).perform()
-        element = self.driver.find_element(By.ID, "id_voting_type")
-        actions = ActionChains(self.driver)
-        actions.move_to_element(element).release().perform()
-        self.driver.find_element(By.ID, "id_name").click()
-        self.driver.find_element(By.CSS_SELECTOR, ".field-name > div").click()
-        self.driver.find_element(By.ID, "id_name").send_keys("Champions")
-        self.driver.find_element(By.ID, "id_desc").click()
-        self.driver.find_element(By.ID, "id_desc").send_keys("Ganar la champions")
-        self.vars["window_handles"] = self.driver.window_handles
-        self.driver.find_element(By.CSS_SELECTOR, "#add_id_question > img").click()
-        self.vars["win504"] = self.wait_for_window(2000)
-        self.vars["root"] = self.driver.current_window_handle
-        self.driver.switch_to.window(self.vars["win504"])
-        self.driver.find_element(By.ID, "id_desc").click()
-        self.driver.find_element(By.ID, "id_desc").send_keys(
-            "¿Ganará el Atletico de Madrid la Champions?"
-        )
-        self.driver.find_element(
-            By.CSS_SELECTOR, ".field-optionSiNo .vCheckboxLabel"
-        ).click()
-        self.driver.find_element(
-            By.CSS_SELECTOR, ".field-third_option .vCheckboxLabel"
-        ).click()
-        self.driver.find_element(By.NAME, "_save").click()
-        self.driver.switch_to.window(self.vars["root"])
-        self.vars["window_handles"] = self.driver.window_handles
-        self.driver.find_element(By.CSS_SELECTOR, "#add_id_auths > img").click()
-        self.vars["win5929"] = self.wait_for_window(2000)
-        if self.vars["win5929"] in self.driver.window_handles:
-            self.driver.switch_to.window(self.vars["win5929"])
-        else:
-            print("La ventana no existe o ya ha sido cerrada.")
-        element = WebDriverWait(self.driver, 10).until(
-            EC.presence_of_element_located((By.ID, "id_url"))
-        )
-        element.click()
-        self.driver.find_element(By.ID, "id_url").send_keys("http://localhost:8000")
-        self.driver.find_element(By.ID, "id_name").click()
-        self.driver.find_element(By.ID, "id_name").click()
-        element = self.driver.find_element(By.ID, "id_name")
-        actions = ActionChains(self.driver)
-        actions.double_click(element).perform()
-        self.driver.find_element(By.ID, "id_name").send_keys("url")
-        self.driver.find_element(By.NAME, "_save").click()
-        self.driver.switch_to.window(self.vars["root"])
-        self.driver.find_element(By.NAME, "_save").click()
-        self.driver.find_element(By.LINK_TEXT, "Questions").click()
-        self.driver.find_element(
-            By.LINK_TEXT, "¿Ganará el Atletico de Madrid la Champions?"
-        ).click()
-        elementSi = self.driver.find_element(By.ID, "id_options-0-option")
-        self.assertTrue(elementSi.text == "Sí")
-        elementNo = self.driver.find_element(By.ID, "id_options-1-option")
-        self.assertTrue(elementNo.text == "No")
-        elementDepende = self.driver.find_element(By.ID, "id_options-2-option")
-        self.assertTrue(elementDepende.text == "Depende")
-        self.driver.find_element(By.NAME, "_save").click()
+    def tearDown(self):
+        super().tearDown()
+        self.driver.quit()
+        self.base.tearDown()
 
 
 class TestSelenium1(StaticLiveServerTestCase):
@@ -149,7 +78,7 @@ class TestSelenium1(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "id_name").send_keys("Votacion Atleti")
         self.driver.find_element(By.ID, "id_desc").click()
         self.vars["window_handles"] = self.driver.window_handles
-        self.driver.find_element(By.CSS_SELECTOR, "#add_id_question > img").click()
+        self.driver.find_element(By.CSS_SELECTOR, "#add_id_questions > img").click()
         self.vars["win7257"] = self.wait_for_window(2000)
         self.vars["root"] = self.driver.current_window_handle
         self.driver.switch_to.window(self.vars["win7257"])
@@ -216,6 +145,11 @@ class TestSelenium1(StaticLiveServerTestCase):
         self.assertTrue(elementDepende.text == "Ganara una liga")
         self.driver.find_element(By.NAME, "_save").click()
 
+    def tearDown(self):
+        super().tearDown()
+        self.driver.quit()
+        self.base.tearDown()
+
 
 class TestSelenium2(StaticLiveServerTestCase):
     def setUp(self):
@@ -260,7 +194,7 @@ class TestSelenium2(StaticLiveServerTestCase):
         self.driver.find_element(By.ID, "id_name").click()
         self.driver.find_element(By.ID, "id_name").send_keys("Votacion Atleti")
         self.vars["window_handles"] = self.driver.window_handles
-        self.driver.find_element(By.CSS_SELECTOR, "#add_id_question > img").click()
+        self.driver.find_element(By.CSS_SELECTOR, "#add_id_questions > img").click()
         self.vars["win8675"] = self.wait_for_window(2000)
         self.vars["root"] = self.driver.current_window_handle
         self.driver.switch_to.window(self.vars["win8675"])
@@ -300,11 +234,8 @@ class TestSelenium2(StaticLiveServerTestCase):
             print("La ventana no existe o ya ha sido cerrada.")
         self.driver.find_element(By.ID, "id_name").click()
         self.driver.find_element(By.ID, "id_name").send_keys("url")
-        element = WebDriverWait(self.driver, 5).until(
-            EC.presence_of_element_located((By.ID, "id_url"))
-        )
         self.driver.find_element(By.ID, "id_url").click()
-        self.driver.find_element(By.ID, "id_url").send_keys("http://localhost:8000")
+        self.driver.find_element(By.ID, "id_url").send_keys(self.live_server_url + "/")
         self.driver.find_element(By.NAME, "_save").click()
         self.driver.switch_to.window(self.vars["root"])
         self.driver.find_element(By.NAME, "_save").click()
@@ -333,3 +264,8 @@ class TestSelenium2(StaticLiveServerTestCase):
         elementDepende = self.driver.find_element(By.ID, "id_options-2-option")
         self.assertTrue(elementDepende.text == "Depende")
         self.driver.find_element(By.NAME, "_save").click()
+
+    def tearDown(self):
+        super().tearDown()
+        self.driver.quit()
+        self.base.tearDown()

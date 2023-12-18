@@ -258,7 +258,7 @@ class Voting(models.Model):
 
                 if len(v) != len(set(v)):
                     raise Exception("Non valid tally count")
-        
+
             # print(self.tally)
             aux = []
             for i in self.tally:
@@ -284,7 +284,9 @@ class Voting(models.Model):
                         votes = tally.count(opt.number)
                 else:
                     votes = 0
-                opts.append({"option": opt.option, "number": opt.number, "votes": votes})
+                opts.append(
+                    {"option": opt.option, "number": opt.number, "votes": votes}
+                )
             data = {
                 "options": opts,
                 "voting_id": self.id,
