@@ -743,7 +743,7 @@ class VotingModelTestCasePreference(BaseTestCase):
         tally = self.v.tally
 
         for q in self.v.postproc:
-            for question in v.questions.all():
+            for question in self.v.questions.all():
                 self.assertEqual(
                     q["votes"],
                     sum(e[q["number"] - 1] for e in tally)
