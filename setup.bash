@@ -2,9 +2,9 @@ cd "${0%/*}"
 cd decide
 cp local_settings.example.py local_settings.py
 sed -i "s/10.*:/localhost:/" local_settings.py
-sed -i "s/'NAME': 'postgres'/'NAME': 'decidedb'/" local_settings.py
-sed -i "s/'USER': 'postgres'/'USER': 'decideuser'/" local_settings.py
-sed -i "s/'HOST': 'db'/'HOST': 'localhost',\n        'PASSWORD': 'decidepass123'/" local_settings.py
+sed -i "s/\"NAME\": \"postgres\"/\"NAME\": \"decidedb\"/" local_settings.py
+sed -i "s/\"USER\": \"postgres\"/\"USER\": \"decideuser\"/" local_settings.py
+sed -i "s/\"HOST\": \"db\"/\"HOST\": \"localhost\",\n        \"PASSWORD\": \"decidepass123\"/g" local_settings.py
 echo "Created local_settings.py"
 cd ..
 python -m venv venv
