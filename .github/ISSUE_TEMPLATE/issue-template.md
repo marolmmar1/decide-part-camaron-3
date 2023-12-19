@@ -1,18 +1,19 @@
----
-name: Issue Template
-about: Create an issue to implement a new feature or fix an integration
-title: ''
-labels: ''
-assignees: ''
+	Description: *Descripción de la incidencia*.
+	
+	Affected modules:
+		-Module X.
+		-Module Y.
+		-Module Z.
 
 ---
 
-## Expected Behavior
+	Description: *Título y descripción del error*.
+	
+        Environment used: *Descripción del entorno (software y hardware)*.
 
-## Actual Behavior
+        Steps to follow to get the error:
+	        -Paso X
+	        -Paso Y
+	        -Paso Z
 
-## Natural workflow
-
-  1.
-  2.
-  3.
+        Suggestion: *Sugerencia de como solucionarlo o de dónde está el problema*.
