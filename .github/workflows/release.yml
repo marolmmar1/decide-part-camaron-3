@@ -11,13 +11,7 @@ permissions:
     contents: write
 
 jobs:
-    buildTest:
-        uses: marolmmar1/dedice-part-camaron-3/.github/workflows/django.yml@master
-        secrets:
-            CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
-
     release:
-        needs: buildTest
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
