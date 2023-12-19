@@ -550,7 +550,6 @@ class DashboardTestCase(StaticLiveServerTestCase):
         self.census2 = Census(voting_id=self.voting.id, voter_id=self.userlog.id)
         self.census2.save()
 
-        self.driver = webdriver.Chrome()
         self.vars = {}
 
         options = webdriver.ChromeOptions()
