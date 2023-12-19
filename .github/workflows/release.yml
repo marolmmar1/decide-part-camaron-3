@@ -12,7 +12,7 @@ permissions:
 
 jobs:
     buildTest:
-        uses: Moffinguer/dedice-part-camaron-2/.github/workflows/django.yml@master
+        uses: marolmmar1/dedice-part-camaron-3/.github/workflows/django.yml@master
         secrets:
             CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
 
