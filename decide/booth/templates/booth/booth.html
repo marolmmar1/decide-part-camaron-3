@@ -15,6 +15,7 @@
     <nav class="navbar navbar-dark bg-primary">
         <div class="container-fluid">
             <div class="navbar-brand" >Decide</div>
+            <div v-if="user != null" class="navbar-brand" > Hello, [[ user.username ]]</div>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -116,16 +117,37 @@
 
         <!-- Voting -->
         <div v-if="!signup">
+            <div v-if="voting.voting_type == 'H'">
+                <h1 class="h1">Hierarchy Voting</h1>
+                <br>
+            </div>
             <h1>[[ voting.id ]] - [[ voting.name ]]</h1>
-            <h2>[[ voting.question.desc ]]</h2>
-            <form v-for="opt in voting.question.options" :key="opt.number">
+            <form id="vote" v-for="(question, index) in voting.questions" :key="index">
                 <div class="form-group">
-                    <input type="radio" v-model="selected"
-                                :id="'q' + opt.number"
-                                name="question"
-                                :value="opt.number">
-                        [[ opt.option ]]
-                </div>
+                    <h2 class="h2">[[ question.desc ]]</h2>
+                    <div v-if="voting.voting_type == 'M'">
+                        <ul :id="'M-voting' + index">
+                            <li v-for="opt in question.options">
+                                <p>Number: [[ opt.number ]]</p>
+                                <select :name="'option-' + opt.number" :id="'option-' + opt.number">
+                                    <option v-for="option in question.options" :value="option.number" :key="option.number">
+                                        [[ option.option ]]
+                                    </option>
+                                </select>            
+                                
+                            </li>
+                        </ul>
+                    </div>
+                    <div v-else>
+                        <div class="form-group" v-for="opt in question.options" :key="opt.number">
+                            <input type="radio" v-model="selected[index]"
+                                    :id="'opt' + opt.number + '_index' + index"
+                                    name="'question_' + index"
+                                    :value="opt.number">
+                                [[ opt.option ]]
+                        </div>
+                    </div>
+                </div> 
             </form>
             <button class="btn btn-primary mt-3" v-on:click="decideSend">
                 {% trans "Vote" %}
@@ -151,7 +173,7 @@
     <script src="{% static "crypto/elgamal.js" %}"></script>
 
     <!-- Vuejs -->
-    <script src="https://unpkg.com/vue@latest"</script>
+    <script src="https://unpkg.com/vue@latest"></script>
     <script src="https://unpkg.com/babel-polyfill@latest/dist/polyfill.min.js"></script>
     <script src="https://unpkg.com/bootstrap@5.2.2/dist/js/bootstrap.js"></script>
 
@@ -163,7 +185,8 @@
             data() {
                 return {
                     voting: voting,
-                    selected: "",
+                    selected: {},
+                    questions: {{ questions|safe }}, // cuidao
                     signup: true,
                     successVote: false,
                     alertShow: false,
@@ -225,10 +248,12 @@
                     evt.preventDefault();
                     this.postData("{% url "gateway" "authentication" "/login/" %}", this.form)
                         .then(data => {
+                            console.log("Received token:", data.token); 
                             document.cookie = 'decide='+data.token+';';
                             this.token = data.token;
                             this.getUser();
                             this.alertShow = false;
+                            this.signup = false;                            
                         })
                         .catch(error => {
                             this.showAlert("danger", '{% trans "Error: " %}' + error);
@@ -236,7 +261,7 @@
                 },
                 getUser(evt) {
                     var data = {token: this.token};
-                    this.postData("{% url "gateway" "authentication" "/getuser/" %}", data)
+                    this.postData('{% url "gateway" "authentication" "/getuser/" %}', data)
                         .then(data => {
                             this.user = data;
                             this.signup = false;
@@ -248,7 +273,7 @@
                 decideLogout(evt) {
                     evt.preventDefault();
                     var data = {token: this.token};
-                    this.postData("{% url "gateway" "authentication" "/logout/" %}", data);
+                    this.postData('{% url "gateway" "authentication" "/logout/" %}', data);
                     this.token = null;
                     this.user = null;
                     this.alertShow = false;
@@ -256,16 +281,75 @@
                     this.signup = true;
                     this.successVote = false;
                 },
-                decideEncrypt() {
-                    var bigmsg = BigInt.fromJSONObject(this.selected.toString());
+                decideEncrypt(num) {
+                    var bigmsg = BigInt.fromJSONObject(num);
                     var cipher = ElGamal.encrypt(this.bigpk, bigmsg);
                     return cipher;
                 },
+
+               
+                check_order_ok(preguntasId) {
+
+                    var minflicto = []; //(More Intelligent Names For List I Can't Think Of)
+                    var l = document.getElementById("M-voting" + preguntasId).getElementsByTagName("select");
+                    for (const i of l) { minflicto.push(parseInt(i.value)); }
+                    var comp = [...Array(l.length + 1).keys()];
+                    comp.shift()
+
+                    res = true
+                    for (const i of comp) {
+                        if (!minflicto.includes(i)) { res = false; }
+                    }
+                    
+                    return res;
+                },
                 decideSend(evt) {
                     evt.preventDefault();
-                    var v = this.decideEncrypt();
+                    let votes = [];
+                    let preguntasId = 0;
+                    for (question of this.voting.questions) {
+
+                        if (this.voting.voting_type == "M") {
+                            if (!this.check_order_ok(preguntasId)) { this.showAlert("danger", 'Order of options not valid'); return; }
+                            
+                            var l = document.getElementById("M-voting"+ preguntasId).getElementsByTagName("select");
+
+                            //For M type votings, we save a toString array with the indexes been the question positions and the values been the preferences
+                            var enc = [...Array(l.length + 1).keys()];
+                            enc.shift();
+                            
+                            for (const i of l) {
+                                enc[parseInt(i.id.replace('option-', ''))-1] = parseInt(i.value);
+                            }
+
+                            console.log('[' + enc.toString() + ']')
+                            var v = enc.toString()
+                                .replaceAll(',', '1010101');
+                            console.log(v)
+                            //Can only encrypt numbers. 1010101 is extremely weird to appear in the votes by itself, so we use it as a coma marker
+                            votes.push(v);
+                            
+                        }
+                        
+                        if (voting.voting_type != "M") {
+                            lista = []
+                            
+                            console.log(this.selected[preguntasId])
+                            lista.push(this.selected[preguntasId])
+                            
+                           
+                            votes.push(lista.toString());
+                        }
+                        preguntasId += 1
+
+                    }
+                    var v2 = votes.toString()
+                                .replaceAll(',', '2020202');
+                        var encrypted = this.decideEncrypt(v2);
+                        console.log(v2);
+
                     var data = {
-                        vote: {a: v.alpha.toString(), b: v.beta.toString()},
+                        votes:  {a: encrypted.alpha.toString(), b: encrypted.beta.toString()},
                         voting: this.voting.id,
                         voter: this.user.id,
                         token: this.token

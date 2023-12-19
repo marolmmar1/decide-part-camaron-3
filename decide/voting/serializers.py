@@ -7,25 +7,37 @@ from base.serializers import KeySerializer, AuthSerializer
 class QuestionOptionSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = QuestionOption
-        fields = ('number', 'option')
+        fields = ("number", "option")
 
 
 class QuestionSerializer(serializers.HyperlinkedModelSerializer):
     options = QuestionOptionSerializer(many=True)
+
     class Meta:
         model = Question
-        fields = ('desc', 'options')
+        fields = ("desc", "options")
 
 
 class VotingSerializer(serializers.HyperlinkedModelSerializer):
-    question = QuestionSerializer(many=False)
+    questions = QuestionSerializer(many=True)
     pub_key = KeySerializer()
     auths = AuthSerializer(many=True)
 
     class Meta:
         model = Voting
-        fields = ('id', 'name', 'desc', 'question', 'start_date',
-                  'end_date', 'pub_key', 'auths', 'tally', 'postproc')
+        fields = (
+            "id",
+            "name",
+            "desc",
+            "voting_type",
+            "questions",
+            "start_date",
+            "end_date",
+            "pub_key",
+            "auths",
+            "tally",
+            "postproc",
+        )
 
 
 class SimpleVotingSerializer(serializers.HyperlinkedModelSerializer):
@@ -33,4 +45,4 @@ class SimpleVotingSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Voting
-        fields = ('name', 'desc', 'question', 'start_date', 'end_date')
+        fields = ("name", "desc", "voting_type", "question", "start_date", "end_date")

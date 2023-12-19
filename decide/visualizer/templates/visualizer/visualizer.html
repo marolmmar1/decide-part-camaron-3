@@ -1,12 +1,10 @@
 {% extends "base.html" %}
 {% load i18n static %}
-
 {% block extrahead %}
-    <link type="text/css" rel="stylesheet"
-         href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
     <link type="text/css" rel="stylesheet" href="{% static "booth/style.css" %}" />
 {% endblock %}
-
 {% block content %}
     <div id="app-visualizer">
         <!-- Navbar -->
@@ -15,55 +13,189 @@
                 <h1 class="navbar-brand">Decide</h1>
             </div>
         </nav>
-          
-
         <div class="voting container">
             <h1>[[ voting.id ]] - [[ voting.name ]]</h1>
 
             <h2 v-if="!voting.start_date">Votación no comenzada</h2>
-            <h2 v-else-if="!voting.end_date">Votación en curso</h2>
             <div v-else>
-                <h2 class="heading">Resultados:</h2>
+              <h2 v-if="!voting.end_date">Votación en curso</h2>
+              <div>
+                <button onclick="window.location.href='/visualizer/export-csv/{{voting_id}}'">Export voting to CSV</button>
+                <button onclick="window.location.href='/visualizer/export-xls/{{voting_id}}'">Export voting to xls</button>
+                <button onclick="window.location.href='/visualizer/export-census-csv/{{voting_id}}'">Export census to CSV</button>
+                <button onclick="window.location.href='/visualizer/export-census-xls/{{voting_id}}'">Export census to xls</button>
+              </div>
+              <h2>Estadísticas de la votación:</h2>
+                  <table v-if="voting.tally" class="table table-bordered table-striped">
+                    <tr>
+                      <th>Número de inscritos en censo</th>
+                      <td>[[census.voters.length]]</td>
+                    <tr>
+                    <tr>
+                      <th>Número de votos</th>
+                      <td>[[voting.tally.length / voting.questions.length]]</td>
+                    <tr>
+                    <tr v-if="voting.voting_type != 'H'">
+                      <th>Porcentaje del censo que ha votado</th>
+                      <td>[[voting.tally.length/voting.questions.length/census.voters.length * 100]] %</td>
+                    <tr>
+                  </table>
+                  <table v-else class="table table-bordered table-striped">
+                    <tr>
+                      <th>Número de inscritos en censo</th>
+                      <td>[[census.voters.length]]</td>
+                    <tr>
+                  </table>
 
-                <table class="table table-bordered table-striped">
-                    <thead>
-                        <tr>
-                            <th>Opción</th>
-                            <th>Puntuación</th>
-                            <th>Votos</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="opt in voting.postproc" :key="opt.number">
-                            <th>[[opt.option]]</th>
-                            <td>[[opt.postproc]]</td>
-                            <td class="text-muted">[[opt.votes]]</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+              <div v-if="voting.end_date && voting.tally">
+                  <h2 class="heading">Resultados:</h2>
 
-        </div>
-    </div>
+                    <div v-for="(question, index) in voting.questions">
+                      <table class="table table-bordered table-striped">
+                          <thead>
+                              <tr>
+                                  <th>Opción</th>
+                                  <th v-if="seats">Escaños</th>
+                                  <th>Votos</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+                              <tr v-for="(option, n) in voting.questions[index].options">
+                                  <th>[[ option.option ]]</th>
+                                  <td v-if="seats">[[ seats[n] ]]</td>
+                                  <td class="text-muted">[[ tally[index][n+1] | 0 ]]</td>
+                              </tr>
+                          </tbody>
+                      </table>
+                      <div class="d-flex flex-row justify-content-around p-4">
+                        <div><canvas :id="'stats-bar'+index"></canvas></div>
+                        <div><canvas :id="'stats-pie'+index"></canvas></div>
+                      </div>
+                    </div>
+                </div>
+              </div>
 {% endblock %}
 
 {% block extrabody %}
     <!-- Vuejs -->
-    <script src="https://unpkg.com/vue"></script>
+    <script src="https://unpkg.com/chart.js"></script>
     <script src="https://unpkg.com/babel-polyfill@latest/dist/polyfill.min.js"></script>
     <script src="https://unpkg.com/bootstrap@5.2.2/dist/js/bootstrap.js"></script>
+    <script src="https://unpkg.com/vue"></script>    
+    <!-- <script src="https://unpkg.com/vue-router@3.5.3/dist/vue-router.min.js"></script> -->
+    <!-- <script src="https://unpkg.com/bootstrap-vue@2.21.2/dist/bootstrap-vue.min.js"></script> -->
+    <script>
+      function calcDhontSeats(voting) {
+        var results = voting.postproc.results
+        var results = results.map((x)=>x.dhont)
+        var n = results[0].length
+        var acc = Array(results.length).fill(0)
 
+        for(i=0; i<n; i++) {
+          var posNumbers = results.map((l)=>l[i].percentaje)
+          var maxIndex = posNumbers.indexOf(Math.max(...posNumbers))
+          acc[maxIndex]++
+        }
+        return acc
+      }
+    </script>
     <script>
         var voting = {{voting|safe}};
+        var census = {{census|safe}};
+        console.log(voting)
+
+        var tally = []
+        if(voting.tally){
+          for(i=0; i<voting.questions.length; i++) {
+            var questiontally = voting.tally.filter((value,index)=>index%voting.questions.length==i)
+            if(voting.voting_type == "M"){
+              questiontally = questiontally.map((l)=>l[0])
+            }
+
+            questiontally = questiontally.reduce((acc,value) => {
+              acc[value] = (acc[value] || 0) + 1
+              return acc
+            }, {})
+            voting.questions[i].options.forEach((o)=>{
+              if(!questiontally[o.number]) {
+                questiontally[o.number] = 0
+              }
+            })
+            tally.push(questiontally)
+          }
+        }
+
+
+        var seats = null
+          switch(voting.postproc?.type_postproc) {
+            case "DHO":
+              seats = calcDhontSeats(voting)
+              break
+            case "PAR":
+              seats = voting.postproc.results.map((res)=>res.saintLague)
+              break
+          }
+
         const { createApp } = Vue
         createApp({
             delimiters: ['[[', ']]'],
             data() {
                 return {
-                    voting: voting
+                    voting: voting,
+                    census: census,
+                    tally: tally,
+                    seats: seats
                 }
+            },
+            mounted() {
+              if(voting.tally){
+                for(i=0;i<voting.questions.length;i++){
+                  var subtally = tally[i]
+                  var xValues = voting.questions[i].options.map((o)=>o.option)
+                  var yValues = Object.keys(subtally).sort((a,b)=>a-b).map(i=>subtally[i])
+                  var barColors = ["red", "orange","yellow","lime","turquoise","blue","purple"];
+
+                  new Chart("stats-bar"+i, {
+                    type: "bar",
+                    data: {
+                      labels: xValues,
+                      datasets: [{
+                        backgroundColor: barColors,
+                        data: yValues
+                      }]
+                    },
+                    options: {
+                      maintainAspectRatio:false,
+                      plugins: {
+                        legend: {
+                          display: false
+                        }
+                      }
+                    }
+                  });
+
+                  new Chart("stats-pie"+i, {
+                    type: "pie",
+                    data: {
+                      labels: xValues,
+                      datasets: [{
+                        backgroundColor: barColors,
+                        data: yValues
+                      }]
+                    },
+                    options: {
+                      plugins: {
+                        legend: {
+                          display: false
+                        }
+                      }
+                    }
+                  });
+                }
+              }
             }
         }).mount('#app-visualizer')
+
+
     </script>
-</body>
 {% endblock %}
