@@ -150,7 +150,9 @@ class BoothTestCase(StaticLiveServerTestCase):
         self.assertTrue(
             self.driver.find_element(By.CSS_SELECTOR, "h1").text == "Not Found"
         )
-'''
+
+
+"""
     def test_selenium_multiple_questions(self):
         self.driver.get(f'{self.live_server_url+"/admin/login/?next=/admin/"}')
         self.driver.set_window_size(910, 880)
@@ -251,7 +253,8 @@ class BoothTestCase(StaticLiveServerTestCase):
         )
         elements = self.driver.find_elements(By.CSS_SELECTOR, ".h2")
         assert any(element.text == "test question 2" for element in elements)
-'''
+"""
+
 
 class BoothTestCaseSelenium(StaticLiveServerTestCase):
     def setUp(self):
