@@ -740,7 +740,8 @@ class TestSimulacionSaintLague(StaticLiveServerTestCase):
         self.assertEquals(
             div_contenido, "Error: Unauthorized", "Usuario no Autenticado"
         )
-    '''
+
+    """
     def test_02_validation_error(self):
         self.driver.get(f"{self.live_server_url}/admin/")
         self.driver.set_window_size(1348, 696)
@@ -894,4 +895,4 @@ class TestSimulacionSaintLague(StaticLiveServerTestCase):
         self.driver.find_element(By.NAME, "index").click()
         sleep(3)
         assert "500" in self.driver.page_source
-        '''
+        """
