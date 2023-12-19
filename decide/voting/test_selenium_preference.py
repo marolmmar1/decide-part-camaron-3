@@ -194,10 +194,11 @@ class VotingPreferenceTestCaseSeleniumFail(StaticLiveServerTestCase):
         self.driver.switch_to.window(self.vars["root"])
         self.vars["window_handles"] = self.driver.window_handles
         self.driver.find_element(By.CSS_SELECTOR, "#add_id_auths > img").click()
-
+        time.sleep(1)
         self.vars["win1617"] = self.wait_for_window(5000)
+        time.sleep(1)
         self.driver.switch_to.window(self.vars["win1617"])
-
+        time.sleep(1)
         self.driver.find_element(By.ID, "id_name").send_keys(self.live_server_url + "/")
         self.driver.find_element(By.ID, "id_url").send_keys(self.live_server_url + "/")
 
