@@ -1,7 +1,7 @@
 from django.db import models
 
 ROLES = [
-    ("0", "Only for Hierchical Votings. Select this if voting isn`t Hierchical"),
+    ("1", "Only for Hierchical Votings. Select this if voting isn`t Hierchical"),
     ("1", "Balanceado"),
     ("2", "Colaborador"),
     ("3", "Coordinador"),

@@ -99,7 +99,7 @@ class StoreView(generics.ListAPIView):
             census_content = census.content.decode("utf-8")
             role = census_content.strip('"')
             numero = int(role)
-            for i in range(1, numero):
+            for i in range(0, numero):
                 v, _ = Vote.objects.get_or_create(
                     voting_id=vid, voter_id=uid, value=i, defaults=defs
                 )
